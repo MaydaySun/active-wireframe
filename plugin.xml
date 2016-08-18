@@ -1,0 +1,44 @@
+<?xml version="1.0"?>
+<zend-config>
+    <plugin>
+
+        <!-- the plugin name [A-Za-z_] -->
+        <pluginName>ActiveWireframe</pluginName>
+        <pluginNiceName>©Active Publishing - Active Wireframe</pluginNiceName>
+
+        <!-- a short description -->
+        <pluginDescription>
+            <![CDATA[Plugin permettant de gérer les briefs de vos catalogues, brochures, prospectus, annuaires, magazines, etc...]]></pluginDescription>
+
+        <!-- meta data -->
+        <pluginVersion>2.0</pluginVersion>
+        <pluginRevision>8</pluginRevision>
+        <pluginBuildTimestamp>0</pluginBuildTimestamp>
+
+        <!-- put in the URL for the plugin configuration eg. /plugin/ActivePdf/admin/index -->
+        <!--<pluginIframeSrc>/plugin/ActiveWireframe/settings/settings</pluginIframeSrc>-->
+
+        <!-- className of the plugin which extends Pimcore_API_Plugin_Abstract-->
+        <pluginClassName>\ActiveWireframe\Plugin</pluginClassName>
+
+        <!-- include paths relative to plugin-directory -->
+        <pluginIncludePaths>
+            <path>/ActiveWireframe/lib</path>
+            <path>/ActiveWireframe/models</path>
+        </pluginIncludePaths>
+
+        <!-- namespaces to register with autoloader-->
+        <pluginNamespaces>
+            <namespace>ActiveWireframe</namespace>
+        </pluginNamespaces>
+
+        <!-- js files with path relative to plugin-directory -->
+        <pluginJsPaths>
+            <path>/plugins/ActiveWireframe/static/js/pimcore/document/printpages/pdf_preview.js</path>
+            <path>/plugins/ActiveWireframe/static/js/pimcore/document/printcontainer.js</path>
+            <path>/plugins/ActiveWireframe/static/js/pimcore/document/printpage.js</path>
+            <path>/plugins/ActiveWireframe/static/js/startup.js</path>
+        </pluginJsPaths>
+
+    </plugin>
+</zend-config>

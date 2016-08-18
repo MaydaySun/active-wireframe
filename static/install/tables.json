@@ -1,0 +1,46 @@
+{
+  "name": "tables",
+  "structure": {
+    "_active_catalogs": {
+      "id": "int(11) AUTO_INCREMENT",
+      "document_id": "int(11)",
+      "format_width": "varchar(255)",
+      "format_height": "varchar(255)",
+      "orientation": "varchar(255)",
+      "margin_little": "varchar(255)",
+      "margin_great": "varchar(25)",
+      "margin_top": "varchar(255)",
+      "margin_bottom": "varchar(255)",
+      "template_odd": "varchar(255)",
+      "template_even": "varchar(255)"
+    },
+    "_active_wireframe_pages": {
+      "id": "int(11)  AUTO_INCREMENT",
+      "document_id": "int(11)",
+      "document_parent_id": "int(11)",
+      "document_root_id": "int(11)",
+      "document_type": "varchar(255)",
+      "page_key": "varchar(255)",
+      "products": "text",
+      "grid_row": "int(2)",
+      "grid_col": "int(2)",
+      "locked": "int(2)"
+    },
+    "_active_wireframe_elements": {
+      "id": "int(11)  AUTO_INCREMENT",
+      "o_id": "int(11)",
+      "document_id": "int(11)",
+      "document_parent_id": "int(11)",
+      "document_root_id": "int(11)",
+      "page_key": "varchar(255)",
+      "e_id": "int(11)",
+      "e_key": "varchar(255)",
+      "e_top": "varchar(255)",
+      "e_left": "varchar(255)",
+      "e_transform": "varchar(255)",
+      "e_width": "varchar(255)",
+      "e_height": "varchar(255)",
+      "e_index": "varchar(255)"
+    }
+  }
+}

@@ -1,0 +1,35 @@
+{
+  "name": "doctypes",
+  "structure": {
+    "Catalogue": {
+      "module": "ActiveWireframe",
+      "controller": "create",
+      "action": "form",
+      "template": "",
+      "type": "printcontainer",
+      "priority": "",
+      "creationDate": "",
+      "modificationDate": ""
+    },
+    "Chapitre": {
+      "module": "ActiveWireframe",
+      "controller": "catalogs",
+      "action": "tree",
+      "template": "",
+      "type": "printcontainer",
+      "priority": "",
+      "creationDate": "",
+      "modificationDate": ""
+    },
+    "Page": {
+      "module": "ActiveWireframe",
+      "controller": "pages",
+      "action": "pages",
+      "template": "",
+      "type": "printpage",
+      "priority": "",
+      "creationDate": "",
+      "modificationDate": ""
+    }
+  }
+}

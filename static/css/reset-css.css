@@ -1,0 +1,33 @@
+.reset-css div, .reset-css span, .reset-css applet, .reset-css object, .reset-css iframe, .reset-css h1, .reset-css h2, .reset-css h3, .reset-css h4, .reset-css h5, .reset-css h6, .reset-css p, .reset-css blockquote, .reset-css pre, .reset-css a, .reset-css abbr, .reset-css acronym, .reset-css address, .reset-css big, .reset-css cite, .reset-css code, .reset-css del, .reset-css dfn, .reset-css em, .reset-css img, .reset-css ins, .reset-css kbd, .reset-css q, .reset-css s, .reset-css samp, .reset-css small, .reset-css strike, .reset-css strong, .reset-css sub, .reset-css sup, .reset-css tt, .reset-css var, .reset-css b, .reset-css u, .reset-css i, .reset-css center, .reset-css dl, .reset-css dt, .reset-css dd, .reset-css ol, .reset-css ul, .reset-css li, .reset-css fieldset, .reset-css form, .reset-css label, .reset-css legend, .reset-css table, .reset-css caption, .reset-css tbody, .reset-css tfoot, .reset-css thead, .reset-css tr, .reset-css th, .reset-css td, .reset-css article, .reset-css aside, .reset-css canvas, .reset-css details, .reset-css embed, .reset-css figure, .reset-css figcaption, .reset-css footer, .reset-css header, .reset-css hgroup, .reset-css menu, .reset-css nav, .reset-css output, .reset-css ruby, .reset-css section, .reset-css summary, .reset-css time, .reset-css mark, .reset-css audio, .reset-css video {
+    margin: 0;
+    padding: 0;
+    border: 0;
+    font-size: 100%;
+    font: inherit;
+    vertical-align: baseline;
+}
+
+/* HTML5 display-role reset for older browsers */
+.reset-css article, .reset-css aside, .reset-css details, .reset-css figcaption, .reset-css figure,
+.reset-css footer, .reset-css header, .reset-css hgroup, .reset-css menu, .reset-css nav, .reset-css section {
+    display: block;
+}
+
+.reset-css ol, .reset-css ul {
+    list-style: none;
+}
+
+.reset-css blockquote, .reset-css q {
+    quotes: none;
+}
+
+.reset-css blockquote:before, .reset-css blockquote:after,
+.reset-css q:before, .reset-css q:after {
+    content: '';
+    content: none;
+}
+
+.reset-css table {
+    border-collapse: collapse;
+    border-spacing: 0;
+}

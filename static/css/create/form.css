@@ -1,0 +1,129 @@
+#activeWireframe #form {
+    width: 750px;
+    margin: 0 auto 15px auto;
+    background-color: #fff;
+    overflow: hidden;
+    box-shadow: 1px 2px 4px #000;
+    top: 30px;
+    position: relative;
+    padding: 20px;
+}
+
+#form h1 {
+    position: relative;
+    top: -20px;
+    left: -20px;
+    width: calc(100% + 40px);
+    height: 60px;
+    background: none repeat scroll 0 0 #009EE0;
+    border-bottom: 1px solid #007cc0;
+    color: #FEFEFE;
+    text-shadow: 0 0 1px rgba(0, 0, 0, 0.5);
+    text-align: center;
+    font-size: 2.1rem;
+    line-height: 6rem;
+    margin-bottom: 0;
+}
+
+#form h6 {
+    margin: 5px 0 5px 0;
+    font-size: 1.3rem;
+    font-weight: 700;
+}
+
+#form #tabs-1 select {
+    width: 170px;
+}
+
+#form input:not([type="radio"]):not(.button) {
+    margin-bottom: 5px;
+    padding: 2px 2px 2px 5px;
+}
+
+#form input[type='radio'] {
+    vertical-align: middle;
+    margin-bottom: 2px;
+    margin-right: 5px;
+}
+
+#form #tabs-1 section > div + div {
+    margin-top: 20px;
+}
+
+#form #formatMan {
+    background-color: #FCF8E3;
+    padding: 10px
+}
+
+#form #tabs-1 section #formatMan input {
+    width: 170px;
+}
+
+#form #tabs-1bis select {
+    width: 210px;
+}
+
+#form #tabs-1bis section > div + div {
+    margin-top: 20px;
+}
+
+#form #tabs-1bis .selectionClasses + .selectionClasses,
+#form #tabs-1bis .groupFrontPage + .groupFrontPage {
+    margin-top: 10px;
+}
+
+#form #tabs-1bis #selectQteProducts,
+#form #tabs-1bis #selectOTemplate .ui-selectmenu-button {
+    margin-bottom: 10px;
+}
+
+#form #tabs-2 .divAddPages,
+#form #tabs-2 .divAddChapter,
+#form #tabs-2 article {
+    position: relative;
+}
+
+#form #tabs-2 .divAddPages {
+    margin-top: 35px;
+}
+
+#form #tabs-2 .btn-action {
+    position: absolute;
+    top: -6px;
+    right: 0
+}
+
+#form #tabs-2 h6 {
+    margin-bottom: 15px;
+}
+
+#form #tabs-2 .close-page-chap {
+    position: absolute;
+    top: calc(50% - 10px);
+    width: 20px;
+    height: 20px;
+    text-align: center;
+    right: 10px;
+    cursor: pointer;
+}
+
+#form #tabs-2 .close-page-chap:hover {
+    color: red;
+}
+
+#form #tabs-2 article {
+    background-color: #efefef;
+    padding: 10px;
+    margin-bottom: 10px;
+}
+
+#form #fieldThumbnails > div {
+    background: #efefef;
+    padding: 10px;
+    margin-bottom: 15px;
+    text-align: center;
+}
+
+#form .areaBtn {
+    margin-top: 25px;
+}

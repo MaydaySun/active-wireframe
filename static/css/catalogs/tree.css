@@ -1,0 +1,88 @@
+/* position */
+#activeWireframe #main-section-tree.position-icon-address #block-tree .row-preview {
+    position: relative;
+    display: block;
+    margin: auto;
+    margin-bottom: 65px;
+}
+
+#activeWireframe #main-section-tree.position-icon-book-open #block-tree .row-preview,
+#activeWireframe #main-section-tree.position-icon-th #block-tree .row-preview {
+    position: relative;
+    margin-right: 10px;
+    margin-left: 10px;
+    margin-bottom: 55px;
+    float: left;
+}
+
+/* Page */
+#activeWireframe #block-tree .preview-page {
+    box-shadow: 0 1px 2px #999;
+}
+
+#activeWireframe #block-tree .preview-page.page-right {
+    position: absolute;
+    top: 0;
+    right: 0;
+}
+
+#activeWireframe #block-tree .page-image {
+    width: 100%;
+    height: 100%;
+    background-color: #FFF;
+}
+
+#activeWireframe #block-tree .page-border {
+    border: 2px solid #CC3300;
+}
+
+#activeWireframe #block-tree .preview-page.page-right > .page-border {
+    border-left-width: 0;
+}
+
+#activeWireframe #block-tree .preview-page.page-left > .page-border {
+    border-right-width: 0;
+}
+
+#activeWireframe #block-tree:not(.chapter-tree) .row-preview:first-child .preview-page > .page-border,
+#activeWireframe #block-tree:not(.chapter-tree) .row-preview:last-child .preview-page > .page-border {
+    border-width: 2px;
+}
+
+#activeWireframe #block-tree .preview-page.page-left > .page-border.document-lock,
+#activeWireframe #block-tree .preview-page.page-right > .page-border.document-lock {
+    border-color: #32CD32;
+}
+
+#activeWireframe #block-tree .titre-page {
+    font-size: 9pt;
+    color: #222;
+    margin-top: 3px;
+    text-align: center;
+    font-weight: bold;
+}
+
+#activeWireframe #block-tree .page-right .btn-page-note,
+#activeWireframe #block-tree .page-left .btn-page-note {
+    position: absolute;
+    padding: 0;
+    top: -13px;
+    border-radius: 50%;
+    width: 35px;
+    height: 35px;
+    font-size: 20px;
+    right: -13px;
+}
+
+#activeWireframe #block-tree .page-left .btn-page-note {
+    left: -13px;
+}
+
+#activeWireframe #main-section-tree.position-icon-th #block-tree .row-preview .preview-page .btn-page-note {
+    display: none;
+}
+
+#activeWireframe #block-tree .no-preview {
+    background: #FFF url(/plugins/ActiveWireframe/static/img/orig_no-image.png) center no-repeat;
+    background-size: contain;
+}
