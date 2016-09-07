@@ -1,25 +1,7 @@
-<!-- Fichier CSS -->
 <?php if ($this->editmode) { ?>
     <link href="/plugins/ActiveWireframe/static/css/pages/pages.css?v=<?= $this->version; ?>" rel="stylesheet">
 <?php } ?>
-
-<?php
-// Configurations
-$colGrid = $this->gridCol;
-$rowGrid = $this->gridRow;
-$colGridTmp = 0;
-$rowGridTmp = 0;
-$pageWidth = number_format($this->pageWidth, 2);
-$pageHeight = number_format($this->pageHeight, 2);
-$wProduct = ($pageWidth - number_format($this->paddingLeft, 2) - number_format($this->paddingRight, 2)) / $colGrid;
-$hProduct = ($pageHeight - number_format($this->paddingTop, 2) - number_format($this->paddingBottom, 2)) / $rowGrid;
-?>
-
-<!-- Style CSS généré -->
 <style>
-    /* Print */
-
-    /* Taille de la page cropmarks */
     #activeWireframe #page-global {
         width: <?= $this->pageWidthLandmark; ?> !important;
         height: <?= $this->pageHeightLandmark; ?> !important;
@@ -29,107 +11,84 @@ $hProduct = ($pageHeight - number_format($this->paddingTop, 2) - number_format($
         background-size: <?= $this->pageWidthLandmark; ?> <?= $this->pageHeightLandmark; ?>;
     <?php } ?>
     }
-
-    /* Taille et position de la page conteneur */
     #activeWireframe #page,
     #activeWireframe #page-w2p {
         width: <?= $this->pageWidth; ?> !important;
         height: <?= $this->pageHeight; ?> !important;
         overflow: hidden;
     }
-
     #activeWireframe #page {
         top: <?= $this->pageTop; ?> !important;
         left: <?= $this->pageLeft; ?> !important;
     }
-
-    /* box-w2p-full */
     #activeWireframe .box-w2p-full {
         left: -<?= $this->pageLeft; ?> !important;
         top: -<?= $this->pageTop; ?> !important;
     }
 
-    /* Edition */
+    /* Editmode */
     <?php if ($this->editmode) { ?>
-
-    /* Taille et position de la page conteneur */
     #activeWireframe #page-global {
         top: 0 !important;
         left: 0 !important;
     }
-
     #activeWireframe #page {
         overflow: visible;
     }
-
     #activeWireframe #page-w2p {
         width: 100% !important;
         height: 100% !important;
         overflow: visible;
     }
-
     #activeWireframe .pimcore_area_dropzone {
         width: <?= $this->pageWidthLandmark; ?> !important;
         height: <?= $this->pageHeightLandmark; ?> !important;
     }
-
     #activeWireframe #slider-range-v {
         height: <?= $this->pageHeightLandmark; ?> !important;
     }
-
     #activeWireframe #slider-range-h {
         width: <?= $this->pageWidthLandmark; ?> !important;
     }
-
     #slider-range-v .slider-handle-v {
         width: calc(<?= $this->pageWidthLandmark . ' + 10px'; ?>) !important;
     }
-
     #slider-range-h .slider-handle-h {
         height: calc(<?= $this->pageHeightLandmark . ' + 10px'; ?>) !important;
     }
-
     #box-cropmarks-1,
     #box-cropmarks-3 {
         width: <?= $this->pageWidthLandmark; ?>
     }
-
     #box-cropmarks-3 {
         top: <?= $this->pageHeightLandmark; ?>;
     }
-
     #box-cropmarks-2,
     #box-cropmarks-4 {
         height: <?= $this->pageHeightLandmark; ?>
     }
-
     #box-cropmarks-2 {
         left: calc(300px + <?= $this->pageWidthLandmark; ?>);
     }
-
     #box-page-1,
     #box-page-3 {
-        width: <?= $pageWidth . 'mm' ?>;
+        width: <?= $this->pageWidth; ?> !important;
     }
-
     #box-page-3 {
-        top: <?= $pageHeight + 5 . 'mm' ?>;
+        height: top: calc(<?= $this->pageHeight; ?> +5mm) !important;
     }
-
     #box-page-2,
     #box-page-4 {
-        height: calc(<?= $pageHeight . 'mm + 1px' ?>);
+        height: <?= $this->pageHeight; ?> !important;
     }
-
     #box-page-2 {
-        left: calc(<?= $pageWidth + 5 . 'mm + 300px' ?>);
+        left: calc(<?= $this->pageWidth; ?> +5mm + 300px) !important;
     }
-
     <?php } ?>
 
 </style>
 
-<!-- Page vérrouillé -->
+    <!-- Locked-->
 <?php if ($this->editmode && $this->pageLock) { ?>
     <div id="pageIsLocked"></div>
 <?php } ?>
@@ -146,7 +105,7 @@ $hProduct = ($pageHeight - number_format($this->paddingTop, 2) - number_format($
 
     <section id="page-w2p">
 
-        <!-- Délimitation Fond perdu -->
+        <!--  Lost funds -->
         <?php if ($this->editmode) { ?>
             <div id="box-cropmarks-1"></div>
             <div id="box-cropmarks-2"></div>
@@ -154,7 +113,7 @@ $hProduct = ($pageHeight - number_format($this->paddingTop, 2) - number_format($
             <div id="box-cropmarks-4"></div>
         <?php } ?>
 
-        <!-- délimitation pages -->
+        <!-- Pages size -->
         <?php if ($this->editmode) { ?>
             <div id="box-page-1"></div>
             <div id="box-page-2"></div>
@@ -162,31 +121,25 @@ $hProduct = ($pageHeight - number_format($this->paddingTop, 2) - number_format($
             <div id="box-page-4"></div>
         <?php } ?>
 
-        <!-- sliders Position -->
+        <!-- sliders margin -->
         <?php if ($this->editmode) { ?>
             <div id="slider-range-h"></div>
             <div id="slider-range-v"></div>
         <?php } ?>
 
-        <!-- pages -->
+        <!-- page -->
         <section id="page-global">
 
-            <!-- Zone de désélection des éléments -->
-            <?php if ($this->editmode) { ?>
-                <section id="unselected"></section>
-            <?php } ?>
-
-            <!-- page -->
+            <section id="unselected"></section>
             <section id="page">
 
                 <?php
 
-                // Areas
                 $areaBlock = $this->areablock("pages-editable", array(
                         "manual" => true,
                         "toolbar" => (!$this->pageLock) ? true : false,
                         "areablock_toolbar" => array(
-                            "title" => "Glisser / Déposer",
+                            "title" => "Elements",
                             "buttonWidth" => 210,
                             "buttonMaxCharacters" => 35,
                         ),
@@ -194,18 +147,16 @@ $hProduct = ($pageHeight - number_format($this->paddingTop, 2) - number_format($
                     )
                 )->start();
 
-                // Créations des areas
                 while ($areaBlock->loop()) {
 
-                    // Init
                     $currentIndex = $areaBlock->currentIndex['key'];
                     $strStyles = "";
 
-                    // Tailles des areas
+                    // area size
                     if ((!array_key_exists($currentIndex, $this->elementsData))
                         || ($this->elementsData[$currentIndex]['e_width'] == null)
                     ) {
-                        $strStyles .= "width:" . $wProduct . "mm;";
+                        $strStyles .= "width: 70mm;";
                     } else {
                         $strStyles .= "width:" . $this->elementsData[$currentIndex]['e_width'] . "mm;";
                     }
@@ -213,43 +164,40 @@ $hProduct = ($pageHeight - number_format($this->paddingTop, 2) - number_format($
                     if ((!array_key_exists($currentIndex, $this->elementsData))
                         || ($this->elementsData[$currentIndex]['e_height'] == null)
                     ) {
-                        $strStyles .= "height:" . $hProduct . "mm;";
+                        $strStyles .= "height: 100mm;";
                     } else {
                         $strStyles .= "height:" . $this->elementsData[$currentIndex]['e_height'] . "mm;";
                     }
 
-                    // Position vertical
+                    // vertical position
                     if (($this->activepaginate && $this->elementsData[$currentIndex]['e_top'] == null)
                         || ($this->activepaginate && !array_key_exists($currentIndex, $this->elementsData))
                     ) {
 
-                        // Position de l'area
-                        if ($rowGridTmp == 0) {
-                            $strTop = number_format($this->paddingTop, 2);
-                        } else {
-                            $strTopCalc = ($rowGridTmp * $hProduct) + floatval($this->paddingTop);
-                            $strTop = number_format($strTopCalc, 2);
-                        }
-                        $rowGridTmp++;
-                        $strStyles = $strStyles . "top:" . $strTop . "mm;";
+//                        // Position de l'area
+//                        if ($rowGridTmp == 0) {
+//                            $strTop = number_format($this->paddingTop, 2);
+//                        } else {
+//                            $strTopCalc = ($rowGridTmp * $hProduct) + floatval($this->paddingTop);
+//                            $strTop = number_format($strTopCalc, 2);
+//                        }
+//                        $rowGridTmp++;
+//                        $strStyles = $strStyles . "top:" . $strTop . "mm;";
 
                     } else if ($this->elementsData[$currentIndex]['e_top'] != null) {
-
                         $strStyles .= "top:" . $this->elementsData[$currentIndex]['e_top'] . "mm;";
-
                     } else {
-
                         $strStyles .= "bottom: 0mm; top: inherit;";
                     }
 
-                    // position Horizontal
+                    // Horizontal position
                     if (($this->activepaginate && $this->elementsData[$currentIndex]['e_left'] == null)
                         || ($this->activepaginate && !array_key_exists($currentIndex, $this->elementsData))
                     ) {
 
-                        $valueLeftCalc = ($wProduct * $colGridTmp) + floatval($this->paddingLeft);
-                        $valueLeft = number_format($valueLeftCalc, 2);
-                        $strStyles = $strStyles . "left: " . $valueLeft . "mm;";
+//                        $valueLeftCalc = ($wProduct * $colGridTmp) + floatval($this->paddingLeft);
+//                        $valueLeft = number_format($valueLeftCalc, 2);
+//                        $strStyles = $strStyles . "left: " . $valueLeft . "mm;";
 
                     } else if ($this->elementsData[$currentIndex]['e_left'] != null) {
                         $strStyles .= "left:" . $this->elementsData[$currentIndex]['e_left'] . "mm;";
@@ -257,19 +205,17 @@ $hProduct = ($pageHeight - number_format($this->paddingTop, 2) - number_format($
                         $strStyles .= "right: 0mm; left: inherit;";
                     }
 
-                    // Z-Index de départ de toute area
+                    // Z-Index
                     if (!array_key_exists($currentIndex, $this->elementsData)) {
                         $strStyles .= "z-index: 10;";
                     } else {
-
-                        // Controle que le z-index possède au moins la valeur minimal
                         $zIndexNumber = ($this->elementsData[$currentIndex]['e_index'] > 10)
                             ? $this->elementsData[$currentIndex]['e_index']
                             : 10;
                         $strStyles .= "z-index: " . $zIndexNumber . ";";
                     }
 
-                    // Récupère la valeur du style Transform (rotation, scale ...)
+                    // Transform CSS
                     if (!array_key_exists($currentIndex, $this->elementsData)) {
                         $strStyles .= "transform: none; -webkit-transform: none; -moz-transform: none; -ms-transform: none;";
                     } else {
@@ -279,13 +225,11 @@ $hProduct = ($pageHeight - number_format($this->paddingTop, 2) - number_format($
                         $strStyles .= "-ms-transform:" . $this->elementsData[$currentIndex]['e_transform'] . ";";
                     }
 
-                    // Structure de l'enveloppe de l'area
-                    echo '<div class="box-w2p w2p-draggable box-w2p-resizable " data-key="' . $currentIndex . '"  style="' . $strStyles . '" >';
+                    // Bow-w2p Div
+                    echo '<div class="box-w2p w2p-draggable box-w2p-resizable " data-key="' . $currentIndex
+                        . '"  style="' . $strStyles . '" >';
 
-                    if ($this->editmode) {
-                        echo '<div class="poignee poignee-top"></div>';
-                    }
-
+                    echo '<div class="poignee poignee-top"></div>';
                     echo '<div class="box-w2p-rotatable box-w2p-design">';
 
                     $areaBlock->blockConstruct();
@@ -295,25 +239,22 @@ $hProduct = ($pageHeight - number_format($this->paddingTop, 2) - number_format($
                     $areaBlock->blockDestruct();
 
                     echo '</div>';
-                    if ($this->editmode) {
-                        echo '<div class="poignee poignee-bottom"></div>';
-                    }
+                    echo '<div class="poignee poignee-bottom"></div>';
                     echo '</div>';
 
-                    // Compteur
-                    if (($rowGridTmp == $rowGrid) && $colGrid > 1) {
-                        $rowGridTmp = 0;
-                        $colGridTmp++;
-                    }
+//                    // Compteur
+//                    if (($rowGridTmp == $rowGrid) && $colGrid > 1) {
+//                        $rowGridTmp = 0;
+//                        $colGridTmp++;
+//                    }
 
                 }
 
-                // Fin de création
                 $areaBlock->end();
                 ?>
 
-                <!-- Numero de page -->
-                <p class="numpage <?= ($this->numPage % 2) ? "numpageright" : "numpageleft" ?>">
+                <!-- Page number -->
+                <p id="number-page" class="numpage <?= ($this->numPage % 2) ? "numpageright" : "numpageleft" ?>">
                     <?= $this->numPage; ?>
                 </p>
 
@@ -324,10 +265,6 @@ $hProduct = ($pageHeight - number_format($this->paddingTop, 2) - number_format($
     </section>
 
 </section>
-
-<!-- JS -->
 <?php if ($this->editmode) { ?>
-
     <script src="/plugins/ActiveWireframe/static/js/pages/pages.js?v=<?= $this->version; ?>"></script>
-
 <?php } ?>

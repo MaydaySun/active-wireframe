@@ -8,15 +8,12 @@
 
         <!-- a short description -->
         <pluginDescription>
-            <![CDATA[Plugin permettant de gérer les briefs de vos catalogues, brochures, prospectus, annuaires, magazines, etc...]]></pluginDescription>
+            <![CDATA[Plugin for managing briefs of your catalogs, brochures, flyers, books, magazines...]]></pluginDescription>
 
         <!-- meta data -->
-        <pluginVersion>2.0</pluginVersion>
-        <pluginRevision>8</pluginRevision>
+        <pluginVersion>2.3.0</pluginVersion>
+        <pluginRevision>0</pluginRevision>
         <pluginBuildTimestamp>0</pluginBuildTimestamp>
-
-        <!-- put in the URL for the plugin configuration eg. /plugin/ActivePdf/admin/index -->
-        <!--<pluginIframeSrc>/plugin/ActiveWireframe/settings/settings</pluginIframeSrc>-->
 
         <!-- className of the plugin which extends Pimcore_API_Plugin_Abstract-->
         <pluginClassName>\ActiveWireframe\Plugin</pluginClassName>
@@ -36,9 +33,13 @@
         <pluginJsPaths>
             <path>/plugins/ActiveWireframe/static/js/pimcore/document/printpages/pdf_preview.js</path>
             <path>/plugins/ActiveWireframe/static/js/pimcore/document/printcontainer.js</path>
-            <path>/plugins/ActiveWireframe/static/js/pimcore/document/printpage.js</path>
             <path>/plugins/ActiveWireframe/static/js/startup.js</path>
         </pluginJsPaths>
+
+        <!-- css files with path relative to plugin-directory -->
+        <pluginCssPaths>
+            <path>/plugins/ActiveWireframe/static/css/icons.css</path>
+        </pluginCssPaths>
 
     </plugin>
 </zend-config>

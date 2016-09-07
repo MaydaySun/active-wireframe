@@ -12,17 +12,27 @@
  * @license    http://www.pimcore.org/license     GPLv3 and PEL
  */
 
+/**
+ * Active Publishing
+ *
+ * This source file is subject to the GNU General Public License version 3 (GPLv3)
+ * For the full copyright and license information, please view the LICENSE
+ * files that are distributed with this source code.
+ *
+ * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
+ * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
+ */
+
 namespace ActiveWireframe\Pimcore\Web2Print\Processor;
 
-use ActivePublishing\Pdf\Pdf;
 use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Pimcore\Web2Print\Processor;
 use Pimcore\Config;
+use Pimcore\Logger;
 use Pimcore\Model\Document;
 
 class WkHtmlToPdf extends Processor
 {
-
     /**
      * @var string
      */
@@ -57,7 +67,7 @@ class WkHtmlToPdf extends Processor
         if ($options) {
             foreach ($options as $key => $value) {
                 $this->options .= " --" . (string)$key;
-                if ($value !== null && $value !== "") {
+                if ($value !== null and $value !== "") {
                     $this->options .= " " . (string)$value;
                 }
             }
@@ -105,7 +115,7 @@ class WkHtmlToPdf extends Processor
 
             foreach ($options as $key => $value) {
                 $this->options .= " --" . (string)$key;
-                if ($value !== null && $value !== "") {
+                if ($value !== null and $value !== "") {
                     $this->options .= " " . (string)$value;
                 }
             }
@@ -148,17 +158,17 @@ class WkHtmlToPdf extends Processor
             $this->updateStatus($document->getId(), 50, "pdf_conversion");
             $pdf = $this->fromStringToStream($html);
 
-            // Fichier PDF
-            $pdfFile = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR
-                . 'web2print-document-' . $document->getId() . '.pdf';
-
-            // Page supérieur à 1
-            if (Pdf::countPages($pdfFile) > 1) {
-                $pdfTmp = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR
-                    . 'web2print-document-' . $document->getId() . '-' . uniqid() . '.pdf';
-                $pdf = file_get_contents(Pdf::cut($pdfFile, $pdfTmp, 1));
-                @unlink($pdfTmp);
-            }
+//            // Fichier PDF
+//            $pdfFile = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR
+//                . 'web2print-document-' . $document->getId() . '.pdf';
+//
+//            // Page supérieur à 1
+//            if (Pdf::countPages($pdfFile) > 1) {
+//                $pdfTmp = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR
+//                    . 'web2print-document-' . $document->getId() . '-' . uniqid() . '.pdf';
+//                $pdf = file_get_contents(Pdf::cut($pdfFile, $pdfTmp, 1));
+//                @unlink($pdfTmp);
+//            }
 
             $this->updateStatus($document->getId(), 100, "saving_pdf_document");
             $document->setLastGenerateMessage("");
@@ -166,7 +176,7 @@ class WkHtmlToPdf extends Processor
             return $pdf;
 
         } catch (\Exception $e) {
-            \Logger::error($e);
+            Logger::error($e);
             $document->setLastGenerateMessage($e->getMessage());
             throw new \Exception("Error during REST-Request:" . $e->getMessage());
         }
@@ -233,8 +243,8 @@ class WkHtmlToPdf extends Processor
             $dstFile = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . uniqid() . ".pdf";
         }
 
-        if (empty($srcUrl) || empty($dstFile) || empty($this->wkhtmltopdfBin)) {
-            throw new \Exception("srcUrl || dstFile || wkhtmltopdfBin is empty!");
+        if (empty($srcUrl) or empty($dstFile) or empty($this->wkhtmltopdfBin)) {
+            throw new \Exception("srcUrl or dstFile or wkhtmltopdfBin is empty!");
         }
 
         $retVal = 0;
@@ -244,7 +254,7 @@ class WkHtmlToPdf extends Processor
         $output = file_get_contents($outputFile);
         @unlink($outputFile);
 
-        if ($retVal != 0 && $retVal != 1) {
+        if ($retVal != 0 and $retVal != 1) {
             throw new \Exception("wkhtmltopdf reported error (" . $retVal . "): \n" . $output . "\ncommand was:" . $cmd);
         }
 

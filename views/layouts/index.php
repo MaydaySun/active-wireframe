@@ -7,25 +7,27 @@
 
     <!-- Global CSS & JS -->
     <link href="/pimcore/static/css/fontello.css?v=<?= $this->version; ?>" rel="stylesheet">
+
+    <link href="/plugins/ActiveWireframe/static/css/icons.css" rel="stylesheet">
     <link href="/plugins/ActiveWireframe/static/css/knacss.css?v=<?= $this->version; ?>" rel="stylesheet">
     <link href="/plugins/ActiveWireframe/static/css/knacss-extends.css?v=<?= $this->version; ?>" rel="stylesheet">
-    <link href="/plugins/ActiveWireframe/static/css/main.css?v=<?= $this->version; ?>" rel="stylesheet">
     <link href="/plugins/ActiveWireframe/static/css/reset-css.css" rel="stylesheet">
+    <link href="/plugins/ActiveWireframe/static/css/main.css?v=<?= $this->version; ?>" rel="stylesheet">
+
     <script src="/pimcore/static/js/pimcore/functions.js?v=<?= $this->version; ?>"></script>
     <script src="/plugins/ActiveWireframe/static/js/functions.js?v=<?= $this->version; ?>"></script>
 
     <!-- jQuery -->
-    <script src="/plugins/ActiveWireframe/static/js/jquery.js?v=<?= $this->version; ?>"></script>
-    <script src="/plugins/ActiveWireframe/static/jquery-ui/jquery-ui.js?v=<?= $this->version; ?>"></script>
-    <link href="/plugins/ActiveWireframe/static/jquery-ui/jquery-ui.css?v=<?= $this->version; ?>" rel="stylesheet"/>
-    <link href="/plugins/ActiveWireframe/static/jquery-ui/jquery-ui.theme.css?v=<?= $this->version; ?>"
-          rel="stylesheet"/>
+    <script src="/plugins/ActiveWireframe/static/js/jquery-3.1.0.min.js"></script>
+    <script src="/plugins/ActiveWireframe/static/jquery-ui-1.12.0/jquery-ui.js"></script>
+    <link href="/plugins/ActiveWireframe/static/jquery-ui-1.12.0/jquery-ui.css" rel="stylesheet"/>
+    <link href="/plugins/ActiveWireframe/static/jquery-ui-1.12.0/jquery-ui.theme.css" rel="stylesheet"/>
 
     <!-- jQuery plugins -->
     <script
         src="/plugins/ActiveWireframe/static/jquery-plugins/jquery-ui-rotatable/jquery.ui.rotatable.min.js"></script>
     <script src="/plugins/ActiveWireframe/static/jquery-plugins/jquery.scrollUp/jquery.scrollUp.js"></script>
-    <script src="/plugins/ActiveWireframe/static/js/plugins.js?v=<?= $this->version; ?>"></script>
+    <script src="/plugins/ActiveWireframe/static/js/jquery-plugins.js?v=<?= $this->version; ?>"></script>
 
     <!-- Editmode -->
     <?php if ($this->editmode) { ?>

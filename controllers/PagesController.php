@@ -1,18 +1,13 @@
 <?php
 /**
- * LICENSE
+ * Active Publishing
  *
- * This source file is subject to the new Creative Commons license that is bundled
- * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://creativecommons.org/licenses/by-nc-nd/4.0/
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to contact@active-publishing.fr so we can send you a copy immediately.
+ * This source file is subject to the GNU General Public License version 3 (GPLv3)
+ * For the full copyright and license information, please view the LICENSE
+ * files that are distributed with this source code.
  *
- * @author      Active Publishing <contact@active-publishing.fr>
- * @copyright   Copyright (c) 2015 Active Publishing (http://www.active-publishing.fr)
- * @license     http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
+ * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 use ActivePublishing\Services\Util;
 use ActiveWireframe\Db\Catalogs;
@@ -32,7 +27,6 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_PagesController extends Action
 {
-
     public function init()
     {
         parent::init();
@@ -40,7 +34,7 @@ class ActiveWireframe_PagesController extends Action
         if (!Plugin::composerExists()) {
             $this->disableLayout();
             $this->disableViewAutoRender();
-            echo 'ERROR: Active Publishing - Composer does not exist.';
+            echo 'ERROR: Active Publishing - Composer librairies for this plugin is not installed.';
             exit();
         }
 
@@ -53,36 +47,30 @@ class ActiveWireframe_PagesController extends Action
     }
 
     /**
-     * AFfiche un page du PDF éditable en mode édition, et affiche le PDF généré en mode prévisualisation
+     * Show pdf page in edition mode
      */
     public function pagesAction()
     {
-        // définit le template
         $this->enableLayout();
         $this->setLayout("index");
 
         $this->view->baseUrl = Tool::getHostUrl();
         $this->view->documentId = $this->document->getId();
         $this->view->areadir = self::getAreaDir();
-        $this->view->version = $this->editmode ? Util::getPluginVersion(Plugin::PLUGIN_NAME) : time();
-
-        // Intégration d'Active Paginate
-        $this->view->activepaginate = Util::pluginIsInstalled('ActivePaginate');
-
-        // Récupère les informations de la page en BD
-        $dbPage = new Pages();
-        $page = $dbPage->getPage($this->document->getId());
-
-        // Récupère les données du catalogue
-        $dbCatalog = new Catalogs();
-        $catalog = $dbCatalog->searchCatalogue($this->document->getId());
-
-        // Information catalogue et page
-        $this->view->catalog = $catalog;
-        $this->view->page = $page;
+        $this->view->version = Util::getPluginVersion(Plugin::PLUGIN_NAME);
         $this->view->pageLock = $this->document->isLocked();
 
-        // Taille
+        // Retrieve page informations
+        $dbPage = new Pages();
+        $page = $dbPage->getPage($this->document->getId());
+        $this->view->page = $page;
+
+        // Retrieve catalog informations
+        $dbCatalog = new Catalogs();
+        $catalog = $dbCatalog->searchCatalogue($this->document->getId());
+        $this->view->catalog = $catalog;
+
+        // Get orientation
         if ($catalog['orientation'] == 'landscape') {
             $height = $catalog['format_width'];
             $width = $catalog['format_height'];
@@ -98,24 +86,23 @@ class ActiveWireframe_PagesController extends Action
         $this->view->pageTop = "5mm";
         $this->view->pageLeft = "5mm";
 
-        // Récupère les marges
-        $marginLittle = ($catalog['margin_little'] == "") || (!array_key_exists('margin_little', $catalog)) ?
+        // Retrieve margin
+        $marginLittle = ($catalog['margin_little'] == "") or (!array_key_exists('margin_little', $catalog)) ?
             0 :
             $catalog['margin_little'];
 
-        $marginGreat = ($catalog['margin_great'] == "") || (!array_key_exists('margin_great', $catalog)) ?
+        $marginGreat = ($catalog['margin_great'] == "") or (!array_key_exists('margin_great', $catalog)) ?
             0 :
             $catalog['margin_great'];
 
-        $marginTop = ($catalog['margin_top'] == "") || (!array_key_exists('margin_top', $catalog)) ?
+        $marginTop = ($catalog['margin_top'] == "") or (!array_key_exists('margin_top', $catalog)) ?
             0 :
             $catalog['margin_top'];
 
-        $marginBottom = ($catalog['margin_bottom'] == "") || (!array_key_exists('margin_bottom', $catalog)) ?
+        $marginBottom = ($catalog['margin_bottom'] == "") or (!array_key_exists('margin_bottom', $catalog)) ?
             0 :
             $catalog['margin_bottom'];
 
-        // Applique les marges
         $this->view->paddingLeft = ($this->document->getKey() % 2)
             ? $marginLittle . "mm"
             : $marginGreat . "mm";
@@ -127,98 +114,90 @@ class ActiveWireframe_PagesController extends Action
         $this->view->paddingTop = $marginTop . "mm";
         $this->view->paddingBottom = $marginBottom . "mm";
 
-        // Information Areas
+        // Element informations
         $this->view->elementsData = $this->getElements();
 
-        // Numero de page
-        $this->view->numPage = ctype_digit($this->document->getKey()) ? $this->document->getKey() : null;
+        // page number
+        $this->view->numPage = intval($this->document->getKey());
 
-        // Active Paginate -> Grille
-        $this->view->gridCol = ($page['grid_col'] != 0) ? $page['grid_col'] : 3;
-        $this->view->gridRow = ($page['grid_row'] != 0) ? $page['grid_row'] : 4;
+        // Thumbnail
+        $configThumbnail = [
+            'format' => 'PNG',
+            'width' => null,
+            'height' => null,
+            'aspectratio' => true
+        ];
+        if ($this->editmode or $this->hasParam('nowkhtmltoimage')) {
+            $configThumbnail['quality'] = 90;
+        } else {
+            $configThumbnail['quality'] = 100;
+            $configThumbnail['highResolution'] = 3.2;
+        }
+        $this->view->thumbnail = $configThumbnail;
 
-        // Thumbnail Editmode
-        $thumbnail = ($this->editmode || $this->hasParam('nowkhtmltoimage'))
-            ? ["format" => "PNG", "quality" => 90, "highResolution" => 1]
-            : ["format" => "PNG", "quality" => 100, "highResolution" => 4];
-        $this->view->thumbnail = $thumbnail;
+        // Background template
+        $this->view->template = $this->getTemplate($catalog, $this->document, $configThumbnail);
 
-        // Fond de page
-        $this->view->template = $this->getTemplate($catalog, $this->document, $thumbnail);
+        // ActivePaginate Plugin integration
+        if (Util::pluginIsInstalled('ActivePaginate')) {
+            $this->view->activepaginate = true;
+            $this->view->gridCol = ($page['grid_col'] != 0) ? $page['grid_col'] : 3;
+            $this->view->gridRow = ($page['grid_row'] != 0) ? $page['grid_row'] : 4;
+        }
 
         // Création d'une vignette
-        if (!$this->editmode && !$this->hasParam('nowkhtmltoimage')) {
-            Helpers::getPageThumbnailForTree($this->document, $width, $height);
+        if (!$this->editmode and !$this->hasParam('nowkhtmltoimage')) {
+            Helpers::getPageThumbnailForTree($this->document, $width);
         }
     }
 
     /**
-     * Récupère les areas de l'utilisateur connecté
+     * Get areas for the current user
      * @return string
      */
     public static function getAreaDir()
     {
-        // Récupère l'utilisateur
-        $user = Util::getCurrentUser();
-
-        // Role de l'utilisateur
+        $user = Tool\Admin::getCurrentUser();
         $roles = Util::getRolesFromCurrentUser();
-
-        // Chemin des areas
         $areaPath = '/website/views/areas';
         $areaPathAbs = PIMCORE_WEBSITE_PATH . '/views/areas';
 
-        // Pour la création du PDF
-        if (!$user instanceof User) {
-            $user = User::getById(0);
-        }
+        if ($user instanceof User and !$user->isAdmin() and !empty($roles)) {
 
-        if ($user instanceof User && !$user->isAdmin() && !empty($roles)) {
+            foreach ($roles as $id) {
 
-
-            foreach ($roles as $roleId) {
-
-                $pimcoreRole = UserRole::getById($roleId);
-                if ($pimcoreRole instanceof UserRole
-                    && file_exists($areaPathAbs . '/' . $pimcoreRole->getName())
-                ) {
-                    return $areaPath . '/' . $pimcoreRole->getName();
+                $pimcoreRole = UserRole::getById($id);
+                if ($pimcoreRole instanceof UserRole and file_exists($areaPathAbs . '/' . $pimcoreRole->getName())) {
+                    return $areaPath . DIRECTORY_SEPARATOR . $pimcoreRole->getName();
                 }
 
             }
 
-        } elseif ($user->isAdmin()) {
-
-            // Area pour les admin
+        } else if ($user instanceof User and $user->isAdmin()) {
             return $areaPath . '/admin';
-
         }
 
-        // Areas par defaut
         return $areaPath . '/active-wireframe';
     }
 
     /**
-     * Récupères les données des areas de la page
+     * Retrieve elements data
      * @return array
      */
     public function getElements()
     {
         $dbElement = new Elements();
         $els = $dbElement->getElementsByDocumentId($this->document->getId());
-
-        // Initialise le tableau de retour
-        $retEls = array();
+        $retEls = [];
 
         foreach ($els as $el) {
             $retEls[$el['e_key']] = $el;
         }
-
         return $retEls;
     }
 
     /**
-     * Récupère le template de page
+     * Retrieve template page
      * @param $catalog
      * @param Document $page
      * @param $thumbnail
@@ -227,21 +206,20 @@ class ActiveWireframe_PagesController extends Action
     public function getTemplate($catalog, Document $page, $thumbnail)
     {
         $templatePage = null;
-
-        // Vérifie que la page ne soit pas une page statique
         if ($catalog['document_id'] != $page->getParentId()) {
 
-            // Récupère le numero de la page afin de déterminé le template
+            // Order
             $assetTemplate = ($page->getKey() % 2)
                 ? Asset::getById($catalog['template_odd'])
                 : Asset::getById($catalog['template_even']);
 
-            // Création de l'image de l'asset
-            if (is_object($assetTemplate)) {
+            if ($assetTemplate) {
 
                 if ($assetTemplate instanceof Asset\Document) {
                     $templatePage = $assetTemplate->getImageThumbnail($thumbnail)->getPath();
+
                 } else if ($assetTemplate instanceof Asset\Image) {
+                    $thumbnail = $assetTemplate->getThumbnailConfig($thumbnail);
                     $templatePage = $assetTemplate->getThumbnail($thumbnail)->getPath();
                 }
 

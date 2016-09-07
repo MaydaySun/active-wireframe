@@ -1,23 +1,20 @@
 <?php
 /**
- * LICENSE
+ * Active Publishing
  *
- * This source file is subject to the new Creative Commons license that is bundled
- * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://creativecommons.org/licenses/by-nc-nd/4.0/
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to contact@active-publishing.fr so we can send you a copy immediately.
+ * This source file is subject to the GNU General Public License version 3 (GPLv3)
+ * For the full copyright and license information, please view the LICENSE
+ * files that are distributed with this source code.
  *
- * @author      Active Publishing <contact@active-publishing.fr>
- * @copyright   Copyright (c) 2015 Active Publishing (http://www.active-publishing.fr)
- * @license     http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
+ * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 namespace ActiveWireframe;
 
+use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Pimcore\Image\HtmlToImage;
 use Pimcore\File;
+use Pimcore\Logger;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Printcontainer;
 use Pimcore\Model\Document\Printpage;
@@ -31,41 +28,34 @@ class Helpers
 {
 
     /**
+     * Reload thumbnail of catalog and chapter
      * @param Printcontainer $document
      * @param $width
-     * @param $height
      * @return int
      */
-    public static function reloadThumbnailForTree(Printcontainer $document, $width, $height)
+    public static function reloadThumbnailForTree(Printcontainer $document, $width)
     {
         foreach ($document->getChilds() as $child) {
 
-            // Cas d'une page
             if ($child instanceof Printpage) {
-
-                Helpers::getPageThumbnailForTree($child, $width, $height);
-
-                // Cas des chapitres
+                self::getPageThumbnailForTree($child, $width);
             } elseif ($child instanceof Printcontainer) {
-
-                // Appelle de la fonction
-                self::reloadThumbnailForTree($child, $width, $height);
+                self::reloadThumbnailForTree($child, $width);
             }
 
         }
 
-        return 1;
+        return true;
     }
 
     /**
-     * Création de la miniature pour l'apercut du catalogue / chapitre
+     * Create a thumbnail for each  page
      * @param Document $document
      * @param $width
-     * @param $height
+     * @return bool
      */
-    public static function getPageThumbnailForTree(Document $document, $width, $height)
+    public static function getPageThumbnailForTree(Document $document, $width)
     {
-        // Récupère la reduction
         $widthWk = number_format($width * 0.25);
 
         // Dir tmp
@@ -74,23 +64,23 @@ class Helpers
             . Plugin::PLUGIN_NAME . DIRECTORY_SEPARATOR
             . $document->getId();
 
-        // Chemin des thumbnails des pages
+        // path thumbnail
         if (!file_exists($dirTmp)) {
             File::mkdir($dirTmp);
         }
 
         $url = Tool::getHostUrl() . $document->getFullPath() . '?nowkhtmltoimage=true';
-        $dst = $dirTmp . DIRECTORY_SEPARATOR . $document->getId() . '.png';
+        $dst = $dirTmp . DIRECTORY_SEPARATOR . $document->getId() . '.jpeg';
         $options = [
             'width' => $widthWk,
             'quality' => 75,
             'zoom' => 0.25
         ];
-        HtmlToImage::convert($url, $dst, 'png', $options);
+        return HtmlToImage::convert($url, $dst, 'jpeg', $options);
     }
 
     /**
-     * Génère une nouvelle pagination
+     * Create a new pagination
      * @param Printcontainer $document
      * @param int $index
      * @param array $noRename
@@ -98,28 +88,24 @@ class Helpers
      */
     public static function generateNewPagination(Printcontainer $document, $index = 1, $noRename = array())
     {
-        // Le catalogue n'a pas d'enfants
+        // No child
         if (!$document->hasChilds()) {
             return 0;
         }
 
-        // Parcours les pages
         foreach ($document->getChilds() as $page) {
 
-            // On numerote seulement les types pages ET celle autorisé
-            if (($page instanceof Printpage) && (!in_array($page->getKey(), $noRename))) {
+            if (($page instanceof Printpage) and (!in_array($page->getKey(), $noRename))) {
 
-                // Si la clé de la page est un nombre
                 if (ctype_digit($page->getKey())) {
 
                     try {
 
-                        // Modifie la clé
                         $page->setKey($index);
                         $page->save();
 
                     } catch (\Exception $ex) {
-                        \Logger::err($ex->getMessage());
+                        Logger::err($ex->getMessage());
                         return 0;
                     }
 
@@ -127,10 +113,11 @@ class Helpers
 
                 $index++;
 
-            } elseif ($page instanceof Printcontainer && $page->hasChilds() && (!in_array($page->getKey(), $noRename))
+            } elseif ($page instanceof Printcontainer
+                and $page->hasChilds()
+                and (!in_array($page->getKey(), $noRename))
             ) {
 
-                // Cas des pages dans un chapitre
                 $index = self::generateNewPagination($page, $index, $noRename);
 
             }
@@ -141,7 +128,7 @@ class Helpers
     }
 
     /**
-     * Récupère la réduction d'une page pour la miniature
+     * Reduction for thumb
      * @param $widthPage
      * @return int
      */
@@ -198,6 +185,78 @@ class Helpers
     public static function convertMmToPx($mm, $dpi = 96)
     {
         return ($dpi * $mm) / 25.4;
+    }
+
+    /**
+     * Create catalog page
+     * @param $key
+     * @param $parentId
+     * @param array $configs
+     * @return bool|Printpage
+     */
+    public static function createPage($key, $parentId, $configs = array())
+    {
+        // Validate key
+        if (!Tool::isValidKey($key)) {
+            $key = File::getValidFilename($key);
+        }
+
+        $dataDocument = array(
+            "key" => $key,
+            "published" => 1,
+            "module" => "ActiveWireframe",
+            "controller" => "pages",
+            "action" => "pages"
+        );
+
+        try {
+            $page = Printpage::create($parentId, $dataDocument);
+
+            // Insert BD
+            $dbPages = new Pages();
+            $where = $dbPages->getAdapter()->quoteInto('document_id = ?', $page->getId());
+            $dbPages->update($configs, $where);
+
+            $page->setModificationDate(time());
+            $page->save();
+
+        } catch (\Exception $ex) {
+            Logger::err($ex->getMessage());
+            return false;
+        }
+
+        return $page;
+    }
+
+    /**
+     * Create a chapter
+     * @param $key
+     * @param $parentId
+     * @return bool|Printcontainer
+     */
+    public static function createChapter($key, $parentId)
+    {
+        if (!Tool::isValidKey($key)) {
+            $key = File::getValidFilename($key);
+        }
+
+        $dataDocument = array(
+            "key" => $key,
+            "published" => 1,
+            "module" => "ActiveWireframe",
+            "controller" => "catalogs",
+            "action" => "tree"
+        );
+
+        try {
+            $chapter = Printcontainer::create($parentId, $dataDocument);
+
+        } catch (\Exception $ex) {
+            Logger::err($ex->getMessage());
+            return false;
+        }
+
+        return $chapter;
     }
 
 }

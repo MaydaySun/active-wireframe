@@ -1,18 +1,13 @@
 <?php
 /**
- * LICENSE
+ * Active Publishing
  *
- * This source file is subject to the new Creative Commons license that is bundled
- * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://creativecommons.org/licenses/by-nc-nd/4.0/
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to contact@active-publishing.fr so we can send you a copy immediately.
+ * This source file is subject to the GNU General Public License version 3 (GPLv3)
+ * For the full copyright and license information, please view the LICENSE
+ * files that are distributed with this source code.
  *
- * @author      Active Publishing <contact@active-publishing.fr>
- * @copyright   Copyright (c) 2015 Active Publishing (http://www.active-publishing.fr)
- * @license     http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
+ * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 use ActivePublishing\Services\Response;
 use ActiveWireframe\Db\Catalogs;
@@ -35,92 +30,70 @@ class ActiveWireframe_ElementsController extends Action
         $this->disableViewAutoRender();
         $this->disableBrowserCache();
 
-        if (!Plugin::composerExists()) {
-            $this->disableLayout();
-            $this->disableViewAutoRender();
+        if (!Plugin::composerExists()
+            or !Plugin::isInstalled()
+        ) {
             exit();
         }
-
-        if (!Plugin::isInstalled()) {
-            $this->disableLayout();
-            $this->disableViewAutoRender();
-            exit();
-        }
-
     }
 
     /**
-     * Enregistre les donnees des blocs box-w2p
+     * Save box-w2p
+     * @return int
      */
     public function saveBoxW2pAction()
     {
-        // Récupère les élements à enregistrer
-        if ($this->hasParam('id') && $this->hasParam('elements') && !empty($this->getParam('elements'))) {
+        // Retrieve elements for saving
+        if ($this->hasParam('id') and $this->hasParam('elements') and !empty($this->getParam('elements'))) {
 
             // Instance
             $dbElement = new Elements();
             $dbCatalog = new Catalogs();
 
-            // ID du docuent concerné
             $id_document = $this->getParam("id");
             $document = Printpage::getById($id_document);
 
-            // Supprime les informations des éléments
+            // Delete informations
             $dbElement->deleteByKey('document_id', $document->getId());
 
-            // Récupère le Catalogue
+            // Retrieve catalog
             $catalog = $dbCatalog->searchCatalogue($document->getId());
 
-            // Pour chaques éléments présent dans le document
+            // Elements to encode
             $elements = \json_decode($this->getParam('elements'));
 
             foreach ($elements as $element) {
 
-                // récupérations
-                $oId = $element->oId;
-                $key = $element->key;
-                $top = $element->top;
-                $left = $element->left;
-                $index = $element->index;
-                $width = $element->width;
-                $height = $element->height;
-                $mat = $element->mat;
-
-                // création du tableau de données
-                $data = array(
-                    'o_id' => $oId,
+                $dbElement->insert([
+                    'o_id' => $element->oId,
                     'document_id' => $id_document,
                     'document_parent_id' => $document->getParentId(),
                     'document_root_id' => $catalog['document_id'],
                     'page_key' => $document->getKey(),
                     'e_id' => 0,
-                    'e_key' => $key,
-                    'e_top' => Helpers::convertPxToMm($top),
-                    'e_left' => Helpers::convertPxToMm($left),
-                    'e_index' => $index,
-                    'e_width' => Helpers::convertPxToMm($width),
-                    'e_height' => Helpers::convertPxToMm($height),
-                    'e_transform' => $mat
-                );
-
-                // Insert
-                $dbElement->insert($data);
+                    'e_key' => $element->key,
+                    'e_top' => Helpers::convertPxToMm($element->top),
+                    'e_left' => Helpers::convertPxToMm($element->left),
+                    'e_index' => $element->index,
+                    'e_width' => Helpers::convertPxToMm($element->width),
+                    'e_height' => Helpers::convertPxToMm($element->height),
+                    'e_transform' => $element->mat
+                ]);
             }
 
         }
 
-        return Response::setResponseJson(array(
+        return Response::setResponseJson([
             "success" => true
-        ));
+        ]);
     }
 
     /**
-     * Enregistre les donnees des element-w2p
+     * Save element-w2p
      */
     public function saveElementW2pAction()
     {
-        // Récupère les élements à enregistrer
-        if ($this->hasParam('id') && $this->hasParam('elements') && !empty($this->getParam('elements'))) {
+        if ($this->hasParam('id') and $this->hasParam('elements') and !empty($this->getParam('elements'))) {
 
             $documentId = intval($this->getParam("id"));
 
@@ -130,7 +103,7 @@ class ActiveWireframe_ElementsController extends Action
                 Pimcore\File::mkdir($dir, 0775, true);
             }
 
-            // ID du document
+            // Document ID
             $document = Printpage::getById($documentId);
             if ($document instanceof Printpage) {
 
@@ -140,23 +113,15 @@ class ActiveWireframe_ElementsController extends Action
                     Pimcore\File::mkdir($dirDocument, 0775, true);
                 }
 
-                // Pour chaques éléments présent dans le document
                 $elements = \json_decode($this->getParam('elements'));
 
                 foreach ($elements as $element) {
 
-                    // récupérations
                     $oId = $element->oId;
                     $key = $element->key;
-                    $top = $element->top;
-                    $left = $element->left;
-                    $index = $element->index;
-                    $width = $element->width;
-                    $height = $element->height;
-                    $mat = $element->mat;
 
                     // Object ID OK
-                    if (intval($oId)) {
+                    if (ctype_digit($oId)) {
 
                         // Dir element
                         $dirElement = $dirDocument . DIRECTORY_SEPARATOR . $oId . DIRECTORY_SEPARATOR
@@ -167,19 +132,18 @@ class ActiveWireframe_ElementsController extends Action
                             @unlink($dirElement);
                         }
 
-                        // création du tableau de données
+                        // Retrieve data
                         $data = array(
                             'o_id' => $oId,
                             'e_key' => $key,
-                            'e_top' => Helpers::convertPxToMm($top),
-                            'e_left' => Helpers::convertPxToMm($left),
-                            'e_index' => $index,
-                            'e_width' => Helpers::convertPxToMm($width),
-                            'e_height' => Helpers::convertPxToMm($height),
-                            'e_transform' => $mat
+                            'e_top' => Helpers::convertPxToMm($element->top),
+                            'e_left' => Helpers::convertPxToMm($element->left),
+                            'e_index' => $element->index,
+                            'e_width' => Helpers::convertPxToMm($element->width),
+                            'e_height' => Helpers::convertPxToMm($element->height),
+                            'e_transform' => $element->mat
                         );
 
-                        // Insert
                         Pimcore\File::put($dirElement, \Zend_Json_Encoder::encode($data));
                     }
 
@@ -189,8 +153,8 @@ class ActiveWireframe_ElementsController extends Action
 
         }
 
-        return Response::setResponseJson(array(
+        return Response::setResponseJson([
             "success" => true
-        ));
+        ]);
     }
 }

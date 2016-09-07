@@ -1,18 +1,13 @@
 <?php
 /**
- * LICENSE
+ * Active Publishing
  *
- * This source file is subject to the new Creative Commons license that is bundled
- * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://creativecommons.org/licenses/by-nc-nd/4.0/
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to contact@active-publishing.fr so we can send you a copy immediately.
+ * This source file is subject to the GNU General Public License version 3 (GPLv3)
+ * For the full copyright and license information, please view the LICENSE
+ * files that are distributed with this source code.
  *
- * @author      Active Publishing <contact@active-publishing.fr>
- * @copyright   Copyright (c) 2016 Active Publishing (http://www.active-publishing.fr)
- * @license     http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
+ * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 namespace ActiveWireframe;
 
@@ -26,6 +21,7 @@ use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Pimcore\Console\Command\Web2PrintPdfCreationCommand;
 use Pimcore\API\Plugin as PluginLib;
+use Pimcore\Logger;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Document;
 
@@ -72,35 +68,32 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
      */
     public static function install()
     {
-        // Librairies activepublishing composer introuvable
         if (!self::composerExists()) {
             return 'ERROR: Active Publishing Composer does not exist.';
         }
 
         try {
-
-            // Instance Plugin Service
             $plugin = new Service();
 
-            // Install la traduction pour le plugin
+            // Install translation plugin
             $plugin->createTranslation(self::PLUGIN_PATH_TRANSLATION, self::getPrefixTranslate());
 
-            // Ajout le dossier d'area
+            // Add area directory
             if (file_exists(self::PLUGIN_PATH_INSTALL_AREAS)) {
                 $plugin->createAreas(self::PLUGIN_PATH_INSTALL_AREAS);
             }
 
-            // Installations des tables
+            // Add Tables
             if (file_exists(self::PLUGIN_PATH_INSTALL_TABLES)) {
                 Table::createFromJson(self::PLUGIN_PATH_INSTALL_TABLES);
             }
 
-            // Installations des doctypes
+            // Add doctypes
             if (file_exists(self::PLUGIN_PATH_INSTALL_DOCTYPES)) {
                 DocType::createFromJson(self::PLUGIN_PATH_INSTALL_DOCTYPES);
             }
 
-            // Création de la vignettes active-wireframe-preview
+            // Add thumbnail active-wireframe-preview
             if (!Asset\Image\Thumbnail\Config::getByAutoDetect("active-wireframe-preview")) {
                 $pipe = new Asset\Image\Thumbnail\Config();
                 $pipe->setName("active-wireframe-preview");
@@ -109,27 +102,24 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
                 $pipe->save();
             }
 
-            // Création de la vignettes active-wireframe-preview
+            // Add thumbnail active-wireframe-preview
             if (!Asset\Image\Thumbnail\Config::getByAutoDetect("active-wireframe-print")) {
                 $pipe = new Asset\Image\Thumbnail\Config();
                 $pipe->setName("active-wireframe-print");
                 $pipe->setQuality(100);
                 $pipe->setFormat("PNG");
-                $pipe->setHighResolution(3);
+                $pipe->setHighResolution(3.2);
                 $pipe->save();
             }
 
-            // Création du dossier gabarit de pages dans les fichiers
+            // Create template directory
             self::createDirectoryTemplates();
 
-            // Tous est OK, création du fichier d'installation
             $plugin->createFileInstall(true, self::PLUGIN_VAR_PATH_INSTALL, self::PLUGIN_VAR_PATH_UNINSTALL);
-
         } catch (\Exception $ex) {
             return $ex->getMessage();
         }
 
-        // Install OK
         self::$_needsReloadAfterInstall = true;
         return 'Install success.';
     }
@@ -151,7 +141,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     }
 
     /**
-     * Créer le dossier de template pour les fichiers
+     * Create directory template
      * @throws \Exception
      */
     public static function createDirectoryTemplates()
@@ -175,20 +165,16 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
         }
 
         try {
-            // Instance
             $plugin = new Service();
 
-            // Désinstalle la traduction pour le plugin
+            // Uninstall translation
             $plugin->rmTranslation(self::PLUGIN_PATH_TRANSLATION, self::getPrefixTranslate());
 
-            // Tous est OK, création du fichier de désinstallation
             $plugin->createFileInstall(false, self::PLUGIN_VAR_PATH_INSTALL, self::PLUGIN_VAR_PATH_UNINSTALL);
-
         } catch (\Exception $ex) {
             return $ex->getMessage();
         }
 
-        // Uninstall OK
         self::$_needsReloadAfterInstall = true;
         return 'Uninstall success !';
     }
@@ -208,7 +194,6 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     {
         parent::init();
 
-        // Ajoute les fonctions d'évènement sur les documents
         \Pimcore::getEventManager()->attach("document.postAdd", array($this, "addEventDocumentPostAdd"));
         \Pimcore::getEventManager()->attach("document.postDelete", array($this, "addEventDocumentPostDelete"));
         \Pimcore::getEventManager()->attach("document.postUpdate", array($this, "addEventDocumentPostUpdate"));
@@ -225,45 +210,40 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
     /**
      * @param $event
-     * @return int
-     * @throws \Exception
+     * @return bool
      */
     public function addEventDocumentPostAdd($event)
     {
         $document = $event->getTarget();
 
-        if (($document instanceof Document\Printcontainer || $document instanceof Document\Printpage)
-            && $document->getModule() == Plugin::PLUGIN_NAME
+        if (($document instanceof Document\Printcontainer or $document instanceof Document\Printpage)
+            and $document->getModule() == Plugin::PLUGIN_NAME
         ) {
 
             $document->setPublished(1);
             $document->save();
 
-            // Cas de la copie
+            // copy
             $server = $_SERVER;
             $redirectUrl = isset($server['REDIRECT_URL']) ? explode('/', $server['REDIRECT_URL']) : false;
             array_shift($redirectUrl);
-            $copy = (($redirectUrl[1] == 'document') && ($redirectUrl[2] == 'copy'));
+            $copy = (($redirectUrl[1] == 'document') and ($redirectUrl[2] == 'copy'));
 
-            if ($copy && isset($_GET['sourceId'])) {
+            if ($copy and isset($_GET['sourceId'])) {
 
                 $sourceId = $_GET['sourceId'];
 
-                // Test si le document copié est un catalogue, un chapitre ou une page d'un chemin de fer
+                // if the copied cocument is a catalog or chapter or page
                 $dbcatalogs = new Catalogs();
                 $catalog = $dbcatalogs->getCatalog($sourceId);
 
-                // C'est un catalogue
                 if ($catalog) {
 
-                    // Clone les données du catalogue
-                    // + Suppréssion de l'id de la bd
-                    // + modification de l'id du document
+                    // clone
                     unset($catalog['id']);
                     $catalog['document_id'] = $document->getId();
 
                     try {
-
                         $dbcatalogs->insert($catalog);
 
                     } catch (\Exception $ex) {
@@ -272,22 +252,20 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
                     };
 
                 } else {
-                    // Recherche si c'est une page ou un chapitre
 
                     $dbpages = new Pages();
                     $pageCatalogue = $dbpages->getPage($sourceId);
 
                     if (is_array($pageCatalogue)) {
 
-                        // recherche le niveau de la page : 1er niveau ou page dans un chapitre
                         $pageInChapter = true;
                         if (($pageCatalogue['document_parent_id'] == $pageCatalogue['document_root_id'])
-                            && $pageCatalogue['document_type'] == 'page'
+                            and $pageCatalogue['document_type'] == 'page'
                         ) {
                             $pageInChapter = false;
                         }
 
-                        // On modifie les informations d'identifications des données
+                        // update informations
                         unset($pageCatalogue['id']);
                         $pageCatalogue['document_id'] = $document->getId();
                         $pageCatalogue['document_parent_id'] = $document->getParentId();
@@ -300,7 +278,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
                                 $pageCatalogue['document_root_id'] = $document->getParent()->getParentId();
                             }
 
-                            // Récupère les éléments de la page source
+                            // Retrieve elements
                             $dbelements = new Elements();
                             $elements = $dbelements->getElementsByDocumentId($sourceId);
 
@@ -318,7 +296,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
                                         $dbelements->insert($element);
 
                                     } catch (\Exception $ex) {
-                                        \Logger::err($ex);
+                                        Logger::err($ex);
                                     }
 
                                 }
@@ -328,24 +306,19 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
                         }
 
                         try {
-
-                            // Insert les données du document cloné
+                            // Add cloned data
                             $dbpages->insert($pageCatalogue);
 
                         } catch (\Exception $ex) {
-
                             $document->delete();
                             return Response::setResponseJson(array('success' => false));
-
                         };
                     }
 
                 }
 
-            } elseif ($document instanceof Document\Printpage && $document->getAction() == 'pages') {
-                // Ajout d'une page
+            } elseif ($document instanceof Document\Printpage and $document->getAction() == 'pages') {
 
-                // Recherche si le parent est un chapitre
                 $dbpage = new Pages();
                 $pageParentId = $dbpage->getPage($document->getParentId());
 
@@ -353,81 +326,61 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
                 $selectPage['document_id'] = $document->getId();
                 $selectPage['document_type'] = "page";
 
-                // Le parent est un chapitre
-                if (is_array($pageParentId) && $pageParentId['document_type'] == "chapter") {
+                // Parent is a chapter
+                if (is_array($pageParentId) and $pageParentId['document_type'] == "chapter") {
 
-                    // Modification des données de la page
                     $selectPage['document_parent_id'] = $document->getParentId();
                     $selectPage['document_root_id'] = $document->getParent()->getParentId();
 
                 } elseif (!$pageParentId) {
 
-                    // Le parent n'est pas un chapitre, on test si c'est un catalogue
                     $dbcatalog = new Catalogs();
                     $resultCatalog = $dbcatalog->getCatalog($document->getParentId());
 
-                    // Le parent est le catalogue
+                    // Parent is a catalog
                     if ($resultCatalog) {
-
-                        // Modification des données de la page
                         $selectPage['document_parent_id'] = $document->getParentId();
                         $selectPage['document_root_id'] = $document->getParentId();
                     }
 
                 } else {
-
-                    // Modification des données de la page
                     $selectPage['document_parent_id'] = 0;
                     $selectPage['document_root_id'] = 0;
-
                 }
 
-                // Informations liées au document
                 $selectPage['page_key'] = $document->getKey();
                 $selectPage['locked'] = $document->getLocked();
 
-                // Insert
                 $dbpage->insert($selectPage);
 
-            } elseif ($document instanceof Document\Printcontainer && $document->getAction() == 'tree') {
-                // Ajout d'un chapitre
+            } elseif ($document instanceof Document\Printcontainer and $document->getAction() == 'tree') {
 
                 $selectPage = [];
                 $selectPage['document_id'] = $document->getId();
                 $selectPage['document_type'] = "chapter";
 
-                // Le parent n'est pas un chapitre, on test si c'est un catalogue
                 $dbcatalog = new Catalogs();
                 $resultCatalog = $dbcatalog->getCatalog($document->getParentId());
 
-                // Le parent est le catalogue
+                // Parent is a catalog
                 if ($resultCatalog) {
-
-                    // Modification des données de la page
                     $selectPage['document_parent_id'] = $document->getParentId();
                     $selectPage['document_root_id'] = $document->getParentId();
-
                 } else {
-
-                    // Modification des données de la page
                     $selectPage['document_parent_id'] = 0;
                     $selectPage['document_root_id'] = 0;
-
                 }
 
-                // Informations liées au document
                 $selectPage['page_key'] = $document->getKey();
                 $selectPage['locked'] = $document->getLocked();
 
-                // Insert
                 $dbpage = new Pages();
                 $dbpage->insert($selectPage);
-
             }
 
         }
 
-        return 1;
+        return true;
     }
 
     /**
@@ -438,30 +391,25 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
         $document = $event->getTarget();
 
         if (self::composerExists()
-            && ($document instanceof Document\Printcontainer || $document instanceof Document\Printpage)
-            && $document->getModule() == Plugin::PLUGIN_NAME
+            and ($document instanceof Document\Printcontainer or $document instanceof Document\Printpage)
+            and $document->getModule() == Plugin::PLUGIN_NAME
         ) {
 
-            if ($document instanceof Document\Printpage && $document->getAction() == 'pages') {
-                // Ajout d'une page
+            if ($document instanceof Document\Printpage and $document->getAction() == 'pages') {
 
-                // Recherche la page
                 $dbpage = new Pages();
                 $selectPage = $dbpage->getPage($document->getId());
 
                 if (is_array($selectPage)) {
 
-                    // Supprime l'entrée en BD
+                    // Delete in DB
                     $count = $dbpage->deletePageByDocumentId($document->getId());
-
-                    // Supprime les enregistrements des areas + dossier tmp
                     if ($count > 0) {
 
-                        // On récupère l'entrée du document dans la table ActiveWireframe_Db_Elements
                         $dbElements = new Elements();
                         $dbElements->deleteByKey('document_id', $document->getId());
 
-                        // Supprime le dossier physique
+                        // Delete directory
                         $dirTmp = PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR
                             . "activetmp" . DIRECTORY_SEPARATOR
                             . Plugin::PLUGIN_NAME . DIRECTORY_SEPARATOR
@@ -475,30 +423,22 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
                 }
 
-            } elseif ($document instanceof Document\Printcontainer && ($document->getAction() == 'tree')) {
+            } elseif ($document instanceof Document\Printcontainer and ($document->getAction() == 'tree')) {
 
-                // Recherche la chapitre
                 $dbpage = new Pages();
                 $selectPage = $dbpage->getPage($document->getId());
 
-                // Chapitre trouvé
                 if (is_array($selectPage)) {
-
                     $dbpage->deletePageByDocumentId($document->getId());
 
                 } else {
-                    // Recherche si le document est un catalogue
-
-                    // On récupère l'entrée du document
                     $dbcatalogs = new Catalogs();
                     $selectCat = $dbcatalogs->getCatalog($document->getId());
 
                     if (is_array($selectCat)) {
-
-                        // Supprime l'entrée en BD
+                        // Delete in DB
                         $wherePage = $dbcatalogs->getAdapter()->quoteInto('document_id = ?', $document->getId());
                         $dbcatalogs->delete($wherePage);
-
                     }
 
                 }
@@ -518,55 +458,41 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     {
         $document = $event->getTarget();
 
-        if (($document instanceof Document\Printcontainer || $document instanceof Document\Printpage)
-            && ($document->getModule() == Plugin::PLUGIN_NAME)
+        if (($document instanceof Document\Printcontainer or $document instanceof Document\Printpage)
+            and ($document->getModule() == Plugin::PLUGIN_NAME)
         ) {
 
             if ($document instanceof Document\Printpage) {
 
-                // Récupère la ligne du document active_wireframe_pages en BD
                 $dbpage = new Pages();
                 $selectPage = $dbpage->getPage($document->getId());
 
                 if (is_array($selectPage)) {
-
-                    // Recherche si le parent est un chapitre
                     $pageParentId = $dbpage->getPage($document->getParentId());
 
-                    // Le parent est un chapitre
-                    if (is_array($pageParentId) && $pageParentId['document_type'] == "chapter") {
-
-                        // Modification des données de la page
+                    // Parent is a chapter
+                    if (is_array($pageParentId) and $pageParentId['document_type'] == "chapter") {
                         $selectPage['document_parent_id'] = $document->getParentId();
                         $selectPage['document_root_id'] = $document->getParent()->getParentId();
-
                     } elseif (!$pageParentId) {
-
-                        // Le parent n'est pas un chapitre, on test si c'est un catalogue
                         $dbcatalog = new Catalogs();
                         $resultCatalog = $dbcatalog->getCatalog($document->getParentId());
 
-                        // Le parent est le catalogue
+                        // Parent is a catalog
                         if ($resultCatalog) {
-
-                            // Modification des données de la page
                             $selectPage['document_parent_id'] = $document->getParentId();
                             $selectPage['document_root_id'] = $document->getParentId();
                         }
 
                     } else {
-
-                        // Modification des données de la page
                         $selectPage['document_parent_id'] = 0;
                         $selectPage['document_root_id'] = 0;
-
                     }
 
-                    // Informations liées au document
                     $selectPage['page_key'] = $document->getKey();
                     $selectPage['locked'] = $document->getLocked();
 
-                    // MAJ
+                    // Update
                     $where = $dbpage->getAdapter()->quoteInto('document_id = ?', $document->getId());
                     $dbpage->update($selectPage, $where);
 
@@ -577,38 +503,29 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
                 $dbpage = new Pages();
                 $selectPage = $dbpage->getPage($document->getId());
 
-                // On recherche si le document est un chapitre
-                if (is_array($selectPage) && $selectPage['document_type'] == "chapter") {
+                if (is_array($selectPage) and $selectPage['document_type'] == "chapter") {
 
-                    // On recherche s'il est un enfant d'un catalogue
                     $dbcatalog = new Catalogs();
                     $resultCatalog = $dbcatalog->getCatalog($document->getParentId());
 
-                    // Le document Parent est bien un catalogue
+                    // Parent is a catalog
                     if ($resultCatalog) {
-
                         $selectPage['document_parent_id'] = $document->getParentId();
                         $selectPage['document_root_id'] = $document->getParentId();
-
                     } else {
-
                         $selectPage['document_parent_id'] = 0;
                         $selectPage['document_root_id'] = 0;
-
                     }
 
-                    // Informations du document
                     $selectPage['page_key'] = $document->getKey();
                     $selectPage['locked'] = $document->getLocked();
 
-
-                    // MAJ
+                    // Update
                     $where = $dbpage->getAdapter()->quoteInto('document_id = ?', $document->getId());
                     $dbpage->update($selectPage, $where);
 
-                    // Maj des pages enfantes
+                    // Update childrens
                     foreach ($document->getChilds() as $child) {
-
                         if ($child instanceof Document) {
                             $child->save();
                         }
@@ -620,8 +537,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
         }
 
-        return 1;
-
+        return true;
     }
 
 }

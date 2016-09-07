@@ -11,6 +11,17 @@
  * @license    http://www.pimcore.org/license     GPLv3 and PEL
  */
 
+/**
+ * Active Publishing
+ *
+ * This source file is subject to the GNU General Public License version 3 (GPLv3)
+ * For the full copyright and license information, please view the LICENSE
+ * files that are distributed with this source code.
+ *
+ * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
+ * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
+ */
+
 pimcore.registerNS("pimcore.document.printpages.pdfpreview");
 pimcore.document.printpages.pdfpreview = Class.create({
 
@@ -62,7 +73,7 @@ pimcore.document.printpages.pdfpreview = Class.create({
                             url: "/admin/printpage/cancel-generation/",
                             params: {id: this.page.id},
                             success: function (response) {
-                                result = Ext.decode(response.responseText);
+                                var result = Ext.decode(response.responseText);
                                 if (!result.success) {
                                     pimcore.helpers.showNotification(t('web2print_cancel_generation'), t('web2print_cancel_generation_error'), "error");
                                 }
@@ -389,22 +400,18 @@ pimcore.document.printpages.pdfpreview = Class.create({
             success: function (response) {
                 var result = Ext.decode(response.responseText);
                 if (result.activeGenerateProcess) {
-
                     this.generateForm.hide();
                     this.statusUpdateBox.show();
 
                     if (result.statusUpdate) {
-                        var text = result.statusUpdate.status
-                            + "% (" + t("web2print_" + result.statusUpdate.statusUpdate) + ")";
+                        var text = result.statusUpdate.status + "% (" + t("web2print_" + result.statusUpdate.statusUpdate) + ")";
                         this.progressBar.updateProgress(result.statusUpdate.status / 100, text);
                     }
 
                     window.setTimeout(function () {
                         this.checkForActiveGenerateProcess();
                     }.bind(this), 2000);
-
                 } else {
-
                     this.generateForm.show();
                     this.statusUpdateBox.hide();
 

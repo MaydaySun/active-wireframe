@@ -1,18 +1,3 @@
-/**
- * LICENSE
- *
- * This source file is subject to the new Creative Commons license that is bundled
- * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://creativecommons.org/licenses/by-nc-nd/4.0/
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to contact@active-publishing.fr so we can send you a copy immediately.
- *
- * @author      Active Publishing <contact@active-publishing.fr>
- * @copyright   Copyright (c) 2016 Active Publishing (http://www.active-publishing.fr)
- * @license     http://creativecommons.org/licenses/by-nc-nd/4.0/
- */
 $(document).ready(function () {
 
     var $documentId = $('#documentId').val();
@@ -20,17 +5,14 @@ $(document).ready(function () {
     var $selectOrientation = $('#selectOrientation');
 
     /**
-     * Récupère les vignettes des templates
+     * Get templates thumbnail
      * @param {type} f
      * @param {type} o
      * @returns {undefined}
      */
     function getThumbsTemplates(f, o) {
 
-        // classe
         var thumbCls = $('#fieldThumbnails');
-
-        // Vide les vignettes
         thumbCls.empty();
 
         $.ajax({
@@ -61,14 +43,10 @@ $(document).ready(function () {
 
                     // files
                     var files = data.templates;
-
-                    // Htlm des vignettes
                     var strTemplates = '';
 
-                    // Création des listes
                     for (var i = 0; i <= files.length - 1; i++) {
 
-                        // Vignettes + Id de l'asset
                         var fileThumb = files[i]["thumb"];
                         var fileId = files[i]["id"];
 
@@ -90,9 +68,7 @@ $(document).ready(function () {
 
                     }
 
-                    // Ajoute les templates
                     thumbCls.append(strTemplates);
-
                 }
 
             }
@@ -100,7 +76,7 @@ $(document).ready(function () {
         });
     }
 
-    // Changement de format
+    // update format
     $selectFormat.on('selectmenuchange', function () {
 
         if ($(this).val() === 'null') {
@@ -108,28 +84,24 @@ $(document).ready(function () {
             $('#formatMan').slideDown();
             $('#selectOrientation').val("auto").selectmenu('refresh');
 
-
         } else {
             $('#formatMan').slideUp();
         }
 
         var f = $(this).find(':selected').data('template');
         var o = $selectOrientation.find(':selected').val();
-
-        // Récupère les vignettes des templates
         getThumbsTemplates(f, o);
+
     });
 
-    // Changement de l'orientation
+    // Update orientation
     $selectOrientation.on('selectmenuchange', function () {
-
         var f = $('#selectFormat').find(':selected').data('template');
         var o = $(this).find(':selected').val();
         getThumbsTemplates(f, o);
-
     });
 
-    // 1ère initalisation de template
+    // Init template
     var fInit = $selectFormat.find(':selected').data('template');
     var oInit = $selectOrientation.find(':selected').val();
     getThumbsTemplates(fInit, oInit);
@@ -146,52 +118,59 @@ $(document).ready(function () {
     // Upload de fichiers
     $('#fileToUpload').on('change', prepareUpload);
 
-    // Soumission du formulaire
+    // Submit
     $("#btnSubmit").on('click', function (event) {
         event.preventDefault();
 
-        uploadFiles();
+        // files exist
+        if (files && (files.hasOwnProperty('length'))) {
+
+            // Create a formdata object and add the files
+            var filesData = new FormData();
+            if (files.hasOwnProperty('length')) {
+                $.each(files, function (key, value) {
+                    filesData.append(key, value);
+                });
+            }
+            uploadFiles(filesData);
+
+        } else {
+            submitForm()
+        }
     });
 
     /**
-     * uploadFiles
+     * Upload files
+     * @param data
      */
-    function uploadFiles() {
-
-        // LOADING
-        pimcore.helpers.loadingShow();
-
-        // Create a formdata object and add the files
-        var data = new FormData();
-        if (files.hasOwnProperty('length')) {
-            $.each(files, function (key, value) {
-                data.append(key, value);
-            });
-        }
+    function uploadFiles(data) {
 
         $.ajax({
             url: '/plugin/ActiveWireframe/create/upload-files',
             type: 'POST',
             cache: false,
-
             processData: false,
             dataType: 'json',
             data: data,
-
             contentType: false,
 
-            success: function (data, textStatus) {
-                // L'upload c'est bien passé
+            beforeSend: function (jqXHR, settings) {
+                pimcore.helpers.loadingShow();
+            },
+
+            success: function (data, textStatus, jqXHR) {
                 if (data.success) {
                     submitForm(data);
                 } else {
-                    pimcore.helpers.showNotification(t('error'), 'ERRORS: ' + textStatus, 'error');
-                    pimcore.helpers.loadingHide();
+                    pimcore.helpers.showNotification(t('error'), data.msg, 'error');
                 }
             },
 
             error: function (jqXHR, textStatus) {
                 pimcore.helpers.showNotification(t('error'), 'ERRORS: ' + textStatus, 'error');
+            },
+
+            complete: function (jqXHR, textStatus) {
                 pimcore.helpers.loadingHide();
             }
 
@@ -199,10 +178,11 @@ $(document).ready(function () {
     }
 
     /**
-     * Soumet le formulaire de création
-     * @param data
+     * Submit form for creation of catalog
+     * @param filesData
      */
-    function submitForm(data) {
+    function submitForm(filesData) {
+
         // Create a jQuery object from the form
         var $form = $('#form');
 
@@ -210,9 +190,9 @@ $(document).ready(function () {
         var formData = $form.serialize() + '&documentId=' + $documentId;
 
         // You should sterilise the file names
-        if (data.files !== '') {
-            if (data.files.hasOwnProperty('length')) {
-                $.each(data.files, function (key, value) {
+        if ((filesData !== undefined) && (filesData.files !== "")) {
+            if (filesData.files.hasOwnProperty('length')) {
+                $.each(filesData.files, function (key, value) {
                     formData = formData + '&filenames[]=' + value;
                 });
             }
@@ -222,16 +202,17 @@ $(document).ready(function () {
             url: '/plugin/ActiveWireframe/create/catalog',
             type: 'POST',
             cache: false,
-
             dataType: 'json',
             data: formData,
 
-            success: function (data) {
-                // Catalogue crée
+            beforeSend: function (jqXHR, settings) {
+                pimcore.helpers.loadingShow();
+            },
+
+            success: function (data, textStatus, jqXHR) {
                 if (data.success) {
                     pimcore.helpers.showNotification(t('success'), data.msg);
                 } else {
-                    // Affiche un message d'erreur
                     pimcore.helpers.showNotification(t('error'), data.msg, 'error');
                 }
             },
@@ -241,31 +222,27 @@ $(document).ready(function () {
             },
 
             complete: function () {
-                // Rechargement de l'arbre
+                // Reload tree
                 var store = pimcore.globalmanager.get("layout_document_tree").tree.getStore();
                 store.load({node: store.findRecord("id", 1)});
 
-                // Ferme le document et le réouvre -> prendre en compte le changement de controlleur
+                // close and open document
                 pimcore.helpers.closeDocument($documentId);
                 pimcore.helpers.openDocument($documentId, 'printcontainer');
-
-                // Supprime le loader
                 pimcore.helpers.loadingHide();
             }
         });
     }
 
-    // changement d'etape de création
+    // Next and back creation step
     $('.btn-nav-role').on('click', function (event) {
         event.preventDefault();
-
         var id = $(this).attr('data-nav-id');
         $('#nav-' + id).trigger('click');
         $('#scrollUp').trigger('click');
-
     });
 
-    // Création d'un chapitre ou page dans le formulaire
+    // Event for chapter creation or page
     var contentChapter = $('.divAddChapter > article').clone(true);
     var contentPage = $('.divAddPages > article').clone(true);
 
@@ -283,7 +260,7 @@ $(document).ready(function () {
 
     });
 
-    // Supprime une page ou un chapitre
+    // Delete page or chapter
     $(document).on("click", ".close-page-chap", function () {
         $(this).parent().remove();
     });

@@ -52,7 +52,8 @@
 
 #form #formatMan {
     background-color: #FCF8E3;
-    padding: 10px
+    padding: 10px;
+    margin-top: 10px;
 }
 
 #form #tabs-1 section #formatMan input {
@@ -90,7 +91,11 @@
 #form #tabs-2 .btn-action {
     position: absolute;
     top: -6px;
-    right: 0
+    right: 0;
+}
+
+#form #tabs-2 .btn-action:active {
+    color: #000;
 }
 
 #form #tabs-2 h6 {
@@ -126,4 +131,16 @@
 
 #form .areaBtn {
     margin-top: 25px;
+}
+
+#form .ui-state-active, .ui-widget-content .ui-state-active,
+.ui-widget-header .ui-state-active,
+a.ui-button:active,
+.ui-button:active,
+.ui-button.ui-state-active:hover {
+    font-weight: normal;
+    color: rgb(255, 255, 255);
+    border-image: initial;
+    background: none repeat scroll 0 0 #009EE0;
+    border: 1px solid #007cc0;
 }

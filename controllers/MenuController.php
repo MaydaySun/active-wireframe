@@ -1,18 +1,13 @@
 <?php
 /**
- * LICENSE
+ * Active Publishing
  *
- * This source file is subject to the new Creative Commons license that is bundled
- * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://creativecommons.org/licenses/by-nc-nd/4.0/
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to contact@active-publishing.fr so we can send you a copy immediately.
+ * This source file is subject to the GNU General Public License version 3 (GPLv3)
+ * For the full copyright and license information, please view the LICENSE
+ * files that are distributed with this source code.
  *
- * @author      Active Publishing <contact@active-publishing.fr>
- * @copyright   Copyright (c) 2015 Active Publishing (http://www.active-publishing.fr)
- * @license     http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
+ * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 use ActivePublishing\Services\Response;
 use ActiveWireframe\Db\Catalogs;
@@ -27,7 +22,6 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_MenuController extends Action
 {
-
     public function init()
     {
         parent::init();
@@ -35,61 +29,54 @@ class ActiveWireframe_MenuController extends Action
         $this->disableViewAutoRender();
         $this->disableBrowserCache();
 
-        if (!Plugin::composerExists()) {
-            echo 'ERROR: Active Publishing - Composer does not exist.';
+        if (!Plugin::composerExists()
+            or !Plugin::isInstalled()
+        ) {
             exit();
         }
-
-        if (!Plugin::isInstalled()) {
-            echo 'ERROR: Active Publishing - Plugin does not installed.';
-            exit();
-        }
-
     }
 
     /**
+     * Generate a new pagination
      * @return int
      */
     public function generatePaginationAction()
     {
-
-        // Point de départ pour la nouvelle pagination
+        // Document start for the new pagination
         $document = Printcontainer::getById($this->getParam('documentId'));
         if ($document instanceof Printcontainer) {
 
-            // Index de départ
+            // Start index
             $index = $this->hasParam('index') ? $this->getParam('index') : 1;
 
-            // Pas non inclus dans la numérotation
+            // Pages that will not be included in the new pagination
             $noRename = [];
 
             // instance
             $dbcatalog = new Catalogs();
 
-            // Recherche si le document est un chapitre
+            // Document is a chapter
             if (!$dbcatalog->getCatalog($document->getId())) {
 
-                // Définit les pages à ne pas renomer
                 foreach ($document->getParent()->getChilds() as $child) {
-                    if (($child instanceof Printpage || $child instanceof Printcontainer)
-                        && ($child->getIndex() < $document->getIndex())
+                    if (($child instanceof Printpage or $child instanceof Printcontainer)
+                        and ($child->getIndex() < $document->getIndex())
                     ) {
                         $noRename[] = $child->getKey();
                     }
                 }
 
-                // Récupère le catalogue
+                // Retrieve the catalog
                 $document = $document->getParent();
-
             }
 
-            // Nouvelle pagination
+            // New pagination
             if ($document->hasChilds()) {
 
-                // index temporaire
+                // tmp index
                 $indexTmp = time();
 
-                // Numerotation temporaire, pour éviter les doublons dans un meme niveau d'arborescence
+                // No doublon
                 Helpers::generateNewPagination($document, $indexTmp, $noRename);
                 Helpers::generateNewPagination($document, $index, $noRename);
 
@@ -97,41 +84,36 @@ class ActiveWireframe_MenuController extends Action
 
         }
 
-        return Response::setResponseJson(array(
-            'success' => TRUE,
-            'msg' => null
-        ));
+        return Response::setResponseJson([
+            'success' => true
+        ]);
     }
 
     /**
+     * Refresh thumbnails
      * @return int
      */
     public function reloadCatalogAction()
     {
-        // Récupère le document racine
         $document = Printcontainer::getById($this->getParam('documentId'));
+        if ($document instanceof Printcontainer and $document->getAction() == "tree" and $document->hasChilds()) {
 
-        // Document de type page, et la page est un chapitre ou catalogue
-        if ($document instanceof Printcontainer && $document->getAction() == "tree" && $document->hasChilds()) {
-
-            // Récupère le catalogue
+            // Retrieve catalog
             $dbCatalog = new Catalogs();
 
-            // Printcontainer catalogue
+            // Catalog
             $catalog = $dbCatalog->getCatalog($document->getId());
             if (!$catalog) {
-                // Printconainter chapitre
+                // Chapter
                 $catalog = $dbCatalog->getCatalog($document->getParentId());
             }
 
-            Helpers::reloadThumbnailForTree($document, $catalog['format_width'], $catalog['format_height']);
-
+            Helpers::reloadThumbnailForTree($document, $catalog['format_width']);
         }
 
-        return Response::setResponseJson(array(
-            'success' => TRUE,
-            'msg' => null
-        ));
+        return Response::setResponseJson([
+            'success' => true
+        ]);
     }
 
 }

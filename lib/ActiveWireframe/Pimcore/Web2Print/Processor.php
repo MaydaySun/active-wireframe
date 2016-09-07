@@ -12,14 +12,28 @@
  * @license    http://www.pimcore.org/license     GPLv3 and PEL
  */
 
+/**
+ * Active Publishing
+ *
+ * This source file is subject to the GNU General Public License version 3 (GPLv3)
+ * For the full copyright and license information, please view the LICENSE
+ * files that are distributed with this source code.
+ *
+ * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
+ * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
+ */
+
 namespace ActiveWireframe\Pimcore\Web2Print;
 
 use ActiveWireframe\Pimcore\Web2Print\Processor\WkHtmlToPdf;
 use Pimcore\Config;
+use Pimcore\Logger;
 use Pimcore\Model;
 use Pimcore\Model\Document;
 use Pimcore\Tool;
 use Pimcore\Web2Print\Processor\PdfReactor8;
+
+//use Pimcore\Web2Print\Processor\WkHtmlToPdf;
 
 abstract class Processor
 {
@@ -45,14 +59,19 @@ abstract class Processor
 
         $cmd = Tool\Console::getPhpCli() . " " . realpath(PIMCORE_PATH . DIRECTORY_SEPARATOR . "cli" . DIRECTORY_SEPARATOR . "console.php") . " web2printActivePublishing:pdf-creation -p " . $jobConfig->documentId;
 
-        \Logger::info($cmd);
+        Logger::info($cmd);
 
         if (!$config['disableBackgroundExecution']) {
             Tool\Console::execInBackground($cmd, PIMCORE_LOG_DIRECTORY . DIRECTORY_SEPARATOR . "web2print-output.log");
         } else {
 
             $processor = Processor::getInstance();
-            $processor->setOptionsCatalogs($documentId);
+
+            $config = Config::getWeb2PrintConfig();
+            if ($config->generalTool == "wkhtmltopdf") {
+                $processor->setOptionsCatalogs($documentId);
+            }
+
             $processor->startPdfGeneration($jobConfig->documentId);
         }
 
@@ -122,13 +141,12 @@ abstract class Processor
      */
     public static function getInstance()
     {
-
         $config = Config::getWeb2PrintConfig();
 
-        if ($config->generalTool == "wkhtmltopdf") {
-
+        if ($config->generalTool == "pdfreactor") {
+            return new PdfReactor8();
+        } elseif ($config->generalTool == "wkhtmltopdf") {
             return new WkHtmlToPdf();
-
         } else {
             throw new \Exception("Invalid Configuation - " . $config->generalTool);
         }
@@ -148,30 +166,26 @@ abstract class Processor
         Model\Tool\Lock::acquire($document->getLockKey(), 0);
 
         try {
-
             $pdf = $this->buildPdf($document, $jobConfigFile->config);
             file_put_contents($document->getPdfFileName(), $pdf);
 
-            Model\Tool\TmpStore::delete($document->getLockKey());
-            Model\Tool\Lock::release($document->getLockKey());
-
-            @unlink($this->getJobConfigFile($documentId));
+            \Pimcore::getEventManager()->trigger("document.print.postPdfGeneration", $document, [
+                "filename" => $document->getPdfFileName(),
+                "pdf" => $pdf
+            ]);
 
             $creationDate = \Zend_Date::now();
-            $document->setLastGenerated($creationDate->get() + 1);
+            $document->setLastGenerated(($creationDate->get() + 1));
             $document->save();
-
         } catch (\Exception $e) {
-
-            Model\Tool\TmpStore::delete($document->getLockKey());
-            Model\Tool\Lock::release($document->getLockKey());
-
-            @unlink($this->getJobConfigFile($documentId));
-
             $document->save();
-            \Logger::err($e);
-
+            Logger::err($e);
         }
+
+        Model\Tool\Lock::release($document->getLockKey());
+        Model\Tool\TmpStore::delete($document->getLockKey());
+
+        @unlink($this->getJobConfigFile($documentId));
     }
 
     /**

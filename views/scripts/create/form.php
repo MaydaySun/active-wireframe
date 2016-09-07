@@ -143,7 +143,7 @@
                 </div>
 
                 <div class="areaBtn">
-                    <button class="button btn-next btn-nav-role fr custom_pimcore_icon pimcore_icon_arrow_right"
+                    <button class="button btn-next btn-nav-role fr custom_pimcore_icon pimcore_icon_arrowright"
                             data-nav-id="tabs-2">
                         <?= $this->ts('active_wireframe_next'); ?>
                     </button>
@@ -227,11 +227,11 @@
                 </div>
 
                 <div class="areaBtn">
-                    <button class="button btn-back btn-nav-role fl custom_pimcore_icon pimcore_icon_arrow_left"
+                    <button class="button btn-back btn-nav-role fl custom_pimcore_icon pimcore_icon_arrowleft"
                             data-nav-id="tabs-1">
                         <?= $this->ts('active_wireframe_back'); ?>
                     </button>
-                    <button class="button btn-next btn-nav-role fr custom_pimcore_icon pimcore_icon_arrow_right"
+                    <button class="button btn-next btn-nav-role fr custom_pimcore_icon pimcore_icon_arrowright"
                             data-nav-id="tabs-3">
                         <?= $this->ts('active_wireframe_next'); ?>
                     </button>
@@ -258,7 +258,7 @@
                 </div>
 
                 <div class="areaBtn">
-                    <button class="button btn-back btn-nav-role fl custom_pimcore_icon pimcore_icon_arrow_left"
+                    <button class="button btn-back btn-nav-role fl custom_pimcore_icon pimcore_icon_arrowleft"
                             data-nav-id="tabs-2">
                         <?= $this->ts('active_wireframe_back'); ?>
                     </button>

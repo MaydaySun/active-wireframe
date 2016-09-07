@@ -29,9 +29,6 @@ use Pimcore\Model\Document\Printpage;
  */
 class Pages extends \Zend_Db_Table
 {
-    /**
-     * @var string
-     */
     protected $_name = "_active_wireframe_pages";
 
     /**
@@ -57,8 +54,7 @@ class Pages extends \Zend_Db_Table
                     'col' => null
                 );
 
-            // Enregistrement de la page en BD
-            $arrayPage = array(
+            $arrayPage = [
                 'document_id' => $document->getId(),
                 'document_parent_id' => $parent_id,
                 'document_root_id' => $rootId,
@@ -68,9 +64,7 @@ class Pages extends \Zend_Db_Table
                 'locked' => 0,
                 'grid_row' => $grid['row'],
                 'grid_col' => $grid['col']
-            );
-
-            // Enregistrement du catalogs en BD
+            ];
             return $this->insert($arrayPage);
         }
 
@@ -92,8 +86,7 @@ class Pages extends \Zend_Db_Table
             $id_array[] = $object_id;
         }
 
-        // Insertion du chapitre
-        $arrayCatalog = array(
+        $arrayCatalog = [
             "document_id" => $chapterId,
             "document_parent_id" => $parent_id,
             "document_root_id" => $parent_id,
@@ -101,7 +94,7 @@ class Pages extends \Zend_Db_Table
             "page_key" => $key,
             "products" => \Zend_Json_Encoder::encode($id_array),
             "locked" => 0
-        );
+        ];
         return $this->insert($arrayCatalog);
     }
 

@@ -28,9 +28,6 @@ use Pimcore\Db;
  */
 class Catalogs extends \Zend_Db_Table
 {
-    /**
-     * @var string
-     */
     protected $_name = "_active_catalogs";
 
     /**

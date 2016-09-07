@@ -29,11 +29,7 @@ html {
     background-color: #F6F6F6 !important;
     background-size: auto 22px !important;
     background-position: 5px center !important;
-    padding-left: 20px;
-}
-
-#activeWireframe .pimcore_icon_arrow_left {
-    background: url(/pimcore/static6/img/flat-color-icons/left.svg) no-repeat;
+    padding-left: 30px;
 }
 
 /* Palette flotante */
@@ -116,43 +112,19 @@ html {
 
 #activeWireframe .pimcore_area_entry,
 #activeWireframe .pimcore_area_content,
-#activeWireframe .pimcore_editable,
-#activeWireframe .pimcore_wysiwyg,
-#activeWireframe .pimcore_editable.pimcore_tag_renderlet {
-    height: 100%;
-    width: 100%;
-}
-
-#activeWireframe .pimcore_area_content,
-#activeWireframe .pimcore_editable,
 #activeWireframe .pimcore_wysiwyg {
-    position: absolute !important;
+    min-height: 25px !important;
 }
 
-#activeWireframe .pimcore_editable > .x-panel,
-#activeWireframe .pimcore_editable > .x-panel > .x-panel-body,
-#activeWireframe .pimcore_editable > .x-panel > .x-panel-body > .x-autocontainer-outerCt {
+#activeWireframe .box-w2p .pimcore_area_entry.pimcore_block_entry.pages-editable,
+#activeWireframe .box-w2p .pimcore_area_content,
+#activeWireframe .box-w2p .pimcore_editable.pimcore_tag_renderlet,
+#activeWireframe .box-w2p .pimcore_editable > .x-panel,
+#activeWireframe .box-w2p .pimcore_editable > .x-panel > .x-panel-body,
+#activeWireframe .box-w2p .pimcore_editable > .x-panel > .x-panel-body > .x-autocontainer-outerCt {
     height: 100% !important;
     width: 100% !important;
     overflow: hidden !important;
-    background: transparent !important;
-}
-
-#activeWireframe .pimcore_area_entry.pimcore_block_entry,
-#activeWireframe .pimcore_editable .pimcore_tag_image div,
-#activeWireframe .pimcore_area_content > div {
-    min-height: 50px !important;
-    min-width: 50px !important;
-}
-
-#activeWireframe .pimcore_tag_droptarget {
-    display: none;
-}
-
-#activeWireframe .pimcore_tag_image_empty {
-    border: none !important;
-    background: url(/pimcore/static6/img/flat-color-icons/target.svg) center center/45px no-repeat #FFF !important;
-    height: 100%;
 }
 
 #activeWireframe.target-visible .pimcore_tag_image_empty::after,
@@ -163,9 +135,8 @@ html {
     color: #777;
     font-size: 25px;
     text-align: center;
-    top: calc(50% - 60px);
+    top: 15px;
     width: 100%;
-    height: 100%;
 }
 
 #activeWireframe.target-visible .pimcore_tag_image_empty::after {
@@ -180,17 +151,6 @@ html {
     content: "Glissez votre produit";
 }
 
-#activeWireframe.target-visible .pimcore_wysiwyg {
-    overflow: hidden !important;
-    word-wrap: break-word;
-    overflow-wrap: break-word;
-    text-overflow: ellipsis;
-    -webkit-hyphens: auto;
-    -moz-hyphens: auto;
-    -ms-hyphens: auto;
-    hyphens: auto;
-}
-
 #activeWireframe.target-visible .pimcore_tag_image_empty::before,
 #activeWireframe.target-visible .pimcore_tag_snippet_empty:before,
 #activeWireframe.target-visible .pimcore_wysiwyg:before {
@@ -201,6 +161,7 @@ html {
     top: 0;
     height: calc(100% - 6px);
     width: calc(100% - 6px);
+    z-index: -1;
 }
 
 #activeWireframe .pimcore_tag_image_alt {
