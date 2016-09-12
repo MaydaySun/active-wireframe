@@ -162,13 +162,13 @@ class ActiveWireframe_CatalogsController extends Action
                         : $indice + 1;
 
                     // Instance
-                    $pages[] = array(
+                    $pages[] = [
                         'documentId' => $child->getId(),
                         'key' => $child->getKey(),
                         'indice' => $indice,
                         'notes' => Document::getNotes($child),
-                        'workflow' => (is_array($pageStateWorkflow)) ? $pageStateWorkflow : array()
-                    );
+                        'workflow' => (is_array($pageStateWorkflow)) ? $pageStateWorkflow : []
+                    ];
 
                 } else if ($child instanceof Printcontainer and $child->hasChilds()) {
 

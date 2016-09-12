@@ -97,54 +97,55 @@ $(document).ready(function () {
      * @param name
      * @param o
      */
-    // function activeWidgetSliders(id, name, o) {
-    // var pt = parseFloat($('input[name="paddingTop"]').val());
-    // var pb = parseFloat($('input[name="paddingBottom"]').val());
-    // var pl = parseFloat($('input[name="paddingLeft"]').val());
-    // var pr = parseFloat($('input[name="paddingRight"]').val());
-    //
-    // var width = parseFloat($('input[name="pageWidthLandmark"]').val());
-    // var height = parseFloat($('input[name="pageHeightLandmark"]').val());
-    //
-    // var start = pl;
-    // var end = parseFloat(width) - pr - 10;
-    // var max = parseFloat(width) - 5;
-    //
-    // if (o === 'vertical') {
-    //     start = pb;
-    //     end = parseFloat(height) - pt - 10;
-    //     max = parseFloat(height) - 5;
-    // }
-    //
-    // var widget = $("#" + id).slider({
-    //     orientation: o,
-    //     range: true,
-    //     min: -5,
-    //     max: max,
-    //     values: [start, end],
-    //     step: 0.5,
-    //     // slide: function (event, ui) {
-    //     //     widget.children('.ui-slider-handle').addClass(name);
-    //     //     $('.' + name + '-0').html(ui.values[0] + "mm");
-    //     //     $('.' + name + '-1').html(ui.values[1] + "mm");
-    //     // }
-    // });
-    //
-        // Cls
-    // widget.children('.ui-slider-handle').addClass(name);
-    //
-    // // Values
-    // $('.' + name).each(function (loop) {
-    //     $(this).append('<span class="ui-slider-values ' + name + '-' + loop + '"></span>');
-    //     $(this).append('<span class="ui-slider-values ' + name + '-' + loop + '"></span>');
-    // });
-    //
-    // // Init
-    // $('.' + name + '-0').html(widget.slider("values", 0) + "mm");
-    // $('.' + name + '-1').html(widget.slider("values", 1) + "mm");
-    //
-    // }
-    // activeWidgetSliders('slider-range-h', 'slider-handle-h', 'horizontal');
-    // activeWidgetSliders('slider-range-v', 'slider-handle-v', 'vertical');
+    function activeWidgetSliders(id, name, o) {
+
+        var pt = parseFloat($('input[name="paddingTop"]').val());
+        var pb = parseFloat($('input[name="paddingBottom"]').val());
+        var pl = parseFloat($('input[name="paddingLeft"]').val());
+        var pr = parseFloat($('input[name="paddingRight"]').val());
+
+        var width = parseFloat($('input[name="pageWidthLandmark"]').val());
+        var height = parseFloat($('input[name="pageHeightLandmark"]').val());
+
+        var start = pl;
+        var end = parseFloat(width) - pr - 10;
+        var max = parseFloat(width) - 5;
+
+        if (o === 'vertical') {
+            start = pb;
+            end = parseFloat(height) - pt - 10;
+            max = parseFloat(height) - 5;
+        }
+
+        var widget = $("#" + id).slider({
+            orientation: o,
+            range: true,
+            min: -5,
+            max: max,
+            values: [start, end],
+            step: 0.5,
+            slide: function (event, ui) {
+                widget.children('.ui-slider-handle').addClass(name);
+                $('.' + name + '-0').html(ui.values[0] + "mm");
+                $('.' + name + '-1').html(ui.values[1] + "mm");
+            }
+        });
+
+        widget.children('.ui-slider-handle').addClass(name);
+
+        // Values
+        $('.' + name).each(function (loop) {
+            $(this).append('<span class="ui-slider-values ' + name + '-' + loop + '"></span>');
+            $(this).append('<span class="ui-slider-values ' + name + '-' + loop + '"></span>');
+        });
+
+        // Init
+        $('.' + name + '-0').html(widget.slider("values", 0) + "mm");
+        $('.' + name + '-1').html(widget.slider("values", 1) + "mm");
+
+    }
+
+    activeWidgetSliders('slider-range-h', 'slider-handle-h', 'horizontal');
+    activeWidgetSliders('slider-range-v', 'slider-handle-v', 'vertical');
 
 });

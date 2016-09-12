@@ -10,15 +10,10 @@
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 use ActivePublishing\Services\Util;
-use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Helpers;
 use ActiveWireframe\Plugin;
-use Pimcore\Model\Asset;
-use Pimcore\Model\Document;
-use Pimcore\Model\User;
-use Pimcore\Model\User\UserRole;
 use Pimcore\Tool;
 use Website\Controller\Action;
 
@@ -54,29 +49,31 @@ class ActiveWireframe_PagesController extends Action
         $this->enableLayout();
         $this->setLayout("index");
 
-        $this->view->baseUrl = Tool::getHostUrl();
         $this->view->documentId = $this->document->getId();
-        $this->view->areadir = self::getAreaDir();
-        $this->view->version = Util::getPluginVersion(Plugin::PLUGIN_NAME);
         $this->view->pageLock = $this->document->isLocked();
+        $this->view->numPage = intval($this->document->getKey());
+        $this->view->baseUrl = Tool::getHostUrl();
+        $this->view->areadir = Helpers::getAreaByRole();
+        $this->view->version = Util::getPluginVersion(Plugin::PLUGIN_NAME);
+
+        // instance ActiveWireframe\Db\Pages
+        $dbPage = new Pages();
 
         // Retrieve page informations
-        $dbPage = new Pages();
-        $page = $dbPage->getPage($this->document->getId());
-        $this->view->page = $page;
+        $pinfo = $dbPage->getPageByDocumentId($this->document->getId());
+        $this->view->pinfo = $pinfo;
 
         // Retrieve catalog informations
-        $dbCatalog = new Catalogs();
-        $catalog = $dbCatalog->searchCatalogue($this->document->getId());
-        $this->view->catalog = $catalog;
+        $cinfo = $dbPage->getCatalogByDocumentId($this->document->getId());
+        $this->view->cinfo = $cinfo;
 
         // Get orientation
-        if ($catalog['orientation'] == 'landscape') {
-            $height = $catalog['format_width'];
-            $width = $catalog['format_height'];
+        if ($cinfo['orientation'] == 'landscape') {
+            $height = $cinfo['format_width'];
+            $width = $cinfo['format_height'];
         } else {
-            $width = $catalog['format_width'];
-            $height = $catalog['format_height'];
+            $width = $cinfo['format_width'];
+            $height = $cinfo['format_height'];
         }
 
         $this->view->pageWidth = $width . "mm";
@@ -87,43 +84,24 @@ class ActiveWireframe_PagesController extends Action
         $this->view->pageLeft = "5mm";
 
         // Retrieve margin
-        $marginLittle = ($catalog['margin_little'] == "") or (!array_key_exists('margin_little', $catalog)) ?
-            0 :
-            $catalog['margin_little'];
-
-        $marginGreat = ($catalog['margin_great'] == "") or (!array_key_exists('margin_great', $catalog)) ?
-            0 :
-            $catalog['margin_great'];
-
-        $marginTop = ($catalog['margin_top'] == "") or (!array_key_exists('margin_top', $catalog)) ?
-            0 :
-            $catalog['margin_top'];
-
-        $marginBottom = ($catalog['margin_bottom'] == "") or (!array_key_exists('margin_bottom', $catalog)) ?
-            0 :
-            $catalog['margin_bottom'];
-
         $this->view->paddingLeft = ($this->document->getKey() % 2)
-            ? $marginLittle . "mm"
-            : $marginGreat . "mm";
+            ? $cinfo['margin_little'] . "mm"
+            : $cinfo['margin_great'] . "mm";
 
         $this->view->paddingRight = ($this->document->getKey() % 2)
-            ? $marginGreat . "mm"
-            : $marginLittle . "mm";
+            ? $cinfo['margin_great'] . "mm"
+            : $cinfo['margin_little'] . "mm";
 
-        $this->view->paddingTop = $marginTop . "mm";
-        $this->view->paddingBottom = $marginBottom . "mm";
+        $this->view->paddingTop = $cinfo['margin_top'] . "mm";
+        $this->view->paddingBottom = $cinfo['margin_bottom'] . "mm";
 
         // Element informations
-        $this->view->elementsData = $this->getElements();
-
-        // page number
-        $this->view->numPage = intval($this->document->getKey());
+        $this->view->elementsData = $this->getElements($this->document->getId());
 
         // Thumbnail
         $configThumbnail = [
             'format' => 'PNG',
-            'width' => null,
+            'width' => 1024,
             'height' => null,
             'aspectratio' => true
         ];
@@ -135,14 +113,16 @@ class ActiveWireframe_PagesController extends Action
         }
         $this->view->thumbnail = $configThumbnail;
 
-        // Background template
-        $this->view->template = $this->getTemplate($catalog, $this->document, $configThumbnail);
+        // Get background template for only page in chapter
+        if ($this->document->getParentId() != $cinfo['document_root_id']) {
+            $this->view->template = Helpers::getBackgroundTemplate($this->document, $cinfo, $configThumbnail);
+        }
 
         // ActivePaginate Plugin integration
         if (Util::pluginIsInstalled('ActivePaginate')) {
             $this->view->activepaginate = true;
-            $this->view->gridCol = ($page['grid_col'] != 0) ? $page['grid_col'] : 3;
-            $this->view->gridRow = ($page['grid_row'] != 0) ? $page['grid_row'] : 4;
+            $this->view->gridCol = ($pinfo['grid_col'] != 0) ? $pinfo['grid_col'] : 3;
+            $this->view->gridRow = ($pinfo['grid_row'] != 0) ? $pinfo['grid_row'] : 4;
         }
 
         // Création d'une vignette
@@ -152,82 +132,20 @@ class ActiveWireframe_PagesController extends Action
     }
 
     /**
-     * Get areas for the current user
-     * @return string
-     */
-    public static function getAreaDir()
-    {
-        $user = Tool\Admin::getCurrentUser();
-        $roles = Util::getRolesFromCurrentUser();
-        $areaPath = '/website/views/areas';
-        $areaPathAbs = PIMCORE_WEBSITE_PATH . '/views/areas';
-
-        if ($user instanceof User and !$user->isAdmin() and !empty($roles)) {
-
-            foreach ($roles as $id) {
-
-                $pimcoreRole = UserRole::getById($id);
-                if ($pimcoreRole instanceof UserRole and file_exists($areaPathAbs . '/' . $pimcoreRole->getName())) {
-                    return $areaPath . DIRECTORY_SEPARATOR . $pimcoreRole->getName();
-                }
-
-            }
-
-        } else if ($user instanceof User and $user->isAdmin()) {
-            return $areaPath . '/admin';
-        }
-
-        return $areaPath . '/active-wireframe';
-    }
-
-    /**
-     * Retrieve elements data
+     * @param $documentId
      * @return array
      */
-    public function getElements()
+    public function getElements($documentId)
     {
         $dbElement = new Elements();
-        $els = $dbElement->getElementsByDocumentId($this->document->getId());
-        $retEls = [];
+        $elements = $dbElement->getElementsByDocumentId(intval($documentId));
 
-        foreach ($els as $el) {
-            $retEls[$el['e_key']] = $el;
-        }
-        return $retEls;
-    }
-
-    /**
-     * Retrieve template page
-     * @param $catalog
-     * @param Document $page
-     * @param $thumbnail
-     * @return mixed|null|string
-     */
-    public function getTemplate($catalog, Document $page, $thumbnail)
-    {
-        $templatePage = null;
-        if ($catalog['document_id'] != $page->getParentId()) {
-
-            // Order
-            $assetTemplate = ($page->getKey() % 2)
-                ? Asset::getById($catalog['template_odd'])
-                : Asset::getById($catalog['template_even']);
-
-            if ($assetTemplate) {
-
-                if ($assetTemplate instanceof Asset\Document) {
-                    $templatePage = $assetTemplate->getImageThumbnail($thumbnail)->getPath();
-
-                } else if ($assetTemplate instanceof Asset\Image) {
-                    $thumbnail = $assetTemplate->getThumbnailConfig($thumbnail);
-                    $templatePage = $assetTemplate->getThumbnail($thumbnail)->getPath();
-                }
-
-            }
-
+        $collection = [];
+        foreach ($elements as $element) {
+            $collection[$element['e_key']] = $element;
         }
 
-        return $templatePage;
+        return $collection;
     }
 
 }

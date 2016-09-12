@@ -121,7 +121,9 @@ html {
 #activeWireframe .box-w2p .pimcore_editable.pimcore_tag_renderlet,
 #activeWireframe .box-w2p .pimcore_editable > .x-panel,
 #activeWireframe .box-w2p .pimcore_editable > .x-panel > .x-panel-body,
-#activeWireframe .box-w2p .pimcore_editable > .x-panel > .x-panel-body > .x-autocontainer-outerCt {
+#activeWireframe .box-w2p .pimcore_editable > .x-panel > .x-panel-body > .x-autocontainer-outerCt,
+#activeWireframe .box-w2p-full .pimcore_area_entry.pimcore_block_entry.pages-editable,
+#activeWireframe .box-w2p-full .pimcore_area_content {
     height: 100% !important;
     width: 100% !important;
     overflow: hidden !important;

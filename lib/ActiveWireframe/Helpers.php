@@ -11,13 +11,16 @@
  */
 namespace ActiveWireframe;
 
+use ActivePublishing\Services\Util;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Pimcore\Image\HtmlToImage;
 use Pimcore\File;
 use Pimcore\Logger;
+use Pimcore\Model\Asset;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Printcontainer;
 use Pimcore\Model\Document\Printpage;
+use Pimcore\Model\User;
 use Pimcore\Tool;
 
 /**
@@ -188,75 +191,163 @@ class Helpers
     }
 
     /**
-     * Create catalog page
      * @param $key
      * @param $parentId
+     * @param $catalogId
      * @param array $configs
-     * @return bool|Printpage
+     * @return Document
+     * @throws \Exception
      */
-    public static function createPage($key, $parentId, $configs = array())
+    public static function createPage($key, $parentId, $catalogId, $configs = [])
     {
-        // Validate key
-        if (!Tool::isValidKey($key)) {
+        $parent = Printcontainer::getById($parentId);
+        if ($parent) {
+
+            // get valid key
             $key = File::getValidFilename($key);
-        }
+            if ($key == "") {
+                $key = "undefined-page-key";
+            }
 
-        $dataDocument = array(
-            "key" => $key,
-            "published" => 1,
-            "module" => "ActiveWireframe",
-            "controller" => "pages",
-            "action" => "pages"
-        );
+            $i = 1;
+            while (Document\Service::pathExists($parent->getFullPath() . DIRECTORY_SEPARATOR . $key)) {
+                $key = $key . "-" . $i;
+                $i++;
+            }
 
-        try {
+            $dataDocument = [
+                "key" => $key,
+                "published" => 1,
+                "module" => "ActiveWireframe",
+                "controller" => "pages",
+                "action" => "pages"
+            ];
+
+            // Page creation
             $page = Printpage::create($parentId, $dataDocument);
 
             // Insert BD
             $dbPages = new Pages();
-            $where = $dbPages->getAdapter()->quoteInto('document_id = ?', $page->getId());
-            $dbPages->update($configs, $where);
+            $dbPages->insertPage($page, $catalogId, $configs);
 
-            $page->setModificationDate(time());
-            $page->save();
-
-        } catch (\Exception $ex) {
-            Logger::err($ex->getMessage());
-            return false;
+            return $page;
         }
 
-        return $page;
+        throw new \Exception("Printconatiner CATALOG is not found");
     }
 
     /**
-     * Create a chapter
      * @param $key
      * @param $parentId
-     * @return bool|Printcontainer
+     * @return Document
+     * @throws \Exception
      */
     public static function createChapter($key, $parentId)
     {
-        if (!Tool::isValidKey($key)) {
+        $catalog = Printcontainer::getById($parentId);
+        if ($catalog) {
+
+            // get valid key
             $key = File::getValidFilename($key);
-        }
+            if ($key == "") {
+                $key = "undefined-chapter-key";
+            }
 
-        $dataDocument = array(
-            "key" => $key,
-            "published" => 1,
-            "module" => "ActiveWireframe",
-            "controller" => "catalogs",
-            "action" => "tree"
-        );
+            $i = 1;
+            while (Document\Service::pathExists($catalog->getFullPath() . DIRECTORY_SEPARATOR . $key)) {
+                $key = $key . "-" . $i;
+                $i++;
+            }
 
-        try {
+            $dataDocument = [
+                "key" => $key,
+                "published" => 1,
+                "module" => "ActiveWireframe",
+                "controller" => "catalogs",
+                "action" => "tree"
+            ];
+
+            // Chapter creation
             $chapter = Printcontainer::create($parentId, $dataDocument);
 
-        } catch (\Exception $ex) {
-            Logger::err($ex->getMessage());
-            return false;
+            // Insert BD
+            $dbPages = new Pages();
+            $dbPages->insertChapter($chapter);
+
+            return $chapter;
         }
 
-        return $chapter;
+        throw new \Exception("Printconatiner CATALOG is not found");
+    }
+
+    /**
+     * Get areas for the current user
+     * @return string
+     */
+    public static function getAreaByRole()
+    {
+        // Get user and role
+        $user = Tool\Admin::getCurrentUser();
+        $roles = Util::getRolesFromCurrentUser();
+
+        // Default path
+        $areaPath = '/website/views/areas';
+        $areaPathAbs = PIMCORE_WEBSITE_PATH . '/views/areas';
+
+        // User isn't admin and belong to a role
+        if ($user instanceof User
+            and !$user->isAdmin()
+            and !empty($roles)
+        ) {
+
+            foreach ($roles as $rid) {
+
+                $role = User\Role::getById($rid);
+
+                // Role and directory exists
+                if ($role instanceof User\Role
+                    and file_exists($areaPathAbs . '/' . $role->getName())
+                ) {
+                    return $areaPath . DIRECTORY_SEPARATOR . $role->getName();
+                }
+
+            }
+
+        } else if ($user instanceof User and $user->isAdmin()) {
+
+            // User admin
+            return $areaPath . '/admin';
+        }
+
+        // Default area path
+        return $areaPath . '/active-wireframe';
+    }
+
+    /**
+     * @param Document $page
+     * @param $cinfo
+     * @param $configThumbnail
+     * @return bool|mixed|string
+     */
+    public static function getBackgroundTemplate(Document $page, $cinfo, $configThumbnail)
+    {
+        $assetTemplate = ($page->getKey() % 2)
+            ? Asset::getById(intval($cinfo['template_odd']))
+            : Asset::getById(intval($cinfo['template_even']));
+
+        if ($assetTemplate) {
+
+            if ($assetTemplate instanceof Asset\Document) {
+                return $assetTemplate->getImageThumbnail($configThumbnail)->getPath();
+
+            } else if ($assetTemplate instanceof Asset\Image) {
+                $thumbnail = $assetTemplate->getThumbnailConfig($configThumbnail);
+                return $assetTemplate->getThumbnail($thumbnail)->getPath();
+            }
+
+        }
+
+        return false;
     }
 
 }

@@ -1,24 +1,17 @@
 <?php
-/*
+/**
  * Active Publishing
  *
- * LICENSE
+ * This source file is subject to the GNU General Public License version 3 (GPLv3)
+ * For the full copyright and license information, please view the LICENSE
+ * files that are distributed with this source code.
  *
- * This source file is subject to the new Creative Commons license that is bundled
- * with this package in the file LICENSE.txt.
- * It is also available through the world-wide-web at this URL:
- * http://creativecommons.org/licenses/by-nc-nd/4.0/
- * If you did not receive a copy of the license and are unable to
- * obtain it through the world-wide-web, please send an email
- * to contact@active-publishing.fr so we can send you a copy immediately.
- *
- * @author      Active Publishing <contact@active-publishing.fr>
- * @copyright   Copyright (c) 2015 Active Publishing (http://www.active-publishing.fr)
- * @license     http://creativecommons.org/licenses/by-nc-nd/4.0/
+ * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
+ * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 namespace ActiveWireframe\Db;
-
 use Pimcore\Db;
+use Pimcore\Model\Document\Printcontainer;
 
 \Zend_Db_Table::setDefaultAdapter(Db::get()->getResource());
 
@@ -29,6 +22,38 @@ use Pimcore\Db;
 class Catalogs extends \Zend_Db_Table
 {
     protected $_name = "_active_catalogs";
+
+    /**
+     * @param Printcontainer $document
+     * @param array $data
+     */
+    public function insertCatalog(Printcontainer $document, array $data)
+    {
+        $catalog = $this->getCatalog($document->getId());
+
+        // update
+        if ($catalog) {
+            $where = $this->getAdapter()->quoteInto("document_id = ?", $document->getId());
+            $this->update($data, $where);
+
+        } else {
+            // insert
+            $this->insert($data);
+        }
+    }
+
+    /**
+     * @param $document_id
+     * @return array|bool
+     */
+    public function getCatalog($document_id)
+    {
+        $row = $this->fetchRow($this->select()->where("document_id = ?", $document_id));
+        if ($row != null) {
+            return $row->toArray();
+        }
+        return false;
+    }
 
     /**
      * @param $documentId
@@ -43,19 +68,6 @@ class Catalogs extends \Zend_Db_Table
             return $this->getCatalog($page['document_root_id']);
         }
 
-        return false;
-    }
-
-    /**
-     * @param $document_id
-     * @return array|bool
-     */
-    public function getCatalog($document_id)
-    {
-        $row = $this->fetchRow($this->select()->where("document_id = ?", $document_id));
-        if ($row != null) {
-            return $row->toArray();
-        }
         return false;
     }
 

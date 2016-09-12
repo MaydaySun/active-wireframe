@@ -19,6 +19,7 @@
 namespace ActiveWireframe\Db;
 
 use Pimcore\Db;
+use Pimcore\Model\Document\Printcontainer;
 use Pimcore\Model\Document\Printpage;
 
 \Zend_Db_Table::setDefaultAdapter(Db::get()->getResource());
@@ -32,80 +33,52 @@ class Pages extends \Zend_Db_Table
     protected $_name = "_active_wireframe_pages";
 
     /**
-     * @param $document
-     * @param $key
-     * @param $parent_id
-     * @param $rootId
-     * @param array $configs
+     * @param Printpage $document
+     * @param $catalogId
+     * @param array $conf
      * @return bool|mixed
      */
-    public function insertPage($document, $key, $parent_id, $rootId, $configs = array())
+    public function insertPage(Printpage $document, $catalogId, $conf = [])
     {
-        if ($document instanceof Printpage) {
+        $products = array_key_exists('products', $conf)
+            ? \Zend_Json_Encoder::encode($conf['products'])
+            : \Zend_Json_Encoder::encode([]);
 
-            $products = array_key_exists('products', $configs)
-                ? \Zend_Json_Encoder::encode($configs['products'])
-                : \Zend_Json_Encoder::encode(array());
+        $grid = array_key_exists('grid', $conf)
+            ? $conf['grid']
+            : ['row' => null, 'col' => null];
 
-            $grid = array_key_exists('grid', $configs)
-                ? $configs['grid']
-                : array(
-                    'row' => null,
-                    'col' => null
-                );
+        $data = [
+            'document_id' => $document->getId(),
+            'document_parent_id' => $document->getParentId(),
+            'document_root_id' => $catalogId,
+            'document_type' => "page",
+            'page_key' => $document->getKey(),
+            'products' => $products,
+            'locked' => 0,
+            'grid_row' => $grid['row'],
+            'grid_col' => $grid['col']
+        ];
 
-            $arrayPage = [
-                'document_id' => $document->getId(),
-                'document_parent_id' => $parent_id,
-                'document_root_id' => $rootId,
-                'document_type' => "page",
-                'page_key' => $key,
-                'products' => $products,
-                'locked' => 0,
-                'grid_row' => $grid['row'],
-                'grid_col' => $grid['col']
-            ];
-            return $this->insert($arrayPage);
-        }
-
-        return false;
+        return $this->insert($data);
     }
 
     /**
-     * @param $chapterId
-     * @param $key
-     * @param $parent_id
-     * @param null $object_id
+     * @param Printcontainer $chapter
      * @return mixed
      */
-    public function insertChapter($chapterId, $key, $parent_id, $object_id = null)
+    public function insertChapter(Printcontainer $chapter)
     {
-        // ID du chapitre
-        $id_array = array();
-        if ($object_id != null) {
-            $id_array[] = $object_id;
-        }
-
-        $arrayCatalog = [
-            "document_id" => $chapterId,
-            "document_parent_id" => $parent_id,
-            "document_root_id" => $parent_id,
+        $data = [
+            "document_id" => $chapter->getId(),
+            "document_parent_id" => $chapter->getParentId(),
+            "document_root_id" => $chapter->getParentId(),
             "document_type" => "chapter",
-            "page_key" => $key,
-            "products" => \Zend_Json_Encoder::encode($id_array),
+            "page_key" => $chapter->getKey(),
             "locked" => 0
         ];
-        return $this->insert($arrayCatalog);
-    }
 
-    /**
-     * @param $documentId
-     * @return array|bool
-     */
-    public function getPage($documentId)
-    {
-        $select = $this->fetchRow($this->select()->where("document_id = ?", $documentId));
-        return ($select != null) ? $select->toArray() : false;
+        return $this->insert($data);
     }
 
     /**
@@ -116,6 +89,37 @@ class Pages extends \Zend_Db_Table
     {
         $wherePage = $this->getAdapter()->quoteInto('document_id = ?', $documentId);
         return $this->delete($wherePage);
+    }
+
+    public function getCatalogByDocumentId($documentId)
+    {
+        $pinfo = $this->getPageByDocumentId($documentId);
+        if ($pinfo and is_array($pinfo)) {
+
+            $dbCatalog = new Catalogs();
+            $cinfo = $dbCatalog->getCatalog(intval($pinfo['document_root_id']));
+
+            if ($cinfo and is_array($cinfo)) {
+                return $cinfo;
+            }
+
+        }
+
+        return false;
+    }
+
+    /**
+     * @param $documentId
+     * @return array|bool
+     */
+    public function getPageByDocumentId($documentId)
+    {
+        $select = $this->fetchRow($this->select()->where("document_id = ?", $documentId));
+        if ($select) {
+            return $select->toArray();
+        }
+
+        return false;
     }
 
 }

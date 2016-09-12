@@ -25,7 +25,6 @@
         left: -<?= $this->pageLeft; ?> !important;
         top: -<?= $this->pageTop; ?> !important;
     }
-
     /* Editmode */
     <?php if ($this->editmode) { ?>
     #activeWireframe #page-global {
@@ -51,39 +50,12 @@
         width: <?= $this->pageWidthLandmark; ?> !important;
     }
     #slider-range-v .slider-handle-v {
-        width: calc(<?= $this->pageWidthLandmark . ' + 10px'; ?>) !important;
+        width: calc(<?= $this->pageWidthLandmark; ?> +10px) !important;
     }
     #slider-range-h .slider-handle-h {
-        height: calc(<?= $this->pageHeightLandmark . ' + 10px'; ?>) !important;
+        height: calc(<?= $this->pageHeightLandmark; ?> +10px) !important;
     }
-    #box-cropmarks-1,
-    #box-cropmarks-3 {
-        width: <?= $this->pageWidthLandmark; ?>
-    }
-    #box-cropmarks-3 {
-        top: <?= $this->pageHeightLandmark; ?>;
-    }
-    #box-cropmarks-2,
-    #box-cropmarks-4 {
-        height: <?= $this->pageHeightLandmark; ?>
-    }
-    #box-cropmarks-2 {
-        left: calc(300px + <?= $this->pageWidthLandmark; ?>);
-    }
-    #box-page-1,
-    #box-page-3 {
-        width: <?= $this->pageWidth; ?> !important;
-    }
-    #box-page-3 {
-        height: top: calc(<?= $this->pageHeight; ?> +5mm) !important;
-    }
-    #box-page-2,
-    #box-page-4 {
-        height: <?= $this->pageHeight; ?> !important;
-    }
-    #box-page-2 {
-        left: calc(<?= $this->pageWidth; ?> +5mm + 300px) !important;
-    }
+
     <?php } ?>
 
 </style>
@@ -95,31 +67,17 @@
 
 <input type="hidden" name="paddingLeft" value="<?= $this->paddingLeft; ?>"/>
 <input type="hidden" name="paddingRight" value=" <?= $this->paddingRight; ?>"/>
+
 <input type="hidden" name="paddingTop" value="<?= $this->paddingTop; ?>"/>
 <input type="hidden" name="paddingBottom" value="<?= $this->paddingBottom; ?>"/>
-<input type="hidden" name="pageWidthLandmark" value="<?= $this->pageWidthLandmark; ?>"/>
+
+    <input type="hidden" name="pageWidthLandmark" value="<?= $this->pageWidthLandmark; ?>"/>
 <input type="hidden" name="pageHeightLandmark" value="<?= $this->pageHeightLandmark; ?>"/>
 
 <!-- Corps -->
 <section id="main-section-page">
 
     <section id="page-w2p">
-
-        <!--  Lost funds -->
-        <?php if ($this->editmode) { ?>
-            <div id="box-cropmarks-1"></div>
-            <div id="box-cropmarks-2"></div>
-            <div id="box-cropmarks-3"></div>
-            <div id="box-cropmarks-4"></div>
-        <?php } ?>
-
-        <!-- Pages size -->
-        <?php if ($this->editmode) { ?>
-            <div id="box-page-1"></div>
-            <div id="box-page-2"></div>
-            <div id="box-page-3"></div>
-            <div id="box-page-4"></div>
-        <?php } ?>
 
         <!-- sliders margin -->
         <?php if ($this->editmode) { ?>
@@ -130,8 +88,25 @@
         <!-- page -->
         <section id="page-global">
 
+            <!--  Lost funds -->
+            <?php if ($this->editmode) { ?>
+                <div id="box-cropmarks-1"></div>
+                <div id="box-cropmarks-2"></div>
+                <div id="box-cropmarks-3"></div>
+                <div id="box-cropmarks-4"></div>
+            <?php } ?>
+
             <section id="unselected"></section>
+
             <section id="page">
+
+                <!-- Pages size -->
+                <?php if ($this->editmode) { ?>
+                    <div id="box-page-1"></div>
+                    <div id="box-page-2"></div>
+                    <div id="box-page-3"></div>
+                    <div id="box-page-4"></div>
+                <?php } ?>
 
                 <?php
 

@@ -72,15 +72,15 @@ class ActiveWireframe_CreateController extends Action
         $this->disableLayout();
         $this->disableBrowserCache();
 
-        $success = true;
-        $msg = Translation::get('active_wireframe_form_success');
         $cover1 = Translation::get('active_wireframe_first_cover');
         $cover2 = Translation::get('active_wireframe_second_cover');
         $cover3 = Translation::get('active_wireframe_third_cover');
         $cover4 = Translation::get('active_wireframe_fourth_cover');
 
-        $documentId = $this->getParam('documentId');
-        $documentRoot = Printcontainer::getById($documentId);
+        $indexPage = 1;
+
+        $catalogId = $this->getParam('documentId');
+        $catalog = Printcontainer::getById($catalogId);
 
         // Orientation
         $orientation = $this->getParam('orientation');
@@ -125,110 +125,89 @@ class ActiveWireframe_CreateController extends Action
             ? $this->getParam('template-even')
             : 0;
 
-        // Save options
-        $optionsCatalog = array(
-            "document_id" => $documentId,
-            "format_width" => number_format($formatPageWidth, 2),
-            "format_height" => number_format($formatPageHeight, 2),
-            "orientation" => $orientation,
-            "margin_little" => $margin_little,
-            "margin_great" => $margin_great,
-            "margin_top" => $margin_top,
-            "margin_bottom" => $margin_bottom,
-            "template_odd" => $template_odd,
-            "template_even" => $template_even
-        );
-
-        // Insert to DB
-        $dbCatalog = new Catalogs();
-        $dbCatalog->insert($optionsCatalog);
-
-        $indexPage = 1;
-
-        // Create cover 1 and 2
-        if ($this->getParam("coverPage") === "1") {
-            Helpers::createPage($cover1, $documentId);
-            Helpers::createPage($cover2, $documentId);
-            $indexPage = 3;
-        }
-
-        // Active Paginate
-        if (Util::pluginIsInstalled('ActivePaginate')) {
-            $indexPage = $this->createWithPaginate($indexPage, $documentId);
-        }
-
-        // Crate chapter
-        if ($this->hasParam("chapters") and !empty($this->getParam("chapters"))) {
-            $chapCreated = [];
-            foreach ($this->getParam("chapters") as $keyChap => $nameChap) {
-
-                // Formate le nom
-                $nameChap = trim($nameChap);
-                $nameChap = in_array($nameChap, $chapCreated) or ($nameChap == "") ?
-                    'undefined-chapter-' . $keyChap :
-                    $nameChap;
-
-                // Create and insert options in DB
-                $chapter = Helpers::createChapter($nameChap, $documentId);
-
-                // Create page of chapter
-                $keyPageMax = $this->getParam("numbPages");
-
-                for ($keyPageinChapter = 1; $keyPageinChapter <= $keyPageMax[$keyChap]; $keyPageinChapter++) {
-                    Helpers::createPage($indexPage, $chapter->getId());
-                    $indexPage++;
-                }
-
-                // Incrémente le tableau
-                $chapCreated[] = $nameChap;
-            }
-
-        }
-
-        // Create static page
-        if ($this->hasParam("pageStatic") and !empty($this->getParam("pageStatic"))) {
-            $pageStaticCreated = [];
-            foreach ($this->getParam("pageStatic") as $keyPageStatic => $pageStatic) {
-
-                $pageStatic = trim($pageStatic);
-                if ($pageStatic != "") {
-
-                    $pageStatic = in_array($pageStatic, $pageStaticCreated) ?
-                        "undefined-page-" . $keyPageStatic :
-                        $pageStatic;
-
-                    // Create and insert in DB
-                    Helpers::createPage($pageStatic, $documentId);
-                    $pageStaticCreated[] = $pageStatic;
-                }
-            }
-
-        }
-
-        // Create Cover 3 and 4
-        if ($this->getParam("coverPage") === "1") {
-            Helpers::createPage($cover3, $documentId);
-            Helpers::createPage($cover4, $documentId);
-        }
-
         try {
 
-            $documentRoot->setValues(array("controller" => "catalogs", "action" => "tree"));
-            $documentRoot->setPublished(1);
-            $documentRoot->save();
+            // Insert catalog informations in DB
+            $dbCatalog = new Catalogs();
+            $dbCatalog->insertCatalog($catalog, [
+                "document_id" => $catalogId,
+                "format_width" => number_format($formatPageWidth, 2),
+                "format_height" => number_format($formatPageHeight, 2),
+                "orientation" => $orientation,
+                "margin_little" => $margin_little,
+                "margin_great" => $margin_great,
+                "margin_top" => $margin_top,
+                "margin_bottom" => $margin_bottom,
+                "template_odd" => $template_odd,
+                "template_even" => $template_even
+            ]);
+
+            // Create cover 1 and 2
+            if ($this->getParam("coverPage") === "1") {
+                Helpers::createPage($cover1, $catalogId, $catalogId);
+                Helpers::createPage($cover2, $catalogId, $catalogId);
+                $indexPage = 3;
+            }
+
+            // Active Paginate
+            if (Util::pluginIsInstalled('ActivePaginate')) {
+                $indexPage = $this->createWithPaginate($indexPage, $catalogId);
+            }
+
+            // Crate chapter
+            if ($this->hasParam("chapters") and !empty($this->getParam("chapters"))) {
+
+                foreach ($this->getParam("chapters") as $keyChap => $nameChap) {
+
+                    // Create and insert options in DB
+                    $chapter = Helpers::createChapter($nameChap, $catalogId);
+                    if ($chapter instanceof Printcontainer) {
+
+                        // Create page of chapter
+                        $keyPageMax = $this->getParam("numbPages");
+
+                        for ($keyPageinChapter = 1; $keyPageinChapter <= $keyPageMax[$keyChap]; $keyPageinChapter++) {
+                            Helpers::createPage($indexPage, $chapter->getId(), $catalogId);
+                            $indexPage++;
+                        }
+
+                    }
+                }
+
+            }
+
+            // Create static page
+            if ($this->hasParam("pageStatic") and !empty($this->getParam("pageStatic"))) {
+
+                foreach ($this->getParam("pageStatic") as $keyPageStatic => $pageStatic) {
+                    Helpers::createPage($pageStatic, $catalogId, $catalogId);
+                }
+
+            }
+
+            // Create Cover 3 and 4
+            if ($this->getParam("coverPage") === "1") {
+                Helpers::createPage($cover3, $catalogId, $catalogId);
+                Helpers::createPage($cover4, $catalogId, $catalogId);
+            }
+
+            $catalog->setValues(["controller" => "catalogs", "action" => "tree"]);
+            $catalog->setPublished(1);
+            $catalog->save();
 
         } catch (\Exception $ex) {
 
-            \Pimcore\Logger::err($ex->getMessage());
-            $success = false;
-            $msg = $ex->getMessage();
+            return Response::setResponseJson([
+                'success' => false,
+                'msg' => $ex->getMessage()
+            ]);
 
         }
 
-        return Response::setResponseJson(array(
-            'success' => $success,
-            'msg' => $msg
-        ));
+        return Response::setResponseJson([
+            'success' => true,
+            'msg' => Translation::get('active_wireframe_form_success')
+        ]);
     }
 
     /**
@@ -254,7 +233,7 @@ class ActiveWireframe_CreateController extends Action
 
             // flyleaf
             if ($this->hasParam('frontPage') and intval($this->getParam('frontPage')) == 1) {
-                $import['frontPage'] = array(
+                $import['frontPage'] = [
                     'type' => $this->getParam('frontPageTypeOption'),
                     'template' => $this->hasParam('selectOTemplate')
                         ? trim($this->getParam('selectOTemplate'))
@@ -265,7 +244,7 @@ class ActiveWireframe_CreateController extends Action
                     'qteProduct' => $this->hasParam('selectQteProduct')
                         ? intval($this->getParam('selectQteProduct'))
                         : 0
-                );
+                ];
             }
 
             //Import by CSV files
@@ -280,11 +259,11 @@ class ActiveWireframe_CreateController extends Action
             ) {
 
                 // Import by tree
-                $import['tree'] = array(
+                $import['tree'] = [
                     'familyClassId' => $this->getParam('targetClassFamily'),
                     'familyId' => $this->getParam('targetFamily'),
                     'objectClassId' => $this->getParam('targetClassObject')
-                );
+                ];
 
                 $indexPage = call_user_func("\\ActivePaginate\\Form::ProductsImport", $documentId, $import, 'tree');
             }
@@ -313,10 +292,10 @@ class ActiveWireframe_CreateController extends Action
             $templates = $this->getAssetThumbnailByPath('/gabarits-de-pages/' . $format);
         }
 
-        return Response::setResponseJson(array(
+        return Response::setResponseJson([
             'success' => !empty($templates),
             'templates' => $templates
-        ));
+        ]);
     }
 
     /**
@@ -325,19 +304,19 @@ class ActiveWireframe_CreateController extends Action
      * @param array $files
      * @return array
      */
-    public function getAssetThumbnailByPath($pathToFolderAsset, $files = array())
+    public function getAssetThumbnailByPath($pathToFolderAsset, $files = [])
     {
         $assetFolder = Asset\Folder::getByPath($pathToFolderAsset);
         if ($assetFolder instanceof Asset\Folder and $assetFolder->hasChilds()) {
 
             // Config
-            $thumbnailConf = array(
+            $thumbnailConf = [
                 'format' => 'PNG',
                 'width' => null,
                 'height' => 150,
                 'quality' => 90,
                 'aspectratio' => true
-            );
+            ];
 
             foreach ($assetFolder->getChilds() as $child) {
 
@@ -393,20 +372,20 @@ class ActiveWireframe_CreateController extends Action
                     $files[] = $uploaddir . "/" . $file['name'];
                 } else {
 
-                    return Response::setResponseJson(array(
+                    return Response::setResponseJson([
                         'success' => false,
                         'msg' => Translation::get('active_wireframe_error_uploadfiles')
-                    ));
+                    ]);
 
                 }
             }
         }
 
-        return Response::setResponseJson(array(
+        return Response::setResponseJson([
             'success' => true,
             'msg' => '',
             'files' => $files
-        ));
+        ]);
 
     }
 
