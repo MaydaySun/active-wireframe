@@ -3,14 +3,13 @@ $(document).ready(function () {
     var body = $("#activeWireframe");
 
     /**
-     * Element UI
+     * Initialize widgets Jquery UI
      * @param element
      */
     function setElementWidgetUi(element) {
-
-        var handle = (element.children(".poignee").length > 0)
-            ? element.children(".poignee")
-            : false;
+        var handle = (element.children(".box-w2p-handle").length > 0) ?
+            element.children(".box-w2p-handle") :
+            false;
 
         // Draggable
         element.draggable({
@@ -32,7 +31,7 @@ $(document).ready(function () {
     }
 
     /**
-     * Active w2p box
+     *  Change CSS for the box-w2p selected
      */
     function activeBoxW2p() {
         var zindex = 0;
@@ -52,7 +51,7 @@ $(document).ready(function () {
     }
 
     /**
-     * Active element-w2p
+     * Change CSS for the box-w2p selected
      */
     function activeElementW2p(element) {
         var zindex = 0;
@@ -76,7 +75,7 @@ $(document).ready(function () {
         setElementWidgetUi($(this));
     });
 
-    // Initializaion of widgetss element-w2p
+    // Initializaion of widgets element-w2p
     body.on('click', ".element-w2p", function () {
         setElementWidgetUi($(this));
         activeElementW2p($(this));

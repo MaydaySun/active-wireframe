@@ -10,8 +10,8 @@
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 use ActivePublishing\Services\Response;
-use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Db\Elements;
+use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Helpers;
 use ActiveWireframe\Plugin;
 use Pimcore\Model\Document\Printpage;
@@ -47,8 +47,8 @@ class ActiveWireframe_ElementsController extends Action
         if ($this->hasParam('id') and $this->hasParam('elements') and !empty($this->getParam('elements'))) {
 
             // Instance
+            $dbPages = new Pages();
             $dbElement = new Elements();
-            $dbCatalog = new Catalogs();
 
             $id_document = $this->getParam("id");
             $document = Printpage::getById($id_document);
@@ -57,18 +57,17 @@ class ActiveWireframe_ElementsController extends Action
             $dbElement->deleteByKey('document_id', $document->getId());
 
             // Retrieve catalog
-            $catalog = $dbCatalog->searchCatalogue($document->getId());
+            $cinfo = $dbPages->getCatalogByDocumentId($document->getId());
 
             // Elements to encode
             $elements = \json_decode($this->getParam('elements'));
-
             foreach ($elements as $element) {
 
                 $dbElement->insert([
                     'o_id' => $element->oId,
                     'document_id' => $id_document,
                     'document_parent_id' => $document->getParentId(),
-                    'document_root_id' => $catalog['document_id'],
+                    'document_root_id' => $cinfo['document_id'],
                     'page_key' => $document->getKey(),
                     'e_id' => 0,
                     'e_key' => $element->key,
@@ -127,7 +126,7 @@ class ActiveWireframe_ElementsController extends Action
                         $dirElement = $dirDocument . DIRECTORY_SEPARATOR . $oId . DIRECTORY_SEPARATOR
                             . 'element-w2p-' . $key . '.json';
 
-                        // Supprime le fichier JSON existant
+                        // Delete json file
                         if (file_exists($dirElement)) {
                             @unlink($dirElement);
                         }

@@ -13,17 +13,11 @@ namespace ActiveWireframe;
 
 use ActivePublishing\Plugin\Service;
 use ActivePublishing\Services\DocType;
-use ActivePublishing\Services\File;
-use ActivePublishing\Services\Response;
 use ActivePublishing\Services\Table;
-use ActiveWireframe\Db\Catalogs;
-use ActiveWireframe\Db\Elements;
-use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Pimcore\Console\Command\Web2PrintPdfCreationCommand;
 use Pimcore\API\Plugin as PluginLib;
-use Pimcore\Logger;
 use Pimcore\Model\Asset;
-use Pimcore\Model\Document;
+use Pimcore\Model\Element\ValidationException;
 
 /**
  * Class Plugin
@@ -194,350 +188,42 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     {
         parent::init();
 
-        \Pimcore::getEventManager()->attach("document.postAdd", array($this, "addEventDocumentPostAdd"));
-        \Pimcore::getEventManager()->attach("document.postDelete", array($this, "addEventDocumentPostDelete"));
-        \Pimcore::getEventManager()->attach("document.postUpdate", array($this, "addEventDocumentPostUpdate"));
+        // document.postAdd
+        \Pimcore::getEventManager()->attach("document.postAdd", function (\Zend_EventManager_Event $e) {
+            try {
+                $handler = new Handler();
+                $handler->postAdd($e);
+            } catch (\Exception $ex) {
+                throw new ValidationException($ex->getMessage(), $ex->getCode());
+            }
+        });
+
+        //document.postUpdate
+        \Pimcore::getEventManager()->attach("document.postUpdate", function (\Zend_EventManager_Event $e) {
+            try {
+                $handler = new Handler();
+                $handler->postUpdate($e);
+            } catch (\Exception $ex) {
+                throw new ValidationException($ex->getMessage(), $ex->getCode());
+            }
+        });
+
+        // document.postDelete
+        \Pimcore::getEventManager()->attach("document.postDelete", function (\Zend_EventManager_Event $e) {
+            try {
+                $handler = new Handler();
+                $handler->postDelete($e);
+            } catch (\Exception $ex) {
+                throw new ValidationException($ex->getMessage(), $ex->getCode());
+            }
+        });
 
         // Console
         \Pimcore::getEventManager()->attach('system.console.init', function (\Zend_EventManager_Event $e) {
-            /** @var \Pimcore\Console\Application $application */
             $application = $e->getTarget();
-
             // add a single command
             $application->add(new Web2PrintPdfCreationCommand());
         });
-    }
-
-    /**
-     * @param $event
-     * @return bool
-     */
-    public function addEventDocumentPostAdd($event)
-    {
-        $document = $event->getTarget();
-
-        if (($document instanceof Document\Printcontainer or $document instanceof Document\Printpage)
-            and $document->getModule() == Plugin::PLUGIN_NAME
-        ) {
-
-            $document->setPublished(1);
-            $document->save();
-
-            // copy
-            $server = $_SERVER;
-            $redirectUrl = isset($server['REDIRECT_URL']) ? explode('/', $server['REDIRECT_URL']) : false;
-            array_shift($redirectUrl);
-            $copy = (($redirectUrl[1] == 'document') and ($redirectUrl[2] == 'copy'));
-
-            if ($copy and isset($_GET['sourceId'])) {
-
-                $sourceId = $_GET['sourceId'];
-
-                // if the copied cocument is a catalog or chapter or page
-                $dbcatalogs = new Catalogs();
-                $catalog = $dbcatalogs->getCatalog($sourceId);
-
-                if ($catalog) {
-
-                    // clone
-                    unset($catalog['id']);
-                    $catalog['document_id'] = $document->getId();
-
-                    try {
-                        $dbcatalogs->insert($catalog);
-
-                    } catch (\Exception $ex) {
-                        $document->delete();
-                        return Response::setResponseJson(array('success' => false));
-                    };
-
-                } else {
-
-                    $dbpages = new Pages();
-                    $pageCatalogue = $dbpages->getPage($sourceId);
-
-                    if (is_array($pageCatalogue)) {
-
-                        $pageInChapter = true;
-                        if (($pageCatalogue['document_parent_id'] == $pageCatalogue['document_root_id'])
-                            and $pageCatalogue['document_type'] == 'page'
-                        ) {
-                            $pageInChapter = false;
-                        }
-
-                        // update informations
-                        unset($pageCatalogue['id']);
-                        $pageCatalogue['document_id'] = $document->getId();
-                        $pageCatalogue['document_parent_id'] = $document->getParentId();
-                        $pageCatalogue['document_root_id'] = $document->getParentId();
-
-                        // Page
-                        if ($pageCatalogue['document_type'] == 'page') {
-
-                            if ($pageInChapter) {
-                                $pageCatalogue['document_root_id'] = $document->getParent()->getParentId();
-                            }
-
-                            // Retrieve elements
-                            $dbelements = new Elements();
-                            $elements = $dbelements->getElementsByDocumentId($sourceId);
-
-                            if (!empty($elements)) {
-
-                                foreach ($elements as $element) {
-
-                                    unset($element['id']);
-                                    $element['document_id'] = $document->getId();
-                                    $element['document_parent_id'] = $document->getParentId();
-                                    $element['document_root_id'] = $document->getParent()->getParentId();
-
-                                    try {
-
-                                        $dbelements->insert($element);
-
-                                    } catch (\Exception $ex) {
-                                        Logger::err($ex);
-                                    }
-
-                                }
-
-                            }
-
-                        }
-
-                        try {
-                            // Add cloned data
-                            $dbpages->insert($pageCatalogue);
-
-                        } catch (\Exception $ex) {
-                            $document->delete();
-                            return Response::setResponseJson(array('success' => false));
-                        };
-                    }
-
-                }
-
-            } elseif ($document instanceof Document\Printpage and $document->getAction() == 'pages') {
-
-                $dbpage = new Pages();
-                $pageParentId = $dbpage->getPage($document->getParentId());
-
-                $selectPage = [];
-                $selectPage['document_id'] = $document->getId();
-                $selectPage['document_type'] = "page";
-
-                // Parent is a chapter
-                if (is_array($pageParentId) and $pageParentId['document_type'] == "chapter") {
-
-                    $selectPage['document_parent_id'] = $document->getParentId();
-                    $selectPage['document_root_id'] = $document->getParent()->getParentId();
-
-                } elseif (!$pageParentId) {
-
-                    $dbcatalog = new Catalogs();
-                    $resultCatalog = $dbcatalog->getCatalog($document->getParentId());
-
-                    // Parent is a catalog
-                    if ($resultCatalog) {
-                        $selectPage['document_parent_id'] = $document->getParentId();
-                        $selectPage['document_root_id'] = $document->getParentId();
-                    }
-
-                } else {
-                    $selectPage['document_parent_id'] = 0;
-                    $selectPage['document_root_id'] = 0;
-                }
-
-                $selectPage['page_key'] = $document->getKey();
-                $selectPage['locked'] = $document->getLocked();
-
-                $dbpage->insert($selectPage);
-
-            } elseif ($document instanceof Document\Printcontainer and $document->getAction() == 'tree') {
-
-                $selectPage = [];
-                $selectPage['document_id'] = $document->getId();
-                $selectPage['document_type'] = "chapter";
-
-                $dbcatalog = new Catalogs();
-                $resultCatalog = $dbcatalog->getCatalog($document->getParentId());
-
-                // Parent is a catalog
-                if ($resultCatalog) {
-                    $selectPage['document_parent_id'] = $document->getParentId();
-                    $selectPage['document_root_id'] = $document->getParentId();
-                } else {
-                    $selectPage['document_parent_id'] = 0;
-                    $selectPage['document_root_id'] = 0;
-                }
-
-                $selectPage['page_key'] = $document->getKey();
-                $selectPage['locked'] = $document->getLocked();
-
-                $dbpage = new Pages();
-                $dbpage->insert($selectPage);
-            }
-
-        }
-
-        return true;
-    }
-
-    /**
-     * @param $event
-     */
-    public function addEventDocumentPostDelete($event)
-    {
-        $document = $event->getTarget();
-
-        if (self::composerExists()
-            and ($document instanceof Document\Printcontainer or $document instanceof Document\Printpage)
-            and $document->getModule() == Plugin::PLUGIN_NAME
-        ) {
-
-            if ($document instanceof Document\Printpage and $document->getAction() == 'pages') {
-
-                $dbpage = new Pages();
-                $selectPage = $dbpage->getPage($document->getId());
-
-                if (is_array($selectPage)) {
-
-                    // Delete in DB
-                    $count = $dbpage->deletePageByDocumentId($document->getId());
-                    if ($count > 0) {
-
-                        $dbElements = new Elements();
-                        $dbElements->deleteByKey('document_id', $document->getId());
-
-                        // Delete directory
-                        $dirTmp = PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR
-                            . "activetmp" . DIRECTORY_SEPARATOR
-                            . Plugin::PLUGIN_NAME . DIRECTORY_SEPARATOR
-                            . $document->getId();
-
-                        if (file_exists($dirTmp)) {
-                            File::rm($dirTmp);
-                        }
-
-                    }
-
-                }
-
-            } elseif ($document instanceof Document\Printcontainer and ($document->getAction() == 'tree')) {
-
-                $dbpage = new Pages();
-                $selectPage = $dbpage->getPage($document->getId());
-
-                if (is_array($selectPage)) {
-                    $dbpage->deletePageByDocumentId($document->getId());
-
-                } else {
-                    $dbcatalogs = new Catalogs();
-                    $selectCat = $dbcatalogs->getCatalog($document->getId());
-
-                    if (is_array($selectCat)) {
-                        // Delete in DB
-                        $wherePage = $dbcatalogs->getAdapter()->quoteInto('document_id = ?', $document->getId());
-                        $dbcatalogs->delete($wherePage);
-                    }
-
-                }
-
-            }
-
-        }
-
-    }
-
-    /**
-     * @param $event
-     * @return int
-     * @throws \Exception
-     */
-    public function addEventDocumentPostUpdate($event)
-    {
-        $document = $event->getTarget();
-
-        if (($document instanceof Document\Printcontainer or $document instanceof Document\Printpage)
-            and ($document->getModule() == Plugin::PLUGIN_NAME)
-        ) {
-
-            if ($document instanceof Document\Printpage) {
-
-                $dbpage = new Pages();
-                $selectPage = $dbpage->getPage($document->getId());
-
-                if (is_array($selectPage)) {
-                    $pageParentId = $dbpage->getPage($document->getParentId());
-
-                    // Parent is a chapter
-                    if (is_array($pageParentId) and $pageParentId['document_type'] == "chapter") {
-                        $selectPage['document_parent_id'] = $document->getParentId();
-                        $selectPage['document_root_id'] = $document->getParent()->getParentId();
-                    } elseif (!$pageParentId) {
-                        $dbcatalog = new Catalogs();
-                        $resultCatalog = $dbcatalog->getCatalog($document->getParentId());
-
-                        // Parent is a catalog
-                        if ($resultCatalog) {
-                            $selectPage['document_parent_id'] = $document->getParentId();
-                            $selectPage['document_root_id'] = $document->getParentId();
-                        }
-
-                    } else {
-                        $selectPage['document_parent_id'] = 0;
-                        $selectPage['document_root_id'] = 0;
-                    }
-
-                    $selectPage['page_key'] = $document->getKey();
-                    $selectPage['locked'] = $document->getLocked();
-
-                    // Update
-                    $where = $dbpage->getAdapter()->quoteInto('document_id = ?', $document->getId());
-                    $dbpage->update($selectPage, $where);
-
-                }
-
-            } elseif ($document instanceof Document\Printcontainer) {
-
-                $dbpage = new Pages();
-                $selectPage = $dbpage->getPage($document->getId());
-
-                if (is_array($selectPage) and $selectPage['document_type'] == "chapter") {
-
-                    $dbcatalog = new Catalogs();
-                    $resultCatalog = $dbcatalog->getCatalog($document->getParentId());
-
-                    // Parent is a catalog
-                    if ($resultCatalog) {
-                        $selectPage['document_parent_id'] = $document->getParentId();
-                        $selectPage['document_root_id'] = $document->getParentId();
-                    } else {
-                        $selectPage['document_parent_id'] = 0;
-                        $selectPage['document_root_id'] = 0;
-                    }
-
-                    $selectPage['page_key'] = $document->getKey();
-                    $selectPage['locked'] = $document->getLocked();
-
-                    // Update
-                    $where = $dbpage->getAdapter()->quoteInto('document_id = ?', $document->getId());
-                    $dbpage->update($selectPage, $where);
-
-                    // Update childrens
-                    foreach ($document->getChilds() as $child) {
-                        if ($child instanceof Document) {
-                            $child->save();
-                        }
-                    }
-
-                }
-
-            }
-
-        }
-
-        return true;
     }
 
 }

@@ -1,0 +1,344 @@
+/* #page-w2p */
+#activeWireframe #page-w2p {
+    padding: 50px 0 50px 300px
+}
+
+/* #page-global */
+#activeWireframe #page-global {
+    position: relative;
+    background-color: #FFF;
+}
+
+#activeWireframe #border-page-global {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    top: 0;
+    left: 0;
+    border: 1px solid rgb(255, 0, 0);
+}
+
+/* #page */
+#activeWireframe #page {
+    position: absolute;
+    width: calc(100% - 10mm);
+    height: calc(100% - 10mm);
+    top: 5mm;
+    left: 5mm;
+    background-color: transparent;
+}
+
+#activeWireframe #border-page {
+    position: absolute;
+    width: calc(100% - 10mm);
+    height: calc(100% - 10mm);
+    top: 5mm;
+    left: 5mm;
+    border: 1px solid rgb(0, 0, 0);
+}
+
+/* #unselected */
+#activeWireframe #unselected {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* #page-locked */
+#activeWireframe #page-locked {
+    background-color: rgba(0, 0, 0, 0.3);
+    z-index: 9000;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+}
+
+/* .box-w2p */
+#activeWireframe .box-w2p {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 350px;
+    height: 150px;
+    min-height: 50px;
+    min-width: 50px;
+    border: 2px solid transparent;
+    z-index: 3;
+}
+
+#activeWireframe .box-w2p .pimcore_area_entry.pimcore_block_entry.pages-editable,
+#activeWireframe .box-w2p .pimcore_area_content,
+#activeWireframe .box-w2p .pimcore_editable.pimcore_tag_renderlet,
+#activeWireframe .box-w2p .pimcore_editable > .x-panel,
+#activeWireframe .box-w2p .pimcore_editable > .x-panel > .x-panel-body,
+#activeWireframe .box-w2p .pimcore_editable > .x-panel > .x-panel-body > .x-autocontainer-outerCt {
+    height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+}
+
+#activeWireframe .box-w2p .ui-icon,
+#activeWireframe .box-w2p .ui-widget-content .ui-icon {
+    background-image: none;
+}
+
+#activeWireframe .box-w2p:hover > .box-w2p-handle,
+#activeWireframe .box-w2p:hover > .ui-rotatable-handle {
+    display: block;
+    z-index: 100;
+}
+
+#activeWireframe .box-w2p.selected {
+    border: 2px solid #707;
+}
+
+#activeWireframe .box-w2p.selected .box-w2p-handle {
+    display: block !important;
+    width: 80% !important;
+    left: 10%;
+    border: 2px solid #707;
+}
+
+#activeWireframe .box-w2p.selected .handle-bottom {
+    border-top: none;
+    bottom: -22px !important;
+}
+
+#activeWireframe .box-w2p.selected .handle-top {
+    border-bottom: none;
+    top: -22px !important;
+}
+
+#activeWireframe .box-w2p.selected > .ui-resizable-handle.ui-resizable-se,
+#activeWireframe .box-w2p.selected > .ui-resizable-handle.ui-resizable-sw,
+#activeWireframe .box-w2p.selected > .ui-resizable-handle.ui-resizable-ne,
+#activeWireframe .box-w2p.selected > .ui-resizable-handle.ui-resizable-nw {
+    width: 10px;
+    height: 10px;
+    background-color: #707;
+    position: absolute;
+}
+
+#activeWireframe .box-w2p.selected > .ui-rotatable-handle {
+    width: 20px;
+    cursor: pointer;
+    background-image: url('../img/rotate.png');
+    background-size: 100% auto;
+    left: calc(10% + 5px);
+    bottom: -22px;
+    z-index: 101;
+    position: absolute;
+    height: 20px;
+}
+
+/* .box-w2p-content */
+#activeWireframe .box-w2p-content {
+    width: 100%;
+    height: 100%;
+}
+
+/* .box-w2p-full */
+#activeWireframe .box-w2p-full {
+    z-index: 1;
+}
+
+#activeWireframe .box-w2p-full .pimcore_area_entry.pimcore_block_entry.pages-editable,
+#activeWireframe .box-w2p-full .pimcore_area_content {
+    height: 100% !important;
+    width: 100% !important;
+    overflow: hidden !important;
+}
+
+/* .box-w2p-full-multi */
+#activeWireframe .box-w2p-full-multi {
+    z-index: 2;
+}
+
+/* .element-w2p */
+#activeWireframe .element-w2p {
+    border: 2px solid transparent;
+    cursor: pointer;
+    overflow: hidden;
+}
+
+#activeWireframe .element-w2p.selected {
+    border: 2px solid #000000;
+}
+
+#activeWireframe .element-w2p.selected > .ui-resizable-handle.ui-resizable-se,
+#activeWireframe .element-w2p.selected > .ui-resizable-handle.ui-resizable-sw,
+#activeWireframe .element-w2p.selected > .ui-resizable-handle.ui-resizable-ne,
+#activeWireframe .element-w2p.selected > .ui-resizable-handle.ui-resizable-nw {
+    position: absolute;
+    width: 10px;
+    height: 10px;
+    background-color: #000000;
+}
+
+/* .box-w2p-handle */
+#activeWireframe .box-w2p-handle {
+    background: url(../img/draggable.png) 99% no-repeat #ECECEC;
+    background-size: 16px, auto;
+    position: absolute;
+    width: 100%;
+    height: 20px;
+    cursor: move;
+    z-index: 100;
+    display: none;
+}
+
+#activeWireframe .ui-draggable-dragging .box-w2p-handle {
+    opacity: 0.5;
+}
+
+#activeWireframe .handle-top {
+    top: -20px !important;
+}
+
+#activeWireframe .handle-bottom {
+    bottom: -20px !important;
+}
+
+/* #slider-range-h #slider-range-v */
+#activeWireframe #slider-range-h,
+#activeWireframe #slider-range-v {
+    display: none;
+    position: absolute;
+    background: rgba(0, 158, 224, 0.2);
+}
+#activeWireframe #slider-range-h {
+    height: 10px;
+    width: 100%;
+    top: -10px;
+    left: 0;
+    border: 0;
+    border-right: 1px solid transparent;
+}
+#activeWireframe #slider-range-v {
+    width: 10px;
+    height: 100%;
+    top: 0;
+    left: -10px;
+    border: 0;
+    border-top: 1px solid transparent;
+}
+#activeWireframe #slider-range-v .slider-handle-v,
+#activeWireframe #slider-range-h .slider-handle-h {
+    z-index: 1000;
+    background: #FF00FF;
+    border: 0;
+    margin: 0;
+}
+#activeWireframe #slider-range-h .slider-handle-h {
+    width: 1px;
+    top: 0;
+}
+#activeWireframe #slider-range-v .slider-handle-v {
+    height: 1px;
+    left: 0;
+}
+#activeWireframe #slider-range-h .ui-state-default,
+#activeWireframe #slider-range-h .ui-widget-content .ui-state-default,
+#activeWireframe #slider-range-h .ui-widget-header .ui-state-default {
+    border: 0;
+    cursor: col-resize;
+}
+#activeWireframe #slider-range-v .ui-state-default,
+#activeWireframe #slider-range-v .ui-widget-content .ui-state-default,
+#activeWireframe #slider-range-v .ui-widget-header .ui-state-default {
+    border: 0;
+    cursor: row-resize;
+}
+
+#activeWireframe #slider-range-v .ui-slider-values,
+#activeWireframe #slider-range-h .ui-slider-values {
+    position: absolute;
+    color: #000;
+    font-size: 8pt;
+    width: 50px;
+    text-align: center;
+    font-style: italic;
+    font-weight: 400;
+}
+#activeWireframe #slider-range-h .ui-slider-values {
+    top: -15px;
+    left: -20px;
+}
+#activeWireframe #slider-range-v .ui-slider-values {
+    top: -8px;
+    left: -50px;
+}
+
+#activeWireframe #slider-range-v .ui-state-hover,
+#activeWireframe #slider-range-v .ui-widget-content .ui-state-hover,
+#activeWireframe #slider-range-v .ui-widget-header .ui-state-hover,
+#activeWireframe #slider-range-v .ui-state-focus, .ui-widget-content .ui-state-focus,
+#activeWireframe #slider-range-v .ui-widget-header .ui-state-focus,
+#activeWireframe #slider-range-h .ui-state-hover,
+#activeWireframe #slider-range-h .ui-widget-content .ui-state-hover,
+#activeWireframe #slider-range-h .ui-widget-header .ui-state-hover,
+#activeWireframe #slider-range-h .ui-state-focus, .ui-widget-content .ui-state-focus,
+#activeWireframe #slider-range-h .ui-widget-header .ui-state-focus {
+    border: 0;
+    background: #009EE0;
+    color: transparent;
+}
+
+/* #number-page */
+#activeWireframe #number-page {
+    position: absolute;
+    bottom: 5mm;
+    color: #000;
+    font-size: 9pt;
+    font-weight: bold;
+    margin: 0;
+    padding: 0;
+    line-height: normal;
+    z-index: 2000;
+}
+
+#activeWireframe #number-page.numpageleft {
+    left: 5mm;
+}
+
+#activeWireframe #number-page.numpageright {
+    right: 5mm;
+}
+
+/* ui */
+#activeWireframe .ui-resizable-se {
+    right: -5px;
+    bottom: -5px;
+    cursor: se-resize;
+}
+#activeWireframe .ui-resizable-sw {
+    left: -5px;
+    bottom: -5px;
+    cursor: sw-resize;
+}
+#activeWireframe .ui-resizable-ne {
+    right: -5px;
+    top: -5px;
+    cursor: ne-resize;
+}
+#activeWireframe .ui-resizable-nw {
+    left: -5px;
+    top: -5px;
+    cursor: nw-resize;
+}
+#activeWireframe .ui-icon-gripsmall-diagonal-se {
+    background-position: -64px -227px;
+}
+
+#activeWireframe .ui-corner-all,
+#activeWireframe .ui-corner-all {
+    border-radius: 0 !important;
+}
+
+#activeWireframe .ui-widget-header {
+    background: #009EE0 !important;
+}

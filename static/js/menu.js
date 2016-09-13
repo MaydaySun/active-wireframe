@@ -53,11 +53,11 @@ $(document).ready(function () {
         $('.position-thumbs').each(function () {
 
             var oldClassThumb = $(this).attr('data-position');
-            $("#main-section-tree").removeClass(oldClassThumb);
+            $("#block-tree").removeClass(oldClassThumb);
 
         });
         var newClass = $(this).attr('data-position');
-        $("#main-section-tree").addClass(newClass);
+        $("#block-tree").addClass(newClass);
     }
 
     // Positions des vignettes pour le document BAT

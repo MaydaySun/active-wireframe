@@ -3,15 +3,11 @@ pimcore.registerNS("pimcore.plugin.activewireframe");
 pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
 
     getClassName: function () {
-
         return "pimcore.plugin.activewireframe";
-
     },
 
     initialize: function () {
-
         pimcore.plugin.broker.registerPlugin(this);
-
     },
 
     pimcoreReady: function (params, broker) {
@@ -121,37 +117,30 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
     getData: function (e, page, classe) {
 
         var objectElement = {};
-
-        // Récupère l'id si l'area est une area produit
-        if (classe == 'box-w2p') {
-
-            //data-key w2p
-            objectElement.key = e.getAttribute('data-key');
-
-            // Récupère l'ID de l'objet placé dans le renderlet
-            if (e.select('.object-w2p').elements.length !== 0) {
-                objectElement.oId = e.select('.object-w2p').elements[0].getAttribute('data-o-id');
-            }
-
-        } else if (classe == 'element-w2p') {
-
-            // data element key w2p
-            objectElement.key = e.getAttribute('data-element-key');
-
-            // Récupère l'ID de l'objet placé dans le renderlet
-            if (e.parent('.object-w2p') !== null) {
-                objectElement.oId = e.parent('.object-w2p').getAttribute('data-o-id');
-            }
-
-        }
-
-        // Autres attribut de l'area
+        objectElement.key = 0;
+        objectElement.oId = 0;
         objectElement.top = e.getStyle('top');
         objectElement.left = e.getStyle('left');
         objectElement.index = e.getStyle('z-index');
         objectElement.width = e.getStyle('width');
         objectElement.height = e.getStyle('height');
         objectElement.mat = e.getStyle('transform');
+
+        // Récupère l'id si l'area est une area produit
+        if (classe == 'box-w2p') {
+            //data-key w2p
+            objectElement.key = e.getAttribute('data-key');
+
+            // Get objectID in the renderlet
+            if (e.select('.object-w2p').elements.length !== 0) {
+                objectElement.oId = e.select('.object-w2p').elements[0].getAttribute('data-o-id');
+            }
+
+        } else if (classe == 'element-w2p') {
+            // data element key w2p
+            objectElement.key = e.getAttribute('data-element-key');
+        }
+
         return objectElement;
     },
 

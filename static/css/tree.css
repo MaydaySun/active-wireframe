@@ -1,13 +1,16 @@
-/* position */
-#activeWireframe #main-section-tree.position-icon-address #block-tree .row-preview {
+#activeWireframe #block-tree {
+    padding: 25px 0;
+}
+
+#activeWireframe #block-tree.position-icon-address .row-preview {
     position: relative;
     display: block;
     margin: auto;
     margin-bottom: 65px;
 }
 
-#activeWireframe #main-section-tree.position-icon-book-open #block-tree .row-preview,
-#activeWireframe #main-section-tree.position-icon-th #block-tree .row-preview {
+#activeWireframe #block-tree.position-icon-book-open .row-preview,
+#activeWireframe #block-tree.position-icon-th .row-preview {
     position: relative;
     margin-right: 10px;
     margin-left: 10px;
@@ -15,7 +18,6 @@
     float: left;
 }
 
-/* Page */
 #activeWireframe #block-tree .preview-page {
     box-shadow: 0 1px 2px #999;
 }

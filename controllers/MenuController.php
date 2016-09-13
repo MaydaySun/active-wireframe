@@ -56,7 +56,7 @@ class ActiveWireframe_MenuController extends Action
             $dbcatalog = new Catalogs();
 
             // Document is a chapter
-            if (!$dbcatalog->getCatalog($document->getId())) {
+            if (!$dbcatalog->getCatalogByDocumentId($document->getId())) {
 
                 foreach ($document->getParent()->getChilds() as $child) {
                     if (($child instanceof Printpage or $child instanceof Printcontainer)
@@ -102,10 +102,10 @@ class ActiveWireframe_MenuController extends Action
             $dbCatalog = new Catalogs();
 
             // Catalog
-            $catalog = $dbCatalog->getCatalog($document->getId());
+            $catalog = $dbCatalog->getCatalogByDocumentId($document->getId());
             if (!$catalog) {
                 // Chapter
-                $catalog = $dbCatalog->getCatalog($document->getParentId());
+                $catalog = $dbCatalog->getCatalogByDocumentId($document->getParentId());
             }
 
             Helpers::reloadThumbnailForTree($document, $catalog['format_width']);

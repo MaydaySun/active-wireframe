@@ -97,7 +97,7 @@ class Pages extends \Zend_Db_Table
         if ($pinfo and is_array($pinfo)) {
 
             $dbCatalog = new Catalogs();
-            $cinfo = $dbCatalog->getCatalog(intval($pinfo['document_root_id']));
+            $cinfo = $dbCatalog->getCatalogByDocumentId(intval($pinfo['document_root_id']));
 
             if ($cinfo and is_array($cinfo)) {
                 return $cinfo;

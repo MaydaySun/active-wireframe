@@ -1,7 +1,6 @@
 <!-- CSS -->
-<link href="/plugins/ActiveWireframe/static/css/catalogs/tree.css?v=<?= $this->version; ?>" rel="stylesheet">
+<link href="/plugins/ActiveWireframe/static/css/tree.css?v=<?= $this->version; ?>" rel="stylesheet">
 
-<!-- Aucune pages dans le catalogue -->
 <?php if (isset($this->noChilds)) { ?>
 
     <div class="container bs-example">
@@ -11,7 +10,6 @@
         </div>
     </div>
 
-    <!-- Appercut des pages du catalogue -->
 <?php } else { ?>
 
     <!-- CSS -->
@@ -38,58 +36,46 @@
     </style>
 
     <!-- Corps -->
-    <section id="main-section-tree">
+    <div id="block-tree" class="chapter-tree">
+        <?php
 
-        <div id="block-tree" class="chapter-tree">
+        $start = true;
+        $iCount = 1;
+        $count = count($this->pages);
 
-            <?php
+        foreach ($this->pages as $document) {
 
-            $totalFiles = count($this->pages);
-            $start = true;
+            if ($start or ($document['indice'] % 2 == 0)
+                or $document['key'] == $this->ts('active_wireframe_first_cover')
+                or $document['key'] == $this->ts('active_wireframe_second_cover')
+                or $document['key'] == $this->ts('active_wireframe_fourth_cover')
+            ) {
+                echo "<div class='row-preview'>";
+            }
 
-            foreach ($this->pages as $document) {
+            $classDocumentLock = $document['lock'] ? "document-lock" : "";
+            $classPagePosition = ($document['indice'] % 2 == 0) ? 'page-left' : 'page-right';
 
-                // Si i == 0, début du chemin de fer
-                if ($start
-                    || ($document['indice'] % 2 == 0)
-                    || $document['key'] == $this->ts('active_wireframe_first_cover')
-                    || $document['key'] == $this->ts('active_wireframe_second_cover')
-                    || $document['key'] == $this->ts('active_wireframe_fourth_cover')
-                ) {
-                    echo "<div class='row-preview'>";
-                }
+            if (($document['key'] == $this->ts('active_wireframe_second_cover'))
+                or ($document['key'] == $this->ts('active_wireframe_fourth_cover'))
+            ) {
+                $classPagePosition = 'page-left';
+            }
 
-                // Détermine si l'élément est vérouillé
-                $classDocumentLock = $document['lock'] ? "document-lock" : "";
+            if (($document['key'] == $this->ts('active_wireframe_first_cover'))
+                or ($document['key'] == $this->ts('active_wireframe_third_cover'))
+            ) {
+                $classPagePosition = 'page-right';
+            }
 
-                // Détermine la position de la page
-                $classPagePosition = ($document['indice'] % 2 == 0) ? 'page-left' : 'page-right';
+            $popoverNotes = "";
+            $classNote = "";
+            if (!empty($document['notes'])) {
+                $classNote = "document-notes";
+                $txtNote = "";
+                foreach ($document['notes']['notes'] as $note) {
 
-                if (($document['key'] == $this->ts('active_wireframe_second_cover'))
-                    || ($document['key'] == $this->ts('active_wireframe_fourth_cover'))
-                ) {
-                    $classPagePosition = 'page-left';
-                }
-
-                if (($document['key'] == $this->ts('active_wireframe_first_cover'))
-                    || ($document['key'] == $this->ts('active_wireframe_third_cover'))
-                ) {
-                    $classPagePosition = 'page-right';
-                }
-
-                // Détermine si la page possède des notes
-                $popoverNotes = "";
-                $classNote = "";
-                if (!empty($document['notes'])) {
-
-                    // Classe
-                    $classNote = "document-notes";
-
-                    // Crée la chaine HTML des notes
-                    $txtNote = "";
-
-                    foreach ($document['notes']['notes'] as $note) {
-
+                    if ($note instanceof \Pimcore\Model\Element\Note) {
                         $txtNote = $txtNote . '<li>'
                             . $note->getTitle()
                             . ' : <span>'
@@ -97,71 +83,64 @@
                             . '</span></li>';
                     }
 
-                    $txtNote = '<ul>' . $txtNote . '</ul>';
-
-                    // Création du popover
-                    $popoverNotes = '<button 
-                    type="button" 
-                    class="btn btn-warning btn-page-note icon-book" 
-                    data-container="body" 
-                    data-toggle="popover" 
-                    data-placement="bottom" 
-                    data-content="' . $txtNote . '" 
-                    data-html="true" 
-                    title="Notes de la page">
-                        <span class="badge"></span>
-                    </button>';
-
                 }
 
-                // Plugin Workflow
-                $strStyleWorkflow = "";
-                if (is_array($document['workflow']) && !empty($document['workflow'])) {
-                    $strStyleWorkflow = "border-color: " . $document['workflow']['color'];
-                }
-
-                // Création du chemin de fer
-                $divStart = '<div class="preview-page ' . $classNote . ' ' . $classPagePosition . '">';
-                $file = "activetmp" . DIRECTORY_SEPARATOR
-                    . \ActiveWireframe\Plugin::PLUGIN_NAME . DIRECTORY_SEPARATOR
-                    . $document['documentId'] . DIRECTORY_SEPARATOR
-                    . $document['documentId'] . '.png';
-
-                if (file_exists(PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR . $file)) {
-
-                    $img = '<img src="' . DIRECTORY_SEPARATOR . $file . '?_t=' . time() . '" 
-                    class="page-image page-border ' . $classDocumentLock . '" 
-                    title="' . $document['key'] . '" 
-                    style="' . $strStyleWorkflow . '
-                    "/>';
-
-                } else {
-
-                    $img = '<div class="no-preview page-image page-border ' . $classDocumentLock . '"></div>';
-
-                }
-
-                $pageNumber = '<p class="titre-page">' . $document['key'] . '</p>';
-                $divEnd = "</div>";
-                echo $divStart . $img . $pageNumber . $popoverNotes . $divEnd;
-
-                // Si le document à un numero impaire
-                if (($document['indice'] % 2 == 1)
-                    || $document['key'] == $this->ts('active_wireframe_first_cover')
-                    || $document['key'] == $this->ts('active_wireframe_third_cover')
-                    || $document['key'] == $this->ts('active_wireframe_fourth_cover')
-                ) {
-                    echo '</div>';
-                }
-
-                $start = false;
+                // popover
+                $popoverNotes = '<button 
+                type="button" 
+                class="btn btn-warning btn-page-note icon-book" 
+                data-container="body" 
+                data-toggle="popover" 
+                data-placement="bottom" 
+                data-content="<ul>' . $txtNote . '</ul>" 
+                data-html="true" 
+                title="Notes de la page"><span class="badge"></span></button>';
 
             }
 
-            ?>
+//            // Plugin Workflow
+            $strStyleWorkflow = "";
+//            if (is_array($document['workflow']) and !empty($document['workflow'])) {
+//                $strStyleWorkflow = "border-color: " . $document['workflow']['color'];
+//            }
 
-        </div>
+            $divStart = '<div class="preview-page ' . $classNote . ' ' . $classPagePosition . '">';
 
-    </section>
+            $file = "activetmp" . DIRECTORY_SEPARATOR . \ActiveWireframe\Plugin::PLUGIN_NAME . DIRECTORY_SEPARATOR
+                . $document['documentId'] . DIRECTORY_SEPARATOR . $document['documentId'] . '.png';
+
+            if (file_exists(PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR . $file)) {
+
+                $img = '<img src="' . DIRECTORY_SEPARATOR . $file . '?_t=' . time() . '" 
+                class="page-image page-border ' . $classDocumentLock . '" 
+                title="' . $document['key'] . '" 
+                style="' . $strStyleWorkflow . '
+                "/>';
+
+            } else {
+                $img = '<div class="no-preview page-image page-border ' . $classDocumentLock . '"></div>';
+            }
+
+
+            $pageNumber = '<p class="titre-page">' . $document['key'] . '</p>';
+            $divEnd = "</div>";
+            echo $divStart . $img . $pageNumber . $popoverNotes . $divEnd;
+
+            if (($document['indice'] % 2 == 1)
+                or $document['key'] == $this->ts('active_wireframe_first_cover')
+                or $document['key'] == $this->ts('active_wireframe_third_cover')
+                or $document['key'] == $this->ts('active_wireframe_fourth_cover')
+                or ($iCount == $count)
+            ) {
+                echo '</div>';
+            }
+
+            $start = false;
+            $i++;
+        }
+
+        ?>
+        <p class="clear"></p>
+    </div>
 
 <?php } ?>

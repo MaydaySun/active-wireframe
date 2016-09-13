@@ -81,11 +81,11 @@ class ActiveWireframe_CatalogsController extends Action
 
                 // Retrieve the dats of catalog
                 $dbCatalog = new Catalogs();
-                $catalog = $dbCatalog->getCatalog($document->getId());
+                $catalog = $dbCatalog->getCatalogByDocumentId($document->getId());
 
                 // Case of chapter
                 if (!$catalog) {
-                    $catalog = $dbCatalog->getCatalog($document->getParentId());
+                    $catalog = $dbCatalog->getCatalogByDocumentId($document->getParentId());
                 }
                 $this->view->optionsCat = $catalog;
 

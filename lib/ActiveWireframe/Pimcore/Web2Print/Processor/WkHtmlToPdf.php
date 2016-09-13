@@ -89,10 +89,10 @@ class WkHtmlToPdf extends Processor
         $dbcatalog = new Catalogs();
 
         // Cas d'une page hors chapitre
-        $catalog = $dbcatalog->getCatalog($document->getParentId());
+        $catalog = $dbcatalog->getCatalogByDocumentId($document->getParentId());
         if (!$catalog) {
             // Cas d'une page dans un chapitre
-            $catalog = $dbcatalog->getCatalog($document->getParent()->getParentId());
+            $catalog = $dbcatalog->getCatalogByDocumentId($document->getParent()->getParentId());
         }
 
         if ($catalog) {

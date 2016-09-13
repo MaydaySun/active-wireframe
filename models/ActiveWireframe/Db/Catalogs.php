@@ -29,7 +29,7 @@ class Catalogs extends \Zend_Db_Table
      */
     public function insertCatalog(Printcontainer $document, array $data)
     {
-        $catalog = $this->getCatalog($document->getId());
+        $catalog = $this->getCatalogByDocumentId($document->getId());
 
         // update
         if ($catalog) {
@@ -46,28 +46,12 @@ class Catalogs extends \Zend_Db_Table
      * @param $document_id
      * @return array|bool
      */
-    public function getCatalog($document_id)
+    public function getCatalogByDocumentId($document_id)
     {
         $row = $this->fetchRow($this->select()->where("document_id = ?", $document_id));
         if ($row != null) {
             return $row->toArray();
         }
-        return false;
-    }
-
-    /**
-     * @param $documentId
-     * @return array|bool
-     */
-    public function searchCatalogue($documentId)
-    {
-        $dbPages = new Pages();
-        $page = $dbPages->getPage($documentId);
-
-        if (is_array($page)) {
-            return $this->getCatalog($page['document_root_id']);
-        }
-
         return false;
     }
 

@@ -8,11 +8,12 @@
     <!-- Global CSS & JS -->
     <link href="/pimcore/static/css/fontello.css?v=<?= $this->version; ?>" rel="stylesheet">
 
-    <link href="/plugins/ActiveWireframe/static/css/icons.css" rel="stylesheet">
     <link href="/plugins/ActiveWireframe/static/css/knacss.css?v=<?= $this->version; ?>" rel="stylesheet">
     <link href="/plugins/ActiveWireframe/static/css/knacss-extends.css?v=<?= $this->version; ?>" rel="stylesheet">
+    <link href="/plugins/ActiveWireframe/static/css/layout.css?v=<?= $this->version; ?>" rel="stylesheet">
+
+    <link href="/plugins/ActiveWireframe/static/css/icons.css" rel="stylesheet">
     <link href="/plugins/ActiveWireframe/static/css/reset-css.css" rel="stylesheet">
-    <link href="/plugins/ActiveWireframe/static/css/main.css?v=<?= $this->version; ?>" rel="stylesheet">
 
     <script src="/pimcore/static/js/pimcore/functions.js?v=<?= $this->version; ?>"></script>
     <script src="/plugins/ActiveWireframe/static/js/functions.js?v=<?= $this->version; ?>"></script>
@@ -133,7 +134,7 @@
 
     <div id="dialog-form-pagination">
         <form>
-            <input id="inputIndexPaginator" type="number" min="0" name='index'
+            <input id="input-index-paginator" type="number" min="0" name='index'
                    placeholder="<?= $this->ts('active_wireframe_number_first_page'); ?>"/>
         </form>
     </div>
