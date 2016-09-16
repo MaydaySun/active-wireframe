@@ -84,7 +84,7 @@ $(document).ready(function () {
             cache: false,
             dataType: 'json',
             data: {
-                index: $('#inputIndexPaginator').val(),
+                index: $('#input-index-paginator').val(),
                 documentId: $documentId
             },
             complete: function () {

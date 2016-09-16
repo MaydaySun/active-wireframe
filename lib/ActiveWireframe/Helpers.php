@@ -59,7 +59,7 @@ class Helpers
      */
     public static function getPageThumbnailForTree(Document $document, $width)
     {
-        $widthWk = number_format($width * 0.25);
+        $widthWk = number_format($width * 0.50);
 
         // Dir tmp
         $dirTmp = PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR
@@ -72,12 +72,12 @@ class Helpers
             File::mkdir($dirTmp);
         }
 
-        $url = Tool::getHostUrl() . $document->getFullPath() . '?nowkhtmltoimage=true';
+        $url = Tool::getHostUrl() . $document->getFullPath() . '?forcearea=true';
         $dst = $dirTmp . DIRECTORY_SEPARATOR . $document->getId() . '.jpeg';
         $options = [
             'width' => $widthWk,
-            'quality' => 75,
-            'zoom' => 0.25
+            'quality' => 90,
+            'zoom' => 0.50
         ];
         return HtmlToImage::convert($url, $dst, 'jpeg', $options);
     }
@@ -284,7 +284,7 @@ class Helpers
      * Get areas for the current user
      * @return string
      */
-    public static function getAreaByRole()
+    public static function getAreaByRole($forcearea = false)
     {
         // Get user and role
         $user = Tool\Admin::getCurrentUser();
@@ -293,6 +293,10 @@ class Helpers
         // Default path
         $areaPath = '/website/views/areas';
         $areaPathAbs = PIMCORE_WEBSITE_PATH . '/views/areas';
+
+        if ($forcearea) {
+            return $areaPath . '/admin';
+        }
 
         // User isn't admin and belong to a role
         if ($user instanceof User

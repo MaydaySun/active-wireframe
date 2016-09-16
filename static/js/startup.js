@@ -14,17 +14,10 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
 
     },
 
-    /**
-     * Enregistre les position X et Y des blocs box-w2p et element-w2p
-     * @param document
-     */
     preSaveDocument: function (document) {
-
         if ((document.data.module == "ActiveWireframe") && ((document.data.action == "pages"))) {
             this.saveBoxW2p(document);
-            this.saveElementW2p(document);
         }
-
     },
 
     /**
@@ -33,20 +26,15 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
      */
     saveBoxW2p: function (document) {
 
-        // Initialisations des tableau
-        var aElements = [];
-
-        // Récupère l'iframe
         var documentDom = Ext.get('document_iframe_' + document.id);
         var iframe = documentDom.dom.contentWindow.Ext;
-
-        // Récupère le bloc page et les blocs box-w2p
         var page = iframe.get('page');
-        var elems = iframe.select('.box-w2p');
+        var boxW2p = iframe.select('.box-w2p');
+        var data = [];
 
         // Pour chaques bloc box-w2p
-        elems.each(function (el) {
-            aElements.push(this.getData(el, page, 'box-w2p'));
+        boxW2p.each(function (box) {
+            data.push(this.getData(box, page));
         }.bind(this));
 
         // Enregistre les informations de l'élément box-w2p
@@ -56,7 +44,7 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
             cache: false,
             params: {
                 id: document.id,
-                elements: Ext.util.JSON.encode(aElements)
+                box: Ext.util.JSON.encode(data)
             },
             success: function (xhr) {
                 var response = Ext.util.JSON.decode(xhr.responseText);
@@ -67,98 +55,48 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
         });
     },
 
-    /**
-     * Enregistrement des element-w2p.
-     * @returns {undefined}
-     */
-    saveElementW2p: function (document) {
+    getData: function (bData, page) {
 
-        // Initialisations des tableau
-        var aElements = [];
+        //Get information for the .box-w2p
+        var boxW2p = {};
+        boxW2p.key = bData.getAttribute('data-key');
+        boxW2p.top = bData.getStyle('top');
+        boxW2p.left = bData.getStyle('left');
+        boxW2p.index = bData.getStyle('z-index');
+        boxW2p.width = bData.getStyle('width');
+        boxW2p.height = bData.getStyle('height');
+        boxW2p.mat = bData.getStyle('transform');
+        boxW2p.oId = 0;
+        boxW2p.elements = [];
 
-        // Récupère l'iframe
-        var documentDom = Ext.get('document_iframe_' + document.id);
-        var iframe = documentDom.dom.contentWindow.Ext;
+        // Get data-o-id if exist
+        if (bData.select('.box-w2p-content').elements.length !== 0) {
 
-        // Récupère le bloc page et les blocs box-w2p
-        var page = iframe.get('page');
-        var elems = iframe.select('.element-w2p');
+            // data-o-id
+            boxW2p.oId = bData.select('.box-w2p-content').elements[0].getAttribute('data-o-id');
 
-        // Pour chaques bloc box-w2p
-        elems.each(function (el) {
-            aElements.push(this.getData(el, page, 'element-w2p'));
-        }.bind(this));
+            // .element-w2p
+            var elementW2p = bData.select('.element-w2p');
+            console.log(elementW2p);
 
-        // Enregistre les informations de l'élément box-w2p
-        Ext.Ajax.request({
-            url: '/plugin/ActiveWireframe/elements/save-element-w2p',
-            method: 'GET',
-            cache: false,
-            params: {
-                id: document.id,
-                elements: Ext.util.JSON.encode(aElements)
-            },
-            success: function (xhr) {
-                var response = Ext.util.JSON.decode(xhr.responseText);
-                if (!response.success) {
-                    Ext.Msg.alert(t('error'), response.message);
-                }
-            }
-        });
-    },
+            // Get informations of element-w2p
+            elementW2p.each(function (eData) {
+                var dataElement = {};
+                dataElement.key = eData.getAttribute('data-element-key');
+                dataElement.top = eData.getStyle('top');
+                dataElement.left = eData.getStyle('left');
+                dataElement.index = eData.getStyle('z-index');
+                dataElement.width = eData.getStyle('width');
+                dataElement.height = eData.getStyle('height');
+                dataElement.mat = eData.getStyle('transform');
 
-    /**
-     * Récupère les informations de positions et de tailles.
-     * @param e
-     * @param page
-     * @param classe
-     * @returns {{}}
-     */
-    getData: function (e, page, classe) {
+                boxW2p.elements.push(dataElement)
 
-        var objectElement = {};
-        objectElement.key = 0;
-        objectElement.oId = 0;
-        objectElement.top = e.getStyle('top');
-        objectElement.left = e.getStyle('left');
-        objectElement.index = e.getStyle('z-index');
-        objectElement.width = e.getStyle('width');
-        objectElement.height = e.getStyle('height');
-        objectElement.mat = e.getStyle('transform');
-
-        // Récupère l'id si l'area est une area produit
-        if (classe == 'box-w2p') {
-            //data-key w2p
-            objectElement.key = e.getAttribute('data-key');
-
-            // Get objectID in the renderlet
-            if (e.select('.object-w2p').elements.length !== 0) {
-                objectElement.oId = e.select('.object-w2p').elements[0].getAttribute('data-o-id');
-            }
-
-        } else if (classe == 'element-w2p') {
-            // data element key w2p
-            objectElement.key = e.getAttribute('data-element-key');
-        }
-
-        return objectElement;
-    },
-
-    /**
-     * postSaveDocument
-     * @param document
-     */
-    postSaveDocument: function (document) {
-
-        if ((document.data.module == "ActiveWireframe") && (document.data.action == "pages")) {
-            Ext.Ajax.request({
-                url: document.data.path + document.data.key,
-                method: 'GET',
-                success: function (xhr) {
-                }
             });
+
         }
 
+        return boxW2p;
     }
 
 });

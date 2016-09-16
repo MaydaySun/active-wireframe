@@ -44,7 +44,7 @@ class ActiveWireframe_ElementsController extends Action
     public function saveBoxW2pAction()
     {
         // Retrieve elements for saving
-        if ($this->hasParam('id') and $this->hasParam('elements') and !empty($this->getParam('elements'))) {
+        if ($this->hasParam('id') and $this->hasParam('box') and !empty($this->getParam('box'))) {
 
             // Instance
             $dbPages = new Pages();
@@ -60,24 +60,29 @@ class ActiveWireframe_ElementsController extends Action
             $cinfo = $dbPages->getCatalogByDocumentId($document->getId());
 
             // Elements to encode
-            $elements = \json_decode($this->getParam('elements'));
-            foreach ($elements as $element) {
+            $elements = \json_decode($this->getParam('box'));
+            foreach ($elements as $boxW2p) {
 
                 $dbElement->insert([
-                    'o_id' => $element->oId,
+                    'o_id' => $boxW2p->oId,
                     'document_id' => $id_document,
                     'document_parent_id' => $document->getParentId(),
                     'document_root_id' => $cinfo['document_id'],
                     'page_key' => $document->getKey(),
                     'e_id' => 0,
-                    'e_key' => $element->key,
-                    'e_top' => Helpers::convertPxToMm($element->top),
-                    'e_left' => Helpers::convertPxToMm($element->left),
-                    'e_index' => $element->index,
-                    'e_width' => Helpers::convertPxToMm($element->width),
-                    'e_height' => Helpers::convertPxToMm($element->height),
-                    'e_transform' => $element->mat
+                    'e_key' => $boxW2p->key,
+                    'e_top' => Helpers::convertPxToMm($boxW2p->top),
+                    'e_left' => Helpers::convertPxToMm($boxW2p->left),
+                    'e_index' => $boxW2p->index,
+                    'e_width' => Helpers::convertPxToMm($boxW2p->width),
+                    'e_height' => Helpers::convertPxToMm($boxW2p->height),
+                    'e_transform' => $boxW2p->mat
                 ]);
+
+                if (!empty($boxW2p->elements)) {
+                    $this->saveElementW2p($document, $boxW2p->elements, $boxW2p->oId);
+                }
+
             }
 
         }
@@ -88,72 +93,57 @@ class ActiveWireframe_ElementsController extends Action
     }
 
     /**
-     * Save element-w2p
+     * @param Printpage $document
+     * @param $elementW2p
+     * @param $oId
+     * @return int
      */
-    public function saveElementW2pAction()
+    public function saveElementW2p(Printpage $document, $elementW2p, $oId)
     {
-        if ($this->hasParam('id') and $this->hasParam('elements') and !empty($this->getParam('elements'))) {
-
-            $documentId = intval($this->getParam("id"));
-
-            // Dir
-            $dir = PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR . 'activetmp/' . Plugin::PLUGIN_NAME;
-            if (!file_exists($dir)) {
-                Pimcore\File::mkdir($dir, 0775, true);
-            }
-
-            // Document ID
-            $document = Printpage::getById($documentId);
-            if ($document instanceof Printpage) {
-
-                // Dir document
-                $dirDocument = $dir . DIRECTORY_SEPARATOR . $documentId;
-                if (!file_exists($dirDocument)) {
-                    Pimcore\File::mkdir($dirDocument, 0775, true);
-                }
-
-                $elements = \json_decode($this->getParam('elements'));
-
-                foreach ($elements as $element) {
-
-                    $oId = $element->oId;
-                    $key = $element->key;
-
-                    // Object ID OK
-                    if (ctype_digit($oId)) {
-
-                        // Dir element
-                        $dirElement = $dirDocument . DIRECTORY_SEPARATOR . $oId . DIRECTORY_SEPARATOR
-                            . 'element-w2p-' . $key . '.json';
-
-                        // Delete json file
-                        if (file_exists($dirElement)) {
-                            @unlink($dirElement);
-                        }
-
-                        // Retrieve data
-                        $data = array(
-                            'o_id' => $oId,
-                            'e_key' => $key,
-                            'e_top' => Helpers::convertPxToMm($element->top),
-                            'e_left' => Helpers::convertPxToMm($element->left),
-                            'e_index' => $element->index,
-                            'e_width' => Helpers::convertPxToMm($element->width),
-                            'e_height' => Helpers::convertPxToMm($element->height),
-                            'e_transform' => $element->mat
-                        );
-
-                        Pimcore\File::put($dirElement, \Zend_Json_Encoder::encode($data));
-                    }
-
-                }
-
-            }
-
+        // Directory activetmp
+        $dirTmp = PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR . 'activetmp/' . Plugin::PLUGIN_NAME;
+        if (!file_exists($dirTmp)) {
+            Pimcore\File::mkdir($dirTmp, 0775, true);
         }
 
-        return Response::setResponseJson([
-            "success" => true
-        ]);
+        // Dir document
+        $dirDocument = $dirTmp . DIRECTORY_SEPARATOR . $document->getId();
+        if (!file_exists($dirDocument)) {
+            Pimcore\File::mkdir($dirDocument, 0775, true);
+        }
+
+        if (!empty($elementW2p)) {
+
+            foreach ($elementW2p as $element) {
+
+                if (ctype_digit($oId)) {
+
+                    // Dir element
+                    $dirElement = $dirDocument . DIRECTORY_SEPARATOR . $oId . DIRECTORY_SEPARATOR
+                        . 'element-w2p-' . $element->key . '.json';
+
+                    // Delete json file
+                    if (file_exists($dirElement)) {
+                        @unlink($dirElement);
+                    }
+
+                    // Retrieve data
+                    $data = array(
+                        'o_id' => $oId,
+                        'e_key' => $element->key,
+                        'e_top' => Helpers::convertPxToMm($element->top),
+                        'e_left' => Helpers::convertPxToMm($element->left),
+                        'e_index' => $element->index,
+                        'e_width' => Helpers::convertPxToMm($element->width),
+                        'e_height' => Helpers::convertPxToMm($element->height),
+                        'e_transform' => $element->mat
+                    );
+
+                    Pimcore\File::put($dirElement, \Zend_Json::encode($data));
+                }
+
+            }
+        }
+
     }
 }

@@ -212,17 +212,18 @@ class Handler
                 $dbpage = new Pages();
                 $pinfo = $dbpage->getPageByDocumentId($document->getId());
                 if ($pinfo) {
+
                     $parentInfo = $dbpage->getPageByDocumentId($document->getParentId());
+                    $dbcatalog = new Catalogs();
 
                     // Parent is a chapter
                     if ($parentInfo and $parentInfo['document_type'] == "chapter") {
 
                         $pinfo['document_parent_id'] = $document->getParentId();
                         $pinfo['document_root_id'] = $document->getParent()->getParentId();
+                        $cinfo = $dbcatalog->getCatalogByDocumentId($document->getParent()->getParentId());
 
                     } else {
-
-                        $dbcatalog = new Catalogs();
                         $cinfo = $dbcatalog->getCatalogByDocumentId($document->getParentId());
 
                         // Parent is a catalog
@@ -239,6 +240,9 @@ class Handler
                     // Update
                     $where = $dbpage->getAdapter()->quoteInto('id = ?', $pinfo['id']);
                     $dbpage->update($pinfo, $where);
+
+                    // Created Thumbnail
+                    Helpers::getPageThumbnailForTree($document, $cinfo['format_width']);
 
                 }
 

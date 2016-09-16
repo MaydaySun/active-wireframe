@@ -49,11 +49,13 @@ class ActiveWireframe_PagesController extends Action
         $this->enableLayout();
         $this->setLayout("index");
 
+        $forcearea = $this->hasParam('forcearea');
+
         $this->view->documentId = $this->document->getId();
         $this->view->pageLock = $this->document->isLocked();
         $this->view->numPage = intval($this->document->getKey());
         $this->view->baseUrl = Tool::getHostUrl();
-        $this->view->areadir = Helpers::getAreaByRole();
+        $this->view->areadir = Helpers::getAreaByRole($forcearea);
         $this->view->version = Util::getPluginVersion(Plugin::PLUGIN_NAME);
 
         // instance ActiveWireframe\Db\Pages
@@ -103,18 +105,25 @@ class ActiveWireframe_PagesController extends Action
             'format' => 'PNG',
             'width' => 1024,
             'height' => null,
-            'aspectratio' => true
+            'aspectratio' => true,
+            'quality' => 90
         ];
-        if ($this->editmode or $this->hasParam('nowkhtmltoimage')) {
-            $configThumbnail['quality'] = 90;
-        } else {
-            $configThumbnail['quality'] = 100;
-            $configThumbnail['highResolution'] = 3.2;
+        if (!$this->editmode or !$this->hasParam('nowkhtmltoimage')) {
+
+            $configThumbnail = [
+                'format' => 'PNG',
+                'width' => 1024,
+                'height' => null,
+                'aspectratio' => true,
+                'quality' => 100,
+                'highResolution' => 3.2
+            ];
+
         }
-        $this->view->thumbnail = $configThumbnail;
+        $this->view->thumbnail = serialize($configThumbnail);
 
         // Get background template for only page in chapter
-        if ($this->document->getParentId() != $cinfo['document_root_id']) {
+        if ($this->document->getParentId() != $cinfo['document_id']) {
             $this->view->template = Helpers::getBackgroundTemplate($this->document, $cinfo, $configThumbnail);
         }
 
@@ -123,11 +132,6 @@ class ActiveWireframe_PagesController extends Action
             $this->view->activepaginate = true;
             $this->view->gridCol = ($pinfo['grid_col'] != 0) ? $pinfo['grid_col'] : 3;
             $this->view->gridRow = ($pinfo['grid_row'] != 0) ? $pinfo['grid_row'] : 4;
-        }
-
-        // Création d'une vignette
-        if (!$this->editmode and !$this->hasParam('nowkhtmltoimage')) {
-            Helpers::getPageThumbnailForTree($this->document, $width);
         }
     }
 
