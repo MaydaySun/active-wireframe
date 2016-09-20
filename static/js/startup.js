@@ -77,7 +77,6 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
 
             // .element-w2p
             var elementW2p = bData.select('.element-w2p');
-            console.log(elementW2p);
 
             // Get informations of element-w2p
             elementW2p.each(function (eData) {

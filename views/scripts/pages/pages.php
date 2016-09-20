@@ -1,6 +1,6 @@
 <?php if ($this->editmode) { ?>
 
-    <link href="/plugins/ActiveWireframe/static/css/pages-editmode.css?v=<?= $this->version; ?>" rel="stylesheet">
+    <link href="/plugins/ActiveWireframe/static/css/pages/pages-editmode.css?v=<?= $this->version; ?>" rel="stylesheet">
     <style>
         #activeWireframe #page-global {
             width: <?= $this->pageWidthLandmark; ?> !important;
@@ -25,7 +25,7 @@
 
 <?php } else { ?>
 
-    <link href="/plugins/ActiveWireframe/static/css/pages-preview.css?v=<?= $this->version; ?>" rel="stylesheet">
+    <link href="/plugins/ActiveWireframe/static/css/pages/pages-preview.css?v=<?= $this->version; ?>" rel="stylesheet">
     <style>
         #activeWireframe #page-global {
             width: <?= $this->pageWidth; ?> !important;
@@ -146,6 +146,6 @@
 
 <?php if ($this->editmode) { ?>
 
-    <script src="/plugins/ActiveWireframe/static/js/pages-editmode.js?v=<?= $this->version; ?>"></script>
+    <script src="/plugins/ActiveWireframe/static/js/pages/pages-editmode.js?v=<?= $this->version; ?>"></script>
 
 <?php } ?>

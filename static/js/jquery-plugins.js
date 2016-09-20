@@ -20,8 +20,6 @@ $(document).ready(function () {
     $(".datepicker").datepicker({inline: true});
     $(".tooltip").tooltip();
     $(".selectmenu").selectmenu();
-    $('img.lazy').lazyload({
-        effect: "fadeIn"
-    });
+    $('img.lazy').lazyload();
 
 });

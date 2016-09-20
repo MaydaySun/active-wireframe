@@ -14,8 +14,7 @@ body, html {
 #activeWireframe #page-global {
     position: relative;
     background-color: #FFF;
-    background-position-x: -5mm;
-    background-position-y: -5mm;
+    background-position: -5mm -5mm;
     overflow: hidden;
 }
 
@@ -98,7 +97,7 @@ body, html {
 #activeWireframe .box-w2p.selected > .ui-rotatable-handle {
     width: 20px;
     cursor: pointer;
-    background-image: url('../img/rotate.png');
+    background-image: url('../../img/rotate.png');
     background-size: 100% auto;
     left: calc(10% + 5px);
     bottom: -22px;

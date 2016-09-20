@@ -85,6 +85,10 @@
 }
 
 #activeWireframe #block-tree .no-preview {
-    background: #FFF url(/plugins/ActiveWireframe/static/img/orig_no-image.png) center no-repeat;
+    background: #FFF url(../../../static/img/orig_no-image.png) center no-repeat;
     background-size: contain;
+}
+
+#activeWireframe .alert-tree {
+    margin: 25px;
 }

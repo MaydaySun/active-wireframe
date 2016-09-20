@@ -61,7 +61,7 @@ $(document).ready(function () {
                             '<div class="radio">' +
                             '<label>' +
                             '<input type="radio" name="template-odd" value="' + fileId + '">' +
-                            ts('active_wireframe_page_even') +
+                            ts('active_wireframe_page_odd') +
                             '</label>' +
                             '</div>' +
                             '</div>';

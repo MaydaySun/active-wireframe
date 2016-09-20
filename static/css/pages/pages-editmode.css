@@ -126,7 +126,7 @@
 #activeWireframe .box-w2p.selected > .ui-rotatable-handle {
     width: 20px;
     cursor: pointer;
-    background-image: url('../img/rotate.png');
+    background-image: url('../../img/rotate.png');
     background-size: 100% auto;
     left: calc(10% + 5px);
     bottom: -22px;
@@ -181,7 +181,7 @@
 
 /* .box-w2p-handle */
 #activeWireframe .box-w2p-handle {
-    background: url(../img/draggable.png) 99% no-repeat #ECECEC;
+    background: url(../../img/draggable.png) 99% no-repeat #ECECEC;
     background-size: 16px, auto;
     position: absolute;
     width: 100%;

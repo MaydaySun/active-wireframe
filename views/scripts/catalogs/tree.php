@@ -1,13 +1,11 @@
 <!-- CSS -->
-<link href="/plugins/ActiveWireframe/static/css/tree.css?v=<?= $this->version; ?>" rel="stylesheet">
+<link href="/plugins/ActiveWireframe/static/css/catalogs/tree.css?v=<?= $this->version; ?>" rel="stylesheet">
 
 <?php if (isset($this->noChilds)) { ?>
 
-    <div class="container bs-example">
-        <div class="alert alert-warning">
-            <strong><?= $this->ts('active_wireframe_warning') ?></strong>&nbsp;
-            <?= $this->ts('active_wireframe_no_pages_in_catalog'); ?>
-        </div>
+    <div class="alert alert-warning alert-tree">
+        <strong><?= $this->ts('active_wireframe_warning') ?></strong>&nbsp;
+        <?= $this->ts('active_wireframe_no_pages_in_catalog'); ?>
     </div>
 
 <?php } else { ?>
