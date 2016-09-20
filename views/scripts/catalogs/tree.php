@@ -36,7 +36,7 @@
     </style>
 
     <!-- Corps -->
-    <div id="block-tree" class="chapter-tree">
+    <div id="block-tree" class="chapter-tree container-lazy">
         <?php
 
         $start = true;
@@ -111,14 +111,10 @@
 
             if (file_exists(PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR . $file)) {
 
-                $img = '<img src="' . DIRECTORY_SEPARATOR . $file . '?_t=' . time() . '" 
-                class="page-image page-border ' . $classDocumentLock . '" 
-                title="' . $document['key'] . '" 
-                style="' . $strStyleWorkflow . '
-                "/>';
+                $img = '<img class="page-image page-border lazy ' . $classDocumentLock . '" data-original="' . DIRECTORY_SEPARATOR . $file . '?_t=' . time() . '" title="' . $document['key'] . '" style="' . $strStyleWorkflow . '"/>';
 
             } else {
-                $img = '<div class="no-preview page-image page-border ' . $classDocumentLock . '"></div>';
+                $img = '<div class="no-preview page-image page-border lazy ' . $classDocumentLock . '"></div>';
             }
 
 
@@ -136,7 +132,7 @@
             }
 
             $start = false;
-            $i++;
+            $iCount++;
         }
 
         ?>
