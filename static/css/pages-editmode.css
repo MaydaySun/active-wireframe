@@ -135,8 +135,8 @@
     height: 20px;
 }
 
-/* .box-w2p-content */
-#activeWireframe .box-w2p-content {
+/* .box-w2p-container */
+#activeWireframe .box-w2p-container {
     width: 100%;
     height: 100%;
 }

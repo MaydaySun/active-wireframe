@@ -32,7 +32,6 @@
 
     <!-- Editmode -->
     <?php if ($this->editmode) { ?>
-        <link href="/plugins/ActiveWireframe/static/css/editmode.css?v=<?= $this->version; ?>" rel="stylesheet">
         <script src="/plugins/ActiveWireframe/static/js/menu.js?v=<?= $this->version; ?>"></script>
     <?php } ?>
 

@@ -116,7 +116,7 @@
 
                     echo '<div class="box-w2p" data-key="' . $currentIndex . '"  style="' . $styles . '" >';
                     echo '<div class="box-w2p-handle handle-top"></div>';
-                    echo '<div class="box-w2p-content">';
+                    echo '<div class="box-w2p-container">';
 
                     $areaBlock->blockConstruct();
                     $areaBlock->blockStart();

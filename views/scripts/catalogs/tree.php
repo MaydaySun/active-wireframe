@@ -98,16 +98,16 @@
 
             }
 
-//            // Plugin Workflow
+            // Plugin Workflow
             $strStyleWorkflow = "";
-//            if (is_array($document['workflow']) and !empty($document['workflow'])) {
-//                $strStyleWorkflow = "border-color: " . $document['workflow']['color'];
-//            }
+            if (is_array($document['workflow']) and !empty($document['workflow'])) {
+                $strStyleWorkflow = "border-color: " . $document['workflow']['color'];
+            }
 
             $divStart = '<div class="preview-page ' . $classNote . ' ' . $classPagePosition . '">';
 
             $file = "activetmp" . DIRECTORY_SEPARATOR . \ActiveWireframe\Plugin::PLUGIN_NAME . DIRECTORY_SEPARATOR
-                . $document['documentId'] . DIRECTORY_SEPARATOR . $document['documentId'] . '.png';
+                . $document['documentId'] . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
 
             if (file_exists(PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR . $file)) {
 
