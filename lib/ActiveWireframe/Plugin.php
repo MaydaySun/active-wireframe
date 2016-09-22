@@ -29,7 +29,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
     const PLUGIN_PATH = PIMCORE_PLUGINS_PATH . DIRECTORY_SEPARATOR . self::PLUGIN_NAME;
 
-    const PLUGIN_PATH_STATIC = PIMCORE_DOCUMENT_ROOT . "/static-plugins/" . self::PLUGIN_NAME;
+    const PLUGIN_PATH_STATIC = PIMCORE_WEBSITE_PATH . "/static-plugins/" . self::PLUGIN_NAME;
 
     const PLUGIN_PATH_INSTALL = self::PLUGIN_PATH . "/static/install";
 
