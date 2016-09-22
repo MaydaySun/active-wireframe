@@ -104,15 +104,22 @@
 
             $divStart = '<div class="preview-page ' . $classNote . ' ' . $classPagePosition . '">';
 
-            $file = "activetmp" . DIRECTORY_SEPARATOR . \ActiveWireframe\Plugin::PLUGIN_NAME . DIRECTORY_SEPARATOR
-                . $document['documentId'] . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
+            $file = "/website/static-plugins"
+                . DIRECTORY_SEPARATOR . \ActiveWireframe\Plugin::PLUGIN_NAME
+                . DIRECTORY_SEPARATOR . $document['documentId']
+                . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
 
-            if (file_exists(PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR . $file)) {
+            $absoluteFile  = \ActiveWireframe\Plugin::PLUGIN_PATH_STATIC
+                . DIRECTORY_SEPARATOR . $document['documentId']
+                . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
 
-                $img = '<img class="page-image page-border lazy ' . $classDocumentLock . '" data-original="' . DIRECTORY_SEPARATOR . $file . '?_t=' . time() . '" title="' . $document['key'] . '" style="' . $strStyleWorkflow . '"/>';
+            if (file_exists($absoluteFile)) {
+
+                $img = '<img class="page-image page-border ' . $classDocumentLock . '" src="' . $file
+                    . '?_t=' . time() . '" title="' . $document['key'] . '" style="' . $strStyleWorkflow . '"/>';
 
             } else {
-                $img = '<div class="no-preview page-image page-border lazy ' . $classDocumentLock . '"></div>';
+                $img = '<div class="no-preview page-image page-border ' . $classDocumentLock . '"></div>';
             }
 
 

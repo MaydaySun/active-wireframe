@@ -127,6 +127,27 @@ class ActiveWireframe_PagesController extends Action
             $this->view->template = Helpers::getBackgroundTemplate($this->document, $cinfo, $configThumbnail);
         }
 
+        // Module Extensions
+        $awExtension = \Zend_Json::decode(Tool::getHttpData(Plugin::AW_EXTENSION_URL));
+        if ($awExtension['success']) {
+
+            $includePathJS = "";
+            if (!empty($awExtension['include_js'])) {
+                foreach ($awExtension['include_js'] as $fileJs) {
+                    $includePathJS .= '<script src="' . $fileJs . '"></script>';
+                }
+            }
+            $this->view->includePathJS = $includePathJS;
+
+            $includePathCss = "";
+            if (!empty($awExtension['include_css'])) {
+                foreach ($awExtension['include_css'] as $fileCss) {
+                    $includePathCss = $includePathCss . '<link href="' . $fileCss . '" rel="stylesheet">';
+                }
+            }
+            $this->view->includePathCSS = $includePathCss;
+        }
+
         // ActivePaginate Plugin integration
         if (Util::pluginIsInstalled('ActivePaginate')) {
             $this->view->activepaginate = true;

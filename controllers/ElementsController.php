@@ -96,18 +96,16 @@ class ActiveWireframe_ElementsController extends Action
      * @param Printpage $document
      * @param $elementW2p
      * @param $oId
-     * @return int
      */
     public function saveElementW2p(Printpage $document, $elementW2p, $oId)
     {
-        // Directory activetmp
-        $dirTmp = PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR . 'activetmp/' . Plugin::PLUGIN_NAME;
-        if (!file_exists($dirTmp)) {
-            Pimcore\File::mkdir($dirTmp, 0775, true);
+        // Directory PLUGIN_PATH_STATIC
+        if (!file_exists(Plugin::PLUGIN_PATH_STATIC)) {
+            Pimcore\File::mkdir(Plugin::PLUGIN_PATH_STATIC, 0775, true);
         }
 
         // Dir document
-        $dirDocument = $dirTmp . DIRECTORY_SEPARATOR . $document->getId();
+        $dirDocument = Plugin::PLUGIN_PATH_STATIC . DIRECTORY_SEPARATOR . $document->getId();
         if (!file_exists($dirDocument)) {
             Pimcore\File::mkdir($dirDocument, 0775, true);
         }

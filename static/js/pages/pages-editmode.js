@@ -50,41 +50,14 @@ $(document).ready(function () {
         $(this).addClass('selected');
     }
 
-    /**
-     * Change CSS for the box-w2p selected
-     */
-    function activeElementW2p(element) {
-        var zindex = 0;
-
-        $('.element-w2p').each(function () {
-            if (parseInt($(this).css('z-index')) > zindex) {
-                zindex = parseInt($(this).css('z-index'));
-            }
-        });
-        element.css({"z-index": zindex + 1});
-
-        // delete css class "selected"
-        $('.element-w2p.selected').removeClass('selected');
-
-        // Add css class for the current element
-        element.addClass('selected');
-    }
-
     // Initializaion of widgets box-w2p
     $('.box-w2p').each(function () {
         setElementWidgetUi($(this));
     });
 
-    // Initializaion of widgets element-w2p
-    body.on('click', ".element-w2p", function () {
-        setElementWidgetUi($(this));
-        activeElementW2p($(this));
-    });
-
     // Delete area active
     body.on('click', '#unselected', function () {
         $('.box-w2p.selected').removeClass('selected');
-        $('.element-w2p.selected').removeClass('selected');
     });
 
     // Activation area

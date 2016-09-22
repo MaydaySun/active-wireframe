@@ -1,3 +1,4 @@
+<?= $this->includePathCss; ?>
 <?php if ($this->editmode) { ?>
 
     <link href="/plugins/ActiveWireframe/static/css/pages/pages-editmode.css?v=<?= $this->version; ?>" rel="stylesheet">
@@ -15,11 +16,11 @@
         }
 
         #slider-range-v .slider-handle-v {
-            width: calc(<?= $this->pageWidthLandmark; ?> +10px) !important;
+            width: calc(<?= $this->pageWidthLandmark; ?> + 10px) !important;
         }
 
         #slider-range-h .slider-handle-h {
-            height: calc(<?= $this->pageHeightLandmark; ?> +10px) !important;
+            height: calc(<?= $this->pageHeightLandmark; ?> + 10px) !important;
         }
     </style>
 
@@ -145,7 +146,6 @@
     </div>
 
 <?php if ($this->editmode) { ?>
-
     <script src="/plugins/ActiveWireframe/static/js/pages/pages-editmode.js?v=<?= $this->version; ?>"></script>
-
+    <?= $this->includePathJS; ?>
 <?php } ?>

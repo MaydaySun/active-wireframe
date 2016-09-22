@@ -28,7 +28,6 @@
     <script
         src="/plugins/ActiveWireframe/static/jquery-plugins/jquery-ui-rotatable/jquery.ui.rotatable.min.js"></script>
     <script src="/plugins/ActiveWireframe/static/jquery-plugins/jquery.scrollUp/jquery.scrollUp.js"></script>
-    <script src="/plugins/ActiveWireframe/static/jquery-plugins/jquery_lazyload-1.9.7/jquery.lazyload.min.js"></script>
     <script src="/plugins/ActiveWireframe/static/js/jquery-plugins.js?v=<?= $this->version; ?>"></script>
 
     <!-- Editmode -->

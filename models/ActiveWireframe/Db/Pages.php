@@ -19,8 +19,7 @@
 namespace ActiveWireframe\Db;
 
 use Pimcore\Db;
-use Pimcore\Model\Document\Printcontainer;
-use Pimcore\Model\Document\Printpage;
+use Pimcore\Model\Document;
 
 \Zend_Db_Table::setDefaultAdapter(Db::get()->getResource());
 
@@ -33,12 +32,12 @@ class Pages extends \Zend_Db_Table
     protected $_name = "_active_wireframe_pages";
 
     /**
-     * @param Printpage $document
+     * @param Document $document
      * @param $catalogId
      * @param array $conf
      * @return bool|mixed
      */
-    public function insertPage(Printpage $document, $catalogId, $conf = [])
+    public function insertPage(Document $document, $catalogId, $conf = [])
     {
         $products = array_key_exists('products', $conf)
             ? \Zend_Json_Encoder::encode($conf['products'])
@@ -64,10 +63,10 @@ class Pages extends \Zend_Db_Table
     }
 
     /**
-     * @param Printcontainer $chapter
+     * @param Document $chapter
      * @return mixed
      */
-    public function insertChapter(Printcontainer $chapter)
+    public function insertChapter(Document $chapter)
     {
         $data = [
             "document_id" => $chapter->getId(),

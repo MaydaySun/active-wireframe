@@ -314,11 +314,7 @@ class Handler
                         $dbElements->deleteByKey('document_id', $document->getId());
 
                         // Delete directory
-                        $dirTmp = PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR
-                            . "activetmp" . DIRECTORY_SEPARATOR
-                            . Plugin::PLUGIN_NAME . DIRECTORY_SEPARATOR
-                            . $document->getId();
-
+                        $dirTmp = Plugin::PLUGIN_PATH_STATIC  . DIRECTORY_SEPARATOR . $document->getId();
                         if (file_exists($dirTmp)) {
                             File::rm($dirTmp);
                         }

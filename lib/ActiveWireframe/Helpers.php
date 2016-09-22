@@ -62,14 +62,11 @@ class Helpers
         $widthWk = number_format($width * 0.50);
 
         // Dir tmp
-        $dirTmp = PIMCORE_DOCUMENT_ROOT . DIRECTORY_SEPARATOR
-            . "activetmp" . DIRECTORY_SEPARATOR
-            . Plugin::PLUGIN_NAME . DIRECTORY_SEPARATOR
-            . $document->getId();
+        $dirTmp = Plugin::PLUGIN_PATH_STATIC . DIRECTORY_SEPARATOR . $document->getId();
 
         // path thumbnail
         if (!file_exists($dirTmp)) {
-            File::mkdir($dirTmp);
+            File::mkdir($dirTmp, 0775, true);
         }
 
         $url = Tool::getHostUrl() . $document->getFullPath() . '?forcearea=true';

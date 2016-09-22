@@ -27,25 +27,27 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 {
     const PLUGIN_NAME = "ActiveWireframe";
 
-    const PLUGIN_PATH = PIMCORE_PLUGINS_PATH . '/' . self::PLUGIN_NAME;
+    const PLUGIN_PATH = PIMCORE_PLUGINS_PATH . DIRECTORY_SEPARATOR . self::PLUGIN_NAME;
 
-    const PLUGIN_PATH_TMP = PIMCORE_DOCUMENT_ROOT . "/activetmp/" . self::PLUGIN_NAME;
+    const PLUGIN_PATH_STATIC = PIMCORE_DOCUMENT_ROOT . "/static-plugins/" . self::PLUGIN_NAME;
 
-    const PLUGIN_PATH_INSTALL = self::PLUGIN_PATH . '/static/install';
+    const PLUGIN_PATH_INSTALL = self::PLUGIN_PATH . "/static/install";
 
-    const PLUGIN_PATH_TRANSLATION = self::PLUGIN_PATH . '/static/texts';
+    const PLUGIN_PATH_TRANSLATION = self::PLUGIN_PATH . "/static/texts";
 
-    const PLUGIN_PATH_INSTALL_TABLES = self::PLUGIN_PATH_INSTALL . '/tables.json';
+    const PLUGIN_PATH_INSTALL_TABLES = self::PLUGIN_PATH_INSTALL . "/tables.json";
 
-    const PLUGIN_PATH_INSTALL_DOCTYPES = self::PLUGIN_PATH_INSTALL . '/doctypes.json';
+    const PLUGIN_PATH_INSTALL_DOCTYPES = self::PLUGIN_PATH_INSTALL . "/doctypes.json";
 
-    const PLUGIN_PATH_INSTALL_AREAS = self::PLUGIN_PATH_INSTALL . '/areas';
+    const PLUGIN_PATH_INSTALL_AREAS = self::PLUGIN_PATH_INSTALL . "/areas";
 
     const PLUGIN_VAR_PATH = PIMCORE_WEBSITE_VAR . "/plugins/" . self::PLUGIN_NAME;
 
-    const PLUGIN_VAR_PATH_INSTALL = self::PLUGIN_VAR_PATH . '/install.txt';
+    const PLUGIN_VAR_PATH_INSTALL = self::PLUGIN_VAR_PATH . "/install.txt";
 
-    const PLUGIN_VAR_PATH_UNINSTALL = self::PLUGIN_VAR_PATH . '/uninstall.txt';
+    const PLUGIN_VAR_PATH_UNINSTALL = self::PLUGIN_VAR_PATH . "/uninstall.txt";
+
+    const AW_EXTENSION_URL = "http://plugins-extensions.activepublishing.fr?module=ActiveWireframe";
 
     public static $_needsReloadAfterInstall = false;
 
