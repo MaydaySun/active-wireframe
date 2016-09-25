@@ -33,8 +33,6 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
     const PLUGIN_WEBSITE_STATIC = PIMCORE_WEBSITE_PATH . "/static-plugins/" . self::PLUGIN_NAME;
 
-    const PLUGIN_EXTENSION_URL = "http://plugins-extensions.activepublishing.fr?module=ActiveWireframe";
-
     const ASSET_PAGES_TEMPLATES = "/gabarits-de-pages";
 
     public static $_needsReloadAfterInstall = false;

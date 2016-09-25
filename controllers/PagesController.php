@@ -9,6 +9,7 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
+use ActivePublishing\Service\Extension;
 use ActivePublishing\Service\Tool;
 use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
@@ -130,24 +131,9 @@ class ActiveWireframe_PagesController extends Action
         }
 
         // Module Extensions
-        $awExtension = \Zend_Json::decode(Tool::getHttpData(Plugin::AW_EXTENSION_URL));
-        if ($awExtension['success']) {
-
-            $includePathJS = "";
-            if (!empty($awExtension['include_js'])) {
-                foreach ($awExtension['include_js'] as $fileJs) {
-                    $includePathJS .= '<script src="' . $fileJs . '"></script>';
-                }
-            }
-            $this->view->includePathJS = $includePathJS;
-
-            $includePathCss = "";
-            if (!empty($awExtension['include_css'])) {
-                foreach ($awExtension['include_css'] as $fileCss) {
-                    $includePathCss = $includePathCss . '<link href="' . $fileCss . '" rel="stylesheet">';
-                }
-            }
-            $this->view->includePathCSS = $includePathCss;
+        if ($includeExt = Extension::getInstance(Plugin::PLUGIN_NAME)->check()){
+            $this->view->includePathJS = $includeExt['js'];
+            $this->view->includePathCSS = $includeExt['css'];
         }
 
         // ActivePaginate Plugin integration
