@@ -1,7 +1,7 @@
 {
   "name": "doctypes",
   "structure": {
-    "Catalogue": {
+    "active_wireframe_doctype_catalog": {
       "module": "ActiveWireframe",
       "controller": "create",
       "action": "form",
@@ -11,7 +11,7 @@
       "creationDate": "",
       "modificationDate": ""
     },
-    "Chapitre": {
+    "active_wireframe_doctype_chapter": {
       "module": "ActiveWireframe",
       "controller": "catalogs",
       "action": "tree",
@@ -21,7 +21,7 @@
       "creationDate": "",
       "modificationDate": ""
     },
-    "Page": {
+    "active_wireframe_doctype_page": {
       "module": "ActiveWireframe",
       "controller": "pages",
       "action": "pages",

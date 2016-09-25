@@ -11,9 +11,7 @@
  */
 namespace ActiveWireframe;
 
-use ActivePublishing\Plugin\Service;
-use ActivePublishing\Services\DocType;
-use ActivePublishing\Services\Table;
+use ActivePublishing\Plugin\Service\Install;
 use ActiveWireframe\Pimcore\Console\Command\Web2PrintPdfCreationCommand;
 use Pimcore\API\Plugin as PluginLib;
 use Pimcore\Model\Asset;
@@ -29,29 +27,20 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
     const PLUGIN_PATH = PIMCORE_PLUGINS_PATH . DIRECTORY_SEPARATOR . self::PLUGIN_NAME;
 
-    const PLUGIN_PATH_STATIC = PIMCORE_WEBSITE_PATH . "/static-plugins/" . self::PLUGIN_NAME;
-
-    const PLUGIN_PATH_INSTALL = self::PLUGIN_PATH . "/static/install";
-
-    const PLUGIN_PATH_TRANSLATION = self::PLUGIN_PATH . "/static/texts";
-
-    const PLUGIN_PATH_INSTALL_TABLES = self::PLUGIN_PATH_INSTALL . "/tables.json";
-
-    const PLUGIN_PATH_INSTALL_DOCTYPES = self::PLUGIN_PATH_INSTALL . "/doctypes.json";
-
-    const PLUGIN_PATH_INSTALL_AREAS = self::PLUGIN_PATH_INSTALL . "/areas";
-
     const PLUGIN_VAR_PATH = PIMCORE_WEBSITE_VAR . "/plugins/" . self::PLUGIN_NAME;
 
-    const PLUGIN_VAR_PATH_INSTALL = self::PLUGIN_VAR_PATH . "/install.txt";
+    const PLUGIN_VAR_PATH_INSTALL = self::PLUGIN_VAR_PATH . "/install.json";
 
-    const PLUGIN_VAR_PATH_UNINSTALL = self::PLUGIN_VAR_PATH . "/uninstall.txt";
+    const PLUGIN_WEBSITE_STATIC = PIMCORE_WEBSITE_PATH . "/static-plugins/" . self::PLUGIN_NAME;
 
-    const AW_EXTENSION_URL = "http://plugins-extensions.activepublishing.fr?module=ActiveWireframe";
+    const PLUGIN_EXTENSION_URL = "http://plugins-extensions.activepublishing.fr?module=ActiveWireframe";
+
+    const ASSET_PAGES_TEMPLATES = "/gabarits-de-pages";
 
     public static $_needsReloadAfterInstall = false;
 
     /**
+     * @static
      * @return string
      */
     public static function needsReloadAfterInstall()
@@ -60,6 +49,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     }
 
     /**
+     * @static
      * @return mixed
      */
     public static function install()
@@ -69,49 +59,15 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
         }
 
         try {
-            $plugin = new Service();
 
-            // Install translation plugin
-            $plugin->createTranslation(self::PLUGIN_PATH_TRANSLATION, self::getPrefixTranslate());
-
-            // Add area directory
-            if (file_exists(self::PLUGIN_PATH_INSTALL_AREAS)) {
-                $plugin->createAreas(self::PLUGIN_PATH_INSTALL_AREAS);
-            }
-
-            // Add Tables
-            if (file_exists(self::PLUGIN_PATH_INSTALL_TABLES)) {
-                Table::createFromJson(self::PLUGIN_PATH_INSTALL_TABLES);
-            }
-
-            // Add doctypes
-            if (file_exists(self::PLUGIN_PATH_INSTALL_DOCTYPES)) {
-                DocType::createFromJson(self::PLUGIN_PATH_INSTALL_DOCTYPES);
-            }
-
-            // Add thumbnail active-wireframe-preview
-            if (!Asset\Image\Thumbnail\Config::getByAutoDetect("active-wireframe-preview")) {
-                $pipe = new Asset\Image\Thumbnail\Config();
-                $pipe->setName("active-wireframe-preview");
-                $pipe->setQuality(80);
-                $pipe->setFormat("PNG");
-                $pipe->save();
-            }
-
-            // Add thumbnail active-wireframe-preview
-            if (!Asset\Image\Thumbnail\Config::getByAutoDetect("active-wireframe-print")) {
-                $pipe = new Asset\Image\Thumbnail\Config();
-                $pipe->setName("active-wireframe-print");
-                $pipe->setQuality(100);
-                $pipe->setFormat("PNG");
-                $pipe->setHighResolution(3.2);
-                $pipe->save();
-            }
-
-            // Create template directory
+            self::createThumbnails();
             self::createDirectoryTemplates();
+            Install::installTable(self::PLUGIN_PATH . "/static/install/tables.json");
+            Install::installDocType(self::PLUGIN_PATH . "/static/install/doctypes.json");
+            Install::installDefaultArea(self::PLUGIN_PATH . "/static/install/areas");
+            Install::installTranslationAdmin(self::PLUGIN_PATH . "/static/install/texts.csv");
+            Install::createLogInstall(1, self::PLUGIN_VAR_PATH_INSTALL);
 
-            $plugin->createFileInstall(true, self::PLUGIN_VAR_PATH_INSTALL, self::PLUGIN_VAR_PATH_UNINSTALL);
         } catch (\Exception $ex) {
             return $ex->getMessage();
         }
@@ -121,6 +77,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     }
 
     /**
+     * @static
      * @return bool
      */
     public static function composerExists()
@@ -129,29 +86,48 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     }
 
     /**
-     * @return string
-     */
-    private static function getPrefixTranslate()
-    {
-        return mb_strtolower(preg_replace('/(?=(?<!^)[[:upper:]])/', '_', self::PLUGIN_NAME) . "_");
-    }
-
-    /**
-     * Create directory template
+     * Create thumbnails
+     *
+     * @static
      * @throws \Exception
      */
-    public static function createDirectoryTemplates()
+    private static function createThumbnails()
     {
-        // création du dossier asset Template
-        $assetRoot = Asset\Folder::getByPath("/gabarits-de-pages");
+        // Add thumbnail active-wireframe-preview
+        if (!Asset\Image\Thumbnail\Config::getByAutoDetect("active-wireframe-preview")) {
+            $pipe = new Asset\Image\Thumbnail\Config();
+            $pipe->setName("active-wireframe-preview");
+            $pipe->setQuality(90);
+            $pipe->setFormat("PNG");
+            $pipe->save();
+        }
 
-        if (!$assetRoot instanceof Asset\Folder) {
-            $fichierRacine = Asset::getById(1);
-            Asset\Service::createFolderByPath($fichierRacine->getFullPath() . '/gabarits-de-pages');
+        // Add thumbnail active-wireframe-preview
+        if (!Asset\Image\Thumbnail\Config::getByAutoDetect("active-wireframe-print")) {
+            $pipe = new Asset\Image\Thumbnail\Config();
+            $pipe->setName("active-wireframe-print");
+            $pipe->setQuality(100);
+            $pipe->setFormat("PNG");
+            $pipe->setHighResolution(3.2);
+            $pipe->save();
         }
     }
 
     /**
+     * Create directory pages template
+     *
+     * @static
+     * @throws \Exception
+     */
+    private static function createDirectoryTemplates()
+    {
+        if (!Asset\Service::pathExists(self::ASSET_PAGES_TEMPLATES)) {
+            Asset\Service::createFolderByPath(self::ASSET_PAGES_TEMPLATES);
+        }
+    }
+
+    /**
+     * @static
      * @return string
      */
     public static function uninstall()
@@ -161,12 +137,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
         }
 
         try {
-            $plugin = new Service();
-
-            // Uninstall translation
-            $plugin->rmTranslation(self::PLUGIN_PATH_TRANSLATION, self::getPrefixTranslate());
-
-            $plugin->createFileInstall(false, self::PLUGIN_VAR_PATH_INSTALL, self::PLUGIN_VAR_PATH_UNINSTALL);
+            Install::createLogInstall(0, self::PLUGIN_VAR_PATH_INSTALL);
         } catch (\Exception $ex) {
             return $ex->getMessage();
         }
@@ -176,11 +147,12 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     }
 
     /**
+     * @static
      * @return bool
      */
     public static function isInstalled()
     {
-        return file_exists(self::PLUGIN_VAR_PATH_INSTALL);
+        return Install::isInstalled(self::PLUGIN_VAR_PATH_INSTALL);
     }
 
     /**
@@ -193,18 +165,16 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
         // document.postAdd
         \Pimcore::getEventManager()->attach("document.postAdd", function (\Zend_EventManager_Event $e) {
             try {
-                $handler = new Handler();
-                $handler->postAdd($e);
+                Handler::getInstance()->postAdd($e);
             } catch (\Exception $ex) {
                 throw new ValidationException($ex->getMessage(), $ex->getCode());
             }
         });
 
-        //document.postUpdate
+        // document.postUpdate
         \Pimcore::getEventManager()->attach("document.postUpdate", function (\Zend_EventManager_Event $e) {
             try {
-                $handler = new Handler();
-                $handler->postUpdate($e);
+                Handler::getInstance()->postUpdate($e);
             } catch (\Exception $ex) {
                 throw new ValidationException($ex->getMessage(), $ex->getCode());
             }
@@ -213,17 +183,15 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
         // document.postDelete
         \Pimcore::getEventManager()->attach("document.postDelete", function (\Zend_EventManager_Event $e) {
             try {
-                $handler = new Handler();
-                $handler->postDelete($e);
+                Handler::getInstance()->postDelete($e);
             } catch (\Exception $ex) {
                 throw new ValidationException($ex->getMessage(), $ex->getCode());
             }
         });
 
-        // Console
+        // add a single command
         \Pimcore::getEventManager()->attach('system.console.init', function (\Zend_EventManager_Event $e) {
             $application = $e->getTarget();
-            // add a single command
             $application->add(new Web2PrintPdfCreationCommand());
         });
     }

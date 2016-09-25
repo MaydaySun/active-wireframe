@@ -28,7 +28,27 @@ use Pimcore\Db;
  */
 class Elements extends \Zend_Db_Table
 {
+    /**
+     * @var Elements
+     */
+    protected static $_instance;
+    /**
+     * @var string
+     */
     protected $_name = "_active_wireframe_elements";
+
+    /**
+     * Retrieve singleton instance
+     *
+     * @return Elements
+     */
+    public static function getInstance()
+    {
+        if (null === self::$_instance) {
+            self::$_instance = new self();
+        }
+        return self::$_instance;
+    }
 
     /**
      * @param $documentId

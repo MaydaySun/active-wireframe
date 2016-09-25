@@ -29,7 +29,29 @@ use Pimcore\Model\Document;
  */
 class Pages extends \Zend_Db_Table
 {
+    /**
+     * @static
+     * @var Pages
+     */
+    protected static $_instance;
+    /**
+     * @var string
+     */
     protected $_name = "_active_wireframe_pages";
+
+    /**
+     * Retrieve singleton instance
+     *
+     * @static
+     * @return Pages
+     */
+    public static function getInstance()
+    {
+        if (null === self::$_instance) {
+            self::$_instance = new self();
+        }
+        return self::$_instance;
+    }
 
     /**
      * @param Document $document
@@ -90,6 +112,10 @@ class Pages extends \Zend_Db_Table
         return $this->delete($wherePage);
     }
 
+    /**
+     * @param $documentId
+     * @return array|bool
+     */
     public function getCatalogByDocumentId($documentId)
     {
         $pinfo = $this->getPageByDocumentId($documentId);

@@ -9,12 +9,11 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-use ActivePublishing\Services\Util;
+use ActivePublishing\Service\Tool;
 use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Helpers;
 use ActiveWireframe\Plugin;
-use Pimcore\Tool;
 use Website\Controller\Action;
 
 /**
@@ -22,6 +21,9 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_PagesController extends Action
 {
+    /**
+     * Init
+     */
     public function init()
     {
         parent::init();
@@ -56,10 +58,10 @@ class ActiveWireframe_PagesController extends Action
         $this->view->numPage = intval($this->document->getKey());
         $this->view->baseUrl = Tool::getHostUrl();
         $this->view->areadir = Helpers::getAreaByRole($forcearea);
-        $this->view->version = Util::getPluginVersion(Plugin::PLUGIN_NAME);
+        $this->view->version = Tool::getPluginVersion(Plugin::PLUGIN_NAME);
 
         // instance ActiveWireframe\Db\Pages
-        $dbPage = new Pages();
+        $dbPage = Pages::getInstance();
 
         // Retrieve page informations
         $pinfo = $dbPage->getPageByDocumentId($this->document->getId());
@@ -149,7 +151,7 @@ class ActiveWireframe_PagesController extends Action
         }
 
         // ActivePaginate Plugin integration
-        if (Util::pluginIsInstalled('ActivePaginate')) {
+        if (Tool::pluginIsInstalled('ActivePaginate')) {
             $this->view->activepaginate = true;
             $this->view->gridCol = ($pinfo['grid_col'] != 0) ? $pinfo['grid_col'] : 3;
             $this->view->gridRow = ($pinfo['grid_row'] != 0) ? $pinfo['grid_row'] : 4;
@@ -157,14 +159,14 @@ class ActiveWireframe_PagesController extends Action
     }
 
     /**
+     * Get Data elements
+     *
      * @param $documentId
      * @return array
      */
     public function getElements($documentId)
     {
-        $dbElement = new Elements();
-        $elements = $dbElement->getElementsByDocumentId(intval($documentId));
-
+        $elements = Elements::getInstance()->getElementsByDocumentId(intval($documentId));
         $collection = [];
         foreach ($elements as $element) {
             $collection[$element['e_key']] = $element;

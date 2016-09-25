@@ -9,7 +9,7 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-use ActivePublishing\Services\Response;
+use ActivePublishing\Service\Tool;
 use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Helpers;
@@ -23,6 +23,9 @@ use Website\Controller\Action;
 class ActiveWireframe_ElementsController extends Action
 {
 
+    /**
+     * Init
+     */
     public function init()
     {
         parent::init();
@@ -39,6 +42,7 @@ class ActiveWireframe_ElementsController extends Action
 
     /**
      * Save box-w2p
+     *
      * @return int
      */
     public function saveBoxW2pAction()
@@ -46,18 +50,15 @@ class ActiveWireframe_ElementsController extends Action
         // Retrieve elements for saving
         if ($this->hasParam('id') and $this->hasParam('box') and !empty($this->getParam('box'))) {
 
-            // Instance
-            $dbPages = new Pages();
-            $dbElement = new Elements();
-
             $id_document = $this->getParam("id");
             $document = Printpage::getById($id_document);
 
             // Delete informations
+            $dbElement = Elements::getInstance();
             $dbElement->deleteByKey('document_id', $document->getId());
 
             // Retrieve catalog
-            $cinfo = $dbPages->getCatalogByDocumentId($document->getId());
+            $cinfo = Pages::getInstance()->getCatalogByDocumentId($document->getId());
 
             // Elements to encode
             $elements = \json_decode($this->getParam('box'));
@@ -87,25 +88,23 @@ class ActiveWireframe_ElementsController extends Action
 
         }
 
-        return Response::setResponseJson([
-            "success" => true
-        ]);
+        return Tool::sendJson(["success" => true]);
     }
 
     /**
+     * Save data in database
+     *
      * @param Printpage $document
      * @param $elementW2p
      * @param $oId
      */
     public function saveElementW2p(Printpage $document, $elementW2p, $oId)
     {
-        // Directory PLUGIN_PATH_STATIC
-        if (!file_exists(Plugin::PLUGIN_PATH_STATIC)) {
-            Pimcore\File::mkdir(Plugin::PLUGIN_PATH_STATIC, 0775, true);
+        if (!file_exists(Plugin::PLUGIN_WEBSITE_STATIC)) {
+            Pimcore\File::mkdir(Plugin::PLUGIN_WEBSITE_STATIC, 0775, true);
         }
 
-        // Dir document
-        $dirDocument = Plugin::PLUGIN_PATH_STATIC . DIRECTORY_SEPARATOR . $document->getId();
+        $dirDocument = Plugin::PLUGIN_WEBSITE_STATIC . DIRECTORY_SEPARATOR . $document->getId();
         if (!file_exists($dirDocument)) {
             Pimcore\File::mkdir($dirDocument, 0775, true);
         }
@@ -116,16 +115,13 @@ class ActiveWireframe_ElementsController extends Action
 
                 if (ctype_digit($oId)) {
 
-                    // Dir element
                     $dirElement = $dirDocument . DIRECTORY_SEPARATOR . $oId . DIRECTORY_SEPARATOR
                         . 'element-w2p-' . $element->key . '.json';
 
-                    // Delete json file
                     if (file_exists($dirElement)) {
                         @unlink($dirElement);
                     }
 
-                    // Retrieve data
                     $data = array(
                         'o_id' => $oId,
                         'e_key' => $element->key,

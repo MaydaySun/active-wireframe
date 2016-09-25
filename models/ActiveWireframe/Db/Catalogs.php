@@ -10,6 +10,7 @@
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 namespace ActiveWireframe\Db;
+
 use Pimcore\Db;
 use Pimcore\Model\Document\Printcontainer;
 
@@ -21,7 +22,27 @@ use Pimcore\Model\Document\Printcontainer;
  */
 class Catalogs extends \Zend_Db_Table
 {
+    /**
+     * @var Catalogs
+     */
+    protected static $_instance;
+    /**
+     * @var string
+     */
     protected $_name = "_active_catalogs";
+
+    /**
+     * Retrieve singleton instance
+     *
+     * @return Catalogs
+     */
+    public static function getInstance()
+    {
+        if (null === self::$_instance) {
+            self::$_instance = new self();
+        }
+        return self::$_instance;
+    }
 
     /**
      * @param Printcontainer $document

@@ -11,7 +11,7 @@
  */
 namespace ActiveWireframe;
 
-use ActivePublishing\Services\Util;
+use ActivePublishing\Service\Tool;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Pimcore\Image\HtmlToImage;
 use Pimcore\File;
@@ -21,7 +21,6 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Document\Printcontainer;
 use Pimcore\Model\Document\Printpage;
 use Pimcore\Model\User;
-use Pimcore\Tool;
 
 /**
  * Class Helpers
@@ -29,9 +28,10 @@ use Pimcore\Tool;
  */
 class Helpers
 {
-
     /**
      * Reload thumbnail of catalog and chapter
+     *
+     * @static
      * @param Printcontainer $document
      * @param $width
      * @return int
@@ -53,6 +53,8 @@ class Helpers
 
     /**
      * Create a thumbnail for each  page
+     *
+     * @static
      * @param Document $document
      * @param $width
      * @return bool
@@ -62,7 +64,7 @@ class Helpers
         $widthWk = number_format($width * 0.50);
 
         // Dir tmp
-        $dirTmp = Plugin::PLUGIN_PATH_STATIC . DIRECTORY_SEPARATOR . $document->getId();
+        $dirTmp = Plugin::PLUGIN_WEBSITE_STATIC . DIRECTORY_SEPARATOR . $document->getId();
 
         // path thumbnail
         if (!file_exists($dirTmp)) {
@@ -81,6 +83,8 @@ class Helpers
 
     /**
      * Create a new pagination
+     *
+     * @static
      * @param Printcontainer $document
      * @param int $index
      * @param array $noRename
@@ -100,10 +104,8 @@ class Helpers
                 if (ctype_digit($page->getKey())) {
 
                     try {
-
                         $page->setKey($index);
                         $page->save();
-
                     } catch (\Exception $ex) {
                         Logger::err($ex->getMessage());
                         return 0;
@@ -117,9 +119,7 @@ class Helpers
                 and $page->hasChilds()
                 and (!in_array($page->getKey(), $noRename))
             ) {
-
                 $index = self::generateNewPagination($page, $index, $noRename);
-
             }
 
         }
@@ -129,6 +129,8 @@ class Helpers
 
     /**
      * Reduction for thumb
+     *
+     * @static
      * @param $widthPage
      * @return int
      */
@@ -167,6 +169,8 @@ class Helpers
 
     /**
      * Convert px to mm
+     *
+     * @static
      * @param $pixels
      * @param int $dpi
      * @return float
@@ -178,6 +182,8 @@ class Helpers
 
     /**
      * Convert mm to px
+     *
+     * @static
      * @param $mm
      * @param int $dpi
      * @return float
@@ -188,6 +194,7 @@ class Helpers
     }
 
     /**
+     * @static
      * @param $key
      * @param $parentId
      * @param $catalogId
@@ -224,8 +231,7 @@ class Helpers
             $page = Printpage::create($parentId, $dataDocument);
 
             // Insert BD
-            $dbPages = new Pages();
-            $dbPages->insertPage($page, $catalogId, $configs);
+            Pages::getInstance()->insertPage($page, $catalogId, $configs);
 
             return $page;
         }
@@ -234,6 +240,7 @@ class Helpers
     }
 
     /**
+     * @static
      * @param $key
      * @param $parentId
      * @return Document
@@ -268,8 +275,7 @@ class Helpers
             $chapter = Printcontainer::create($parentId, $dataDocument);
 
             // Insert BD
-            $dbPages = new Pages();
-            $dbPages->insertChapter($chapter);
+            Pages::getInstance()->insertChapter($chapter);
 
             return $chapter;
         }
@@ -279,13 +285,15 @@ class Helpers
 
     /**
      * Get areas for the current user
+     *
+     * @static
      * @return string
      */
     public static function getAreaByRole($forcearea = false)
     {
         // Get user and role
-        $user = Tool\Admin::getCurrentUser();
-        $roles = Util::getRolesFromCurrentUser();
+        $user = Tool::getCurrentUser();
+        $roles = Tool::getRolesFromCurrentUser();
 
         // Default path
         $areaPath = '/website/views/areas';
@@ -325,6 +333,7 @@ class Helpers
     }
 
     /**
+     * @static
      * @param Document $page
      * @param $cinfo
      * @param $configThumbnail

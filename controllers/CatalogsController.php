@@ -9,14 +9,13 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-use ActivePublishing\Services\Document;
-use ActivePublishing\Services\Util;
+use ActivePublishing\Service\Note;
+use ActivePublishing\Service\Tool;
 use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Helpers;
 use ActiveWireframe\Plugin;
 use Pimcore\Model\Document\Printcontainer;
 use Pimcore\Model\Document\Printpage;
-use Pimcore\Tool;
 use Website\Controller\Action;
 
 /**
@@ -24,7 +23,9 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_CatalogsController extends Action
 {
-
+    /**
+     * Init
+     */
     public function init()
     {
         parent::init();
@@ -45,23 +46,17 @@ class ActiveWireframe_CatalogsController extends Action
 
         $this->view->baseUrl = Tool::getHostUrl();
         $this->view->documentId = $this->document->getId();
-        $this->view->version = Util::getPluginVersion(Plugin::PLUGIN_NAME);
+        $this->view->version = Tool::getPluginVersion(Plugin::PLUGIN_NAME);
     }
 
     /**
-     * Displays the wireframe
+     * Displays the wireframe tree
      */
     public function treeAction()
     {
         $document = $this->getParam("document");
-        if (!$document->isPublished()) {
-            $document->setPublished(1);
-            $document->save();
-        }
-
         if ($this->editmode) {
 
-            // Layout
             $this->enableLayout();
             $this->setLayout("index");
 
@@ -80,12 +75,12 @@ class ActiveWireframe_CatalogsController extends Action
                 $this->view->indiceFirstPage = $currentPage['indice'];
 
                 // Retrieve the dats of catalog
-                $dbCatalog = new Catalogs();
-                $catalog = $dbCatalog->getCatalogByDocumentId($document->getId());
+                $dbCatalogs = Catalogs::getInstance();
+                $catalog = $dbCatalogs->getCatalogByDocumentId($document->getId());
 
                 // Case of chapter
                 if (!$catalog) {
-                    $catalog = $dbCatalog->getCatalogByDocumentId($document->getParentId());
+                    $catalog = $dbCatalogs->getCatalogByDocumentId($document->getParentId());
                 }
                 $this->view->optionsCat = $catalog;
 
@@ -104,7 +99,7 @@ class ActiveWireframe_CatalogsController extends Action
                 // Thumbnail creation of new pages
                 foreach ($allPages['pages'] as $page) {
 
-                    $fileThumb = Plugin::PLUGIN_PATH_STATIC . DIRECTORY_SEPARATOR . $page['documentId'] . '.jpeg';
+                    $fileThumb = Plugin::PLUGIN_WEBSITE_STATIC . DIRECTORY_SEPARATOR . $page['documentId'] . '.jpeg';
                     if (!file_exists($fileThumb)) {
                         $printpage = Printpage::getById($page['documentId']);
                         Helpers::getPageThumbnailForTree($printpage, $widthPage);
@@ -115,17 +110,16 @@ class ActiveWireframe_CatalogsController extends Action
             $this->renderScript('catalogs/tree.php');
 
         } else {
-
             $document = $this->getParam("document");
             $allChildren = $document->getAllChildren();
             $this->view->allChildren = $allChildren;
             $this->renderScript('catalogs/webtoprint.php');
-
         }
     }
 
     /**
      * Retrieve the information from a catalog or chapter
+     *
      * @param Printcontainer $document
      * @param int $indice
      * @return array
@@ -133,7 +127,6 @@ class ActiveWireframe_CatalogsController extends Action
     public function getPages(Printcontainer $document, $indice = 0)
     {
         $pages = [];
-
         if ($document->hasChilds()) {
 
             foreach ($document->getChilds() as $child) {
@@ -143,7 +136,7 @@ class ActiveWireframe_CatalogsController extends Action
 
                     // Workflow plugin is installed
                     $pageStateWorkflow = false;
-                    if (Util::pluginIsInstalled('ActiveWorkflow')) {
+                    if (Tool::pluginIsInstalled('ActiveWorkflow')) {
 
                         $classAWPages = "\\ActiveWorkflow\\Db\\Pages";
                         $dbAWPages = new $classAWPages();
@@ -165,7 +158,7 @@ class ActiveWireframe_CatalogsController extends Action
                         'documentId' => $child->getId(),
                         'key' => $child->getKey(),
                         'indice' => $indice,
-                        'notes' => Document::getNotes($child),
+                        'notes' => Note::getNotes($child),
                         'workflow' => (is_array($pageStateWorkflow)) ? $pageStateWorkflow : []
                     ];
 
@@ -179,10 +172,7 @@ class ActiveWireframe_CatalogsController extends Action
             }
         }
 
-        return [
-            'pages' => $pages,
-            'indice' => $indice
-        ];
+        return ['pages' => $pages, 'indice' => $indice];
     }
 
 }

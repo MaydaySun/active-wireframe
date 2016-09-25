@@ -9,9 +9,8 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-use ActivePublishing\Services\Response;
-use ActivePublishing\Services\Translation;
-use ActivePublishing\Services\Util;
+use ActivePublishing\Service\Tool;
+use ActivePublishing\Service\Translation;
 use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Helpers;
 use ActiveWireframe\Plugin;
@@ -24,6 +23,9 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_CreateController extends Action
 {
+    /**
+     * Init
+     */
     public function init()
     {
         parent::init();
@@ -52,11 +54,11 @@ class ActiveWireframe_CreateController extends Action
         $this->setLayout("index");
 
         $this->view->documentId = $this->document->getId();
-        $this->view->version = Util::getPluginVersion(Plugin::PLUGIN_NAME);
+        $this->view->version = Tool::getPluginVersion(Plugin::PLUGIN_NAME);
 
         // Paginate Form
         $this->view->templateFormPaginate = false;
-        if (Util::pluginIsInstalled('ActivePaginate')) {
+        if (Tool::pluginIsInstalled('ActivePaginate')) {
             $pluginName = call_user_func("\\ActivePaginate\\Plugin::PLUGIN_NAME");
             $this->view->templateFormPaginate = '/plugins/' . $pluginName . '/views/scripts/form.php';
         }
@@ -64,6 +66,7 @@ class ActiveWireframe_CreateController extends Action
 
     /**
      * Create catalog
+     *
      * @return int
      */
     public function catalogAction()
@@ -128,8 +131,7 @@ class ActiveWireframe_CreateController extends Action
         try {
 
             // Insert catalog informations in DB
-            $dbCatalog = new Catalogs();
-            $dbCatalog->insertCatalog($catalog, [
+            Catalogs::getInstance()->insertCatalog($catalog, [
                 "document_id" => $catalogId,
                 "format_width" => number_format($formatPageWidth, 2),
                 "format_height" => number_format($formatPageHeight, 2),
@@ -150,7 +152,7 @@ class ActiveWireframe_CreateController extends Action
             }
 
             // Active Paginate
-            if (Util::pluginIsInstalled('ActivePaginate')) {
+            if (Tool::pluginIsInstalled('ActivePaginate')) {
                 $indexPage = $this->createWithPaginate($indexPage, $catalogId);
             }
 
@@ -178,11 +180,9 @@ class ActiveWireframe_CreateController extends Action
 
             // Create static page
             if ($this->hasParam("pageStatic") and !empty($this->getParam("pageStatic"))) {
-
                 foreach ($this->getParam("pageStatic") as $keyPageStatic => $pageStatic) {
                     Helpers::createPage($pageStatic, $catalogId, $catalogId);
                 }
-
             }
 
             // Create Cover 3 and 4
@@ -196,22 +196,15 @@ class ActiveWireframe_CreateController extends Action
             $catalog->save();
 
         } catch (\Exception $ex) {
-
-            return Response::setResponseJson([
-                'success' => false,
-                'msg' => $ex->getMessage()
-            ]);
-
+            return Tool::sendJson(['success' => false, 'msg' => $ex->getMessage()]);
         }
 
-        return Response::setResponseJson([
-            'success' => true,
-            'msg' => Translation::get('active_wireframe_form_success')
-        ]);
+        return Tool::sendJson(['success' => true, 'msg' => Translation::get('active_wireframe_form_success')]);
     }
 
     /**
      * Create page with Active Paginate module
+     *
      * @param $indexPage
      * @param $documentId
      * @return bool
@@ -274,6 +267,7 @@ class ActiveWireframe_CreateController extends Action
 
     /**
      * Retrieve templates
+     *
      * @return int
      */
     public function getTemplatesAction()
@@ -292,7 +286,7 @@ class ActiveWireframe_CreateController extends Action
             $templates = $this->getAssetThumbnailByPath('/gabarits-de-pages/' . $format);
         }
 
-        return Response::setResponseJson([
+        return Tool::sendJson([
             'success' => !empty($templates),
             'templates' => $templates
         ]);
@@ -300,6 +294,7 @@ class ActiveWireframe_CreateController extends Action
 
     /**
      * Retrieve thumbnail for templates
+     *
      * @param $pathToFolderAsset
      * @param array $files
      * @return array
@@ -370,23 +365,17 @@ class ActiveWireframe_CreateController extends Action
                 // Download file
                 if (move_uploaded_file($file['tmp_name'], $filepath)) {
                     $files[] = $uploaddir . "/" . $file['name'];
-                } else {
 
-                    return Response::setResponseJson([
+                } else {
+                    return Tool::sendJson([
                         'success' => false,
                         'msg' => Translation::get('active_wireframe_error_uploadfiles')
                     ]);
-
                 }
             }
         }
 
-        return Response::setResponseJson([
-            'success' => true,
-            'msg' => '',
-            'files' => $files
-        ]);
-
+        return Tool::sendJson(['success' => true, 'msg' => '', 'files' => $files]);
     }
 
 }
