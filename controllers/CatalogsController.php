@@ -99,7 +99,7 @@ class ActiveWireframe_CatalogsController extends Action
                 // Thumbnail creation of new pages
                 foreach ($allPages['pages'] as $page) {
 
-                    $fileThumb = Plugin::PLUGIN_WEBSITE_STATIC . DIRECTORY_SEPARATOR . $page['documentId'] . '.jpeg';
+                    $fileThumb = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $page['documentId'] . '.jpeg';
                     if (!file_exists($fileThumb)) {
                         $printpage = Printpage::getById($page['documentId']);
                         Helpers::getPageThumbnailForTree($printpage, $widthPage);

@@ -64,7 +64,7 @@ class Helpers
         $widthWk = number_format($width * 0.50);
 
         // Dir tmp
-        $dirTmp = Plugin::PLUGIN_WEBSITE_STATIC . DIRECTORY_SEPARATOR . $document->getId();
+        $dirTmp = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $document->getId();
 
         // path thumbnail
         if (!file_exists($dirTmp)) {

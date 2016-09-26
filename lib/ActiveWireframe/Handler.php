@@ -132,9 +132,9 @@ class Handler
                             $dbPages->insert($pageCatalogue);
 
                             // Add data element-w2p and thumbnails
-                            if (file_exists(Plugin::PLUGIN_WEBSITE_STATIC . DIRECTORY_SEPARATOR . $sourceId)) {
-                                File::cp(Plugin::PLUGIN_WEBSITE_STATIC . DIRECTORY_SEPARATOR . $sourceId,
-                                    Plugin::PLUGIN_WEBSITE_STATIC . DIRECTORY_SEPARATOR . $document->getId());
+                            if (file_exists(Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $sourceId)) {
+                                File::cp(Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $sourceId,
+                                    Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $document->getId());
                             }
 
                         } catch (\Exception $ex) {
@@ -318,7 +318,7 @@ class Handler
                         $dbElements->deleteByKey('document_id', $document->getId());
 
                         // Delete directory
-                        $dirTmp = Plugin::PLUGIN_WEBSITE_STATIC  . DIRECTORY_SEPARATOR . $document->getId();
+                        $dirTmp = Plugin::PLUGIN_PATH_DATA  . DIRECTORY_SEPARATOR . $document->getId();
                         if (file_exists($dirTmp)) {
                             File::rm($dirTmp);
                         }

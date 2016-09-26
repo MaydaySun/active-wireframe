@@ -9,6 +9,7 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
+
 namespace ActiveWireframe;
 
 use ActivePublishing\Plugin\Service\Install;
@@ -27,11 +28,11 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
     const PLUGIN_PATH = PIMCORE_PLUGINS_PATH . DIRECTORY_SEPARATOR . self::PLUGIN_NAME;
 
+    const PLUGIN_PATH_DATA = PIMCORE_WEBSITE_PATH . "/plugins-data/" . self::PLUGIN_NAME;
+
     const PLUGIN_VAR_PATH = PIMCORE_WEBSITE_VAR . "/plugins/" . self::PLUGIN_NAME;
 
     const PLUGIN_VAR_PATH_INSTALL = self::PLUGIN_VAR_PATH . "/install.json";
-
-    const PLUGIN_WEBSITE_STATIC = PIMCORE_WEBSITE_PATH . "/static-plugins/" . self::PLUGIN_NAME;
 
     const ASSET_PAGES_TEMPLATES = "/gabarits-de-pages";
 
@@ -62,7 +63,8 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
             self::createDirectoryTemplates();
             Install::installTable(self::PLUGIN_PATH . "/static/install/tables.json");
             Install::installDocType(self::PLUGIN_PATH . "/static/install/doctypes.json");
-            Install::installDefaultArea(self::PLUGIN_PATH . "/static/install/areas");
+            Install::installAreas(self::PLUGIN_PATH . "/static/install/areas.zip",
+                PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "views/areas/active-wireframe");
             Install::installTranslationAdmin(self::PLUGIN_PATH . "/static/install/texts.csv");
             Install::createLogInstall(1, self::PLUGIN_VAR_PATH_INSTALL);
 

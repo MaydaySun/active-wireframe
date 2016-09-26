@@ -109,7 +109,7 @@
                 . DIRECTORY_SEPARATOR . $document['documentId']
                 . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
 
-            $absoluteFile  = \ActiveWireframe\Plugin::PLUGIN_WEBSITE_STATIC
+            $absoluteFile  = \ActiveWireframe\Plugin::PLUGIN_PATH_DATA
                 . DIRECTORY_SEPARATOR . $document['documentId']
                 . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
 
