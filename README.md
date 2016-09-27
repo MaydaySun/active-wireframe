@@ -12,3 +12,4 @@ _Versions :_
     * 2.2.0 : Active Paginate integration 
     * 2.3.0 : Active Web2print integration 
     * 2.3.1 : Integration ActiveWireframe Extensions
+    * 2.3.2 : Add controller WireframeAction
