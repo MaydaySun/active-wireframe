@@ -26,6 +26,11 @@ use Website\Controller\Action;
 class WireframeAction extends Action
 {
     /**
+     * @var string
+     */
+    public $_language;
+
+    /**
      * @var int
      */
     public $_documentId;
@@ -60,6 +65,9 @@ class WireframeAction extends Action
 
         $this->_documentId = intval($this->getDocument()->getId());
         $this->_pluginsDataDocument = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $this->_documentId;
+
+        // language
+        $this->_language = $this->language;
 
         // send var in view
         $this->view->baseHost = Tool::getHostUrl();
