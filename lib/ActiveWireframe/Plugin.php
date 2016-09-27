@@ -152,7 +152,11 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
      */
     public static function isInstalled()
     {
-        return Install::isInstalled(self::PLUGIN_VAR_PATH_INSTALL);
+        if (file_exists(self::PLUGIN_VAR_PATH_INSTALL)) {
+            $conf= new \Zend_Config_Json(self::PLUGIN_VAR_PATH_INSTALL);
+            return intval($conf->get('installed'));
+        }
+        return 0;
     }
 
     /**

@@ -9,6 +9,7 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
+
 namespace ActiveWireframe\Db;
 
 use Pimcore\Db;
@@ -23,9 +24,11 @@ use Pimcore\Model\Document\Printcontainer;
 class Catalogs extends \Zend_Db_Table
 {
     /**
+     * @static
      * @var Catalogs
      */
     protected static $_instance;
+
     /**
      * @var string
      */
