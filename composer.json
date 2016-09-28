@@ -1,0 +1,20 @@
+{
+  "name": "activepublishing/active-wireframe",
+  "description": "Plugin for managing briefs of your catalogs, brochures, flyers, books, magazines...",
+  "type": "pimcore-plugin",
+  "license": "GPL-3.0+",
+  "keywords": ["pimcore","activepublishing","wireframe"],
+  "homepage": "http://http://activepublishing.fr/",
+  "authors": [
+    {
+      "name": "Active Publishing Team",
+      "email": "contact@active-publishing.fr",
+      "homepage": "http://activepublishing.fr/",
+      "role": "Developer"
+    }
+  ],
+  "require": {
+    "php": ">=5.6.0",
+    "pimcore/installer-plugin": "~1.3"
+  }
+}
