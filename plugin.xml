@@ -12,7 +12,7 @@
 
         <!-- meta data -->
         <pluginVersion>2.3.2</pluginVersion>
-        <pluginRevision>3</pluginRevision>
+        <pluginRevision>4</pluginRevision>
         <pluginBuildTimestamp>0</pluginBuildTimestamp>
 
         <!-- className of the plugin which extends Pimcore_API_Plugin_Abstract-->

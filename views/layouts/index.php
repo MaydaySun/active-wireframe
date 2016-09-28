@@ -16,7 +16,6 @@
     <link href="/plugins/ActiveWireframe/static/css/reset-css.css" rel="stylesheet">
 
     <script src="/pimcore/static/js/pimcore/functions.js?v=<?= $this->version; ?>"></script>
-    <script src="/plugins/ActiveWireframe/static/js/functions.js?v=<?= $this->version; ?>"></script>
 
     <!-- jQuery -->
     <script src="/plugins/ActiveWireframe/static/js/jquery-3.1.0.min.js"></script>

@@ -10,6 +10,12 @@
             background-size: <?= $this->pageWidthLandmark; ?> <?= $this->pageHeightLandmark; ?>;
         }
 
+        #activeWireframe .box-w2p-full {
+            width: <?= $this->pageWidthLandmark ?> !important;
+            height: <?= $this->pageHeightLandmark ?> !important;
+            position: absolute;
+        }
+
         #activeWireframe .pimcore_area_dropzone {
             width: <?= $this->pageWidthLandmark; ?> !important;
             height: <?= $this->pageHeightLandmark; ?> !important;
@@ -47,7 +53,7 @@
 <input type="hidden" name="paddingRight" value=" <?= $this->paddingRight; ?>"/>
 <input type="hidden" name="paddingTop" value="<?= $this->paddingTop; ?>"/>
 <input type="hidden" name="paddingBottom" value="<?= $this->paddingBottom; ?>"/>
-    <input type="hidden" name="pageWidthLandmark" value="<?= $this->pageWidthLandmark; ?>"/>
+<input type="hidden" name="pageWidthLandmark" value="<?= $this->pageWidthLandmark; ?>"/>
 <input type="hidden" name="pageHeightLandmark" value="<?= $this->pageHeightLandmark; ?>"/>
 
     <div id="page-w2p">
@@ -149,3 +155,12 @@
     <script src="/plugins/ActiveWireframe/static/js/pages/pages-editmode.js?v=<?= $this->version; ?>"></script>
     <?= $this->includePathJS; ?>
 <?php } ?>
+
+<script>
+    $(document).ready(function() {
+        $('.w2p-full').parents('div[id="page"]').css("padding", "0 !important")
+            .find('.box-w2p')
+            .removeClass('box-w2p')
+            .addClass('box-w2p-full');
+    });
+</script>

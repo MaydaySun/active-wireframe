@@ -144,6 +144,10 @@
 /* .box-w2p-full */
 #activeWireframe .box-w2p-full {
     z-index: 1;
+    top: -5mm !important;
+    left: -5mm !important;
+    bottom: inherit !important;
+    right: inherit !important;
 }
 
 #activeWireframe .box-w2p-full .pimcore_area_entry.pimcore_block_entry.pages-editable,
