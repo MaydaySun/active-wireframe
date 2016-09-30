@@ -1,0 +1,45 @@
+<?xml version="1.0"?>
+<zend-config>
+    <plugin>
+
+        <!-- the plugin name [A-Za-z_] -->
+        <pluginName>ActiveWireframe</pluginName>
+        <pluginNiceName>©Active Publishing - Active Wireframe</pluginNiceName>
+
+        <!-- a short description -->
+        <pluginDescription>
+            <![CDATA[Plugin for managing briefs of your catalogs, brochures, flyers, books, magazines...]]></pluginDescription>
+
+        <!-- meta data -->
+        <pluginVersion>2.3.2</pluginVersion>
+        <pluginRevision>5</pluginRevision>
+        <pluginBuildTimestamp>0</pluginBuildTimestamp>
+
+        <!-- className of the plugin which extends Pimcore_API_Plugin_Abstract-->
+        <pluginClassName>\ActiveWireframe\Plugin</pluginClassName>
+
+        <!-- include paths relative to plugin-directory -->
+        <pluginIncludePaths>
+            <path>/ActiveWireframe/lib</path>
+            <path>/ActiveWireframe/models</path>
+        </pluginIncludePaths>
+
+        <!-- namespaces to register with autoloader-->
+        <pluginNamespaces>
+            <namespace>ActiveWireframe</namespace>
+        </pluginNamespaces>
+
+        <!-- js files with path relative to plugin-directory -->
+        <pluginJsPaths>
+            <path>/plugins/ActiveWireframe/static/js/pimcore/document/printpages/pdf_preview.js</path>
+            <path>/plugins/ActiveWireframe/static/js/pimcore/document/printcontainer.js</path>
+            <path>/plugins/ActiveWireframe/static/js/startup.js</path>
+        </pluginJsPaths>
+
+        <!-- css files with path relative to plugin-directory -->
+        <pluginCssPaths>
+            <path>/plugins/ActiveWireframe/static/css/icons.css</path>
+        </pluginCssPaths>
+
+    </plugin>
+</zend-config>

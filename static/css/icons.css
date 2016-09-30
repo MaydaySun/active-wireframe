@@ -1,0 +1,15 @@
+.pimcore_icon_printcontainer_add {
+    background: url("../../../../pimcore/static6/img/flat-color-icons/book.svg") center center no-repeat !important;
+}
+
+.pimcore_icon_printpage_add {
+    background: url("../../../../pimcore/static6/img/flat-color-icons/news.svg") center center no-repeat !important;
+}
+
+.pimcore_icon_arrowleft {
+    background: url("../../../../pimcore/static6/img/flat-color-icons/left.svg") center center no-repeat !important;
+}
+
+.pimcore_icon_arrowright {
+    background: url("../../../../pimcore/static6/img/flat-color-icons/right.svg") center center no-repeat !important;
+}

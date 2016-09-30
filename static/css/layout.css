@@ -1,0 +1,196 @@
+body,
+html {
+    background-color: #999999;
+}
+
+body {
+    border-left: 3px solid #FFF;
+}
+
+/*ScrollUp */
+#activeWireframe #scrollUp {
+    background-image: url("../../static/img/top.png");
+    display: block;
+    bottom: 20px;
+    right: 20px;
+    width: 38px;
+    height: 38px;
+}
+
+/* custom_pimcore_icon */
+#activeWireframe .custom_pimcore_icon[class*="pimcore_icon_"],
+#activeWireframe .custom_pimcore_icon[class^="pimcore_icon_"] {
+    background-color: #F6F6F6 !important;
+    background-size: auto 22px !important;
+    background-position: 5px center !important;
+    padding-left: 30px;
+}
+/* Palette flotante */
+#activeWireframe .x-window.pimcore_areablock_toolbar {
+    background: none repeat scroll 0 0 #222;
+    overflow: hidden;
+    max-height: 396px;
+    top: 40px !important;
+    left: 3px !important;
+}
+#activeWireframe .x-window.pimcore_areablock_toolbar .x-btn {
+    display: block !important;
+}
+#activeWireframe .x-window.pimcore_areablock_toolbar > .x-window-body {
+    overflow-y: auto;
+    max-height: 350px;
+}
+#activeWireframe .x-window.pimcore_areablock_toolbar > div {
+    background: none repeat scroll 0 0 #222;
+}
+#activeWireframe .x-window.pimcore_areablock_toolbar .x-window-header-title-default {
+    padding: 10px;
+}
+#activeWireframe .x-window.pimcore_areablock_toolbar .x-window-header-default .x-tool-img {
+    background-color: transparent;
+}
+#activeWireframe .x-window.x-window-ghost.x-layer.x-window-default.x-border-box {
+    height: 47px !important;
+}
+
+/* .pimcore_area_dropzone */
+#activeWireframe .pimcore_area_dropzone {
+    text-align: center;
+    position: fixed !important;
+    top: 0;
+    left: 300px;
+    z-index: 9000;
+    background-color: rgba(0, 0, 0, 0.2) !important;
+    border: none !important;
+}
+#activeWireframe .pimcore_area_dropzone:before {
+    content: "Déposer ici";
+    font-size: 22pt;
+    color: #FFF;
+    text-shadow: 0 1px 1px #222;
+    position: relative;
+    top: 25px;
+}
+
+/* .pimcore_block_buttons */
+#activeWireframe .pimcore_block_buttons_pages-editable.pimcore_block_buttons {
+    position: absolute;
+    z-index: 10;
+    padding: 10px;
+    opacity: 0.2;
+}
+#activeWireframe .pimcore_block_buttons_pages-editable.pimcore_block_buttons:hover {
+    opacity: 1;
+    -moz-transition: all 300ms linear;
+    -webkit-transition: all 300ms linear;
+    transition: all 300ms linear;
+}
+#activeWireframe .pimcore_block_buttons .pimcore_block_plus,
+#activeWireframe .pimcore_block_buttons .pimcore_block_up,
+#activeWireframe .pimcore_block_buttons .pimcore_block_down,
+#activeWireframe .pimcore_block_buttons .pimcore_block_type,
+#activeWireframe .pimcore_block_buttons .pimcore_block_options {
+    display: none;
+}
+
+/* pimcore_tag_* */
+#activeWireframe .pimcore_tag_image_empty::after,
+#activeWireframe .pimcore_tag_pdf .pimcore_tag_image_empty::after,
+#activeWireframe .pimcore_tag_snippet_empty:after,
+#activeWireframe .pimcore_wysiwyg:after {
+    position: absolute;
+    color: #777;
+    font-size: 25px;
+    text-align: center;
+    top: 15px;
+    width: 100%;
+}
+
+#activeWireframe .pimcore_tag_image_empty::after {
+    content: "Drag image";
+}
+
+#activeWireframe .pimcore_tag_pdf .pimcore_tag_image_empty::after {
+    content: "Drag PDF";
+}
+
+#activeWireframe .pimcore_tag_snippet_empty:after {
+    content: "Drag object";
+}
+
+#activeWireframe .pimcore_tag_image_empty::before,
+#activeWireframe .pimcore_tag_snippet_empty:before,
+#activeWireframe .pimcore_wysiwyg:before {
+    content: '';
+    border: 3px dashed #777;
+    position: absolute;
+    left: 0;
+    top: 0;
+    height: calc(100% - 6px);
+    width: calc(100% - 6px);
+    z-index: -1;
+}
+
+/* #header-wraptop */
+#activeWireframe #header-wraptop {
+    font: 400 13px/20px 'Open Sans', 'Helvetica Neue', helvetica, arial, verdana, sans-serif;
+    border-bottom: 3px solid #fff;
+    background: #ECECEC;
+    position: fixed;
+    top: 0;
+    left: 0;
+    z-index: 9001;
+    width: 100%;
+    height: 40px;
+    box-shadow: 7px 0 1px #222;
+}
+#activeWireframe .header-wraptop-ghost {
+    height: 40px;
+}
+#activeWireframe #header-wraptop ul {
+    padding: 0;
+}
+#activeWireframe #header-wraptop ul li {
+    display: inline-block;
+    padding: 1rem;
+}
+#activeWireframe #header-wraptop ul li.separator {
+    padding: 0;
+    margin: 0;
+    height: 37px;
+    border-left: 1px solid rgba(0, 0, 0, 0.1);
+    border-right: 1px solid rgba(255, 255, 255, 0.5);
+    position: absolute;
+    top: 0;
+}
+#activeWireframe #header-wraptop a,
+#activeWireframe #header-wraptop span,
+#activeWireframe #header-wraptop p,
+#activeWireframe #header-wraptop .navbar-text {
+    color: #606060;
+    -webkit-transition: all 300ms linear;
+    -moz-transition: all 300ms linear;
+    transition: all 300ms linear;
+}
+#activeWireframe #header-wraptop li:hover > a,
+#activeWireframe #header-wraptop li:focus > a,
+#activeWireframe #header-wraptop li:active > a,
+#activeWireframe #header-wraptop li:hover > span,
+#activeWireframe #header-wraptop li:focus > span,
+#activeWireframe #header-wraptop li:active > span,
+#activeWireframe .position-thumbs-active > a,
+#activeWireframe .position-thumbs-active > span {
+    cursor: pointer;
+    color: #000;
+}
+
+#activeWireframe #input-index-paginator {
+    width: 140px;
+    display: block;
+    margin: auto;
+    padding: 5px;
+}
+
+/*#activeWireframe .ui-selectmenu-menu > .ui-menu {*/
+/*max-height: 200px;*/
+/*}*/
