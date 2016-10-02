@@ -20,24 +20,17 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
         }
     },
 
-    /**
-     * Enregistrement des box-w2p.
-     * @returns {undefined}
-     */
     saveBoxW2p: function (document) {
-
         var documentDom = Ext.get('document_iframe_' + document.id);
         var iframe = documentDom.dom.contentWindow.Ext;
         var page = iframe.get('page');
         var boxW2p = iframe.select('.box-w2p');
         var data = [];
 
-        // Pour chaques bloc box-w2p
         boxW2p.each(function (box) {
             data.push(this.getData(box, page));
         }.bind(this));
 
-        // Enregistre les informations de l'élément box-w2p
         Ext.Ajax.request({
             url: '/plugin/ActiveWireframe/elements/save-box-w2p',
             method: 'GET',
@@ -56,8 +49,6 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
     },
 
     getData: function (bData, page) {
-
-        //Get information for the .box-w2p
         var boxW2p = {};
         boxW2p.key = bData.getAttribute('data-key');
         boxW2p.top = bData.getStyle('top');
@@ -69,16 +60,10 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
         boxW2p.oId = 0;
         boxW2p.elements = [];
 
-        // Get data-o-id if exist
         if (bData.select('.box-w2p-content').elements.length !== 0) {
-
-            // data-o-id
             boxW2p.oId = bData.select('.box-w2p-content').elements[0].getAttribute('data-o-id');
-
-            // .element-w2p
             var elementW2p = bData.select('.element-w2p');
 
-            // Get informations of element-w2p
             elementW2p.each(function (eData) {
                 var dataElement = {};
                 dataElement.key = eData.getAttribute('data-element-key');
@@ -88,13 +73,9 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
                 dataElement.width = eData.getStyle('width');
                 dataElement.height = eData.getStyle('height');
                 dataElement.mat = eData.getStyle('transform');
-
                 boxW2p.elements.push(dataElement)
-
             });
-
         }
-
         return boxW2p;
     }
 

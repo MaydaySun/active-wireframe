@@ -93,7 +93,6 @@
                 data-content="<ul>' . $txtNote . '</ul>" 
                 data-html="true" 
                 title="Notes de la page"><span class="badge"></span></button>';
-
             }
 
             // Plugin Workflow
@@ -104,7 +103,7 @@
 
             $divStart = '<div class="preview-page ' . $classNote . ' ' . $classPagePosition . '">';
 
-            $file = "/website/static-plugins"
+            $file = "/website/plugins-data"
                 . DIRECTORY_SEPARATOR . \ActiveWireframe\Plugin::PLUGIN_NAME
                 . DIRECTORY_SEPARATOR . $document['documentId']
                 . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
@@ -114,14 +113,11 @@
                 . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
 
             if (file_exists($absoluteFile)) {
-
-                $img = '<img class="page-image page-border ' . $classDocumentLock . '" src="' . $file
+                $img = '<img class="lazy page-image page-border ' . $classDocumentLock . '" data-original="' . $file
                     . '?_t=' . time() . '" title="' . $document['key'] . '" style="' . $strStyleWorkflow . '"/>';
-
             } else {
                 $img = '<div class="no-preview page-image page-border ' . $classDocumentLock . '"></div>';
             }
-
 
             $pageNumber = '<p class="titre-page">' . $document['key'] . '</p>';
             $divEnd = "</div>";

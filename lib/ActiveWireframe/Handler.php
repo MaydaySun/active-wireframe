@@ -250,7 +250,8 @@ class Handler
                     $dbpage->update($pinfo, $where);
 
                     // Created Thumbnail
-                    Helpers::getPageThumbnailForTree($document, $cinfo['format_width']);
+                    $widthPX = Helpers::convertMmToPx($cinfo['format_width']);
+                    Helpers::getPageThumbnailForTree($document, $widthPX);
                 }
 
             } elseif ($document instanceof Document\Printcontainer) {

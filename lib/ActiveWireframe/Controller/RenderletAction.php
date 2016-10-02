@@ -9,21 +9,21 @@
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 
-namespace ActiveWireframe\Controllers;
+namespace ActiveWireframe\Controller;
 
-use ActivePublishing\Service\Extension;
 use ActivePublishing\Service\File;
 use ActivePublishing\Service\Tool;
 use ActiveWireframe\Plugin;
+use Pimcore\Model\Document;
 use Pimcore\Model\Object;
 use Website\Controller\Action;
 
 /**
- * Class WireframeAction
+ * Class RenderletAction
  *
- * @package ActiveWireframe\Controllers
+ * @package ActiveWireframe\Controller
  */
-class WireframeAction extends Action
+class RenderletAction extends Action
 {
     /**
      * @var string
@@ -33,12 +33,17 @@ class WireframeAction extends Action
     /**
      * @var int
      */
-    public $_documentId;
+    public $_document;
 
     /**
      * @var int
      */
     public $_objectId;
+
+    /**
+     * @var Object\AbstractObject
+     */
+    public $_object;
 
     /**
      * @var string
@@ -63,8 +68,31 @@ class WireframeAction extends Action
         parent::init();
         $this->disableBrowserCache();
 
-        $this->_documentId = intval($this->getDocument()->getId());
-        $this->_pluginsDataDocument = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $this->_documentId;
+        // For object renderlet
+        if (!$this->hasParam('id')) {
+            echo "Object ID failed."; exit();
+        }
+
+        if (!$object = Object\Concrete::getById($this->getParam('id'))) {
+            echo "Object failed."; exit();
+        }
+
+        $this->_object = $object;
+        $this->_objectId = intval($object->getId());
+        $this->view->object = $object;
+        $this->view->htmlId = $object->getKey() . "-" . $object->getId();
+
+        $this->_pathElementW2pObject = $this->_pluginsDataDocument . DIRECTORY_SEPARATOR . $this->_objectId;
+
+        if ($this->hasParam('documentId')) {
+            $this->_document = Document::getById(intval($this->getParam('documentId')));
+        } elseif ($this->hasParam('pimcore_parentDocument')) {
+            $this->_document = Document::getById(intval($this->getParam('pimcore_parentDocument')));
+        } else {
+            echo "Document ID failed."; exit();
+        }
+
+        $this->_pluginsDataDocument = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $this->_document->getId();
 
         // language
         $this->_language = $this->language;
@@ -74,22 +102,13 @@ class WireframeAction extends Action
         $this->view->baseAssets = PIMCORE_ASSET_DIRECTORY;
 
         // Config Thumbnail
-        if ($this->hasParam('thumbnail')) {
-            $this->view->thumbnail = unserialize($this->getParam('thumbnail'));
-        }
+        $this->view->thumbnail = $this->hasParam('thumbnail') ?
+            $this->getParam('thumbnail') :
+            "active-wireframe-preview";
 
-        // For object renderlet
-        if ($this->hasParam('id')) {
-            if (Object\Concrete::getById($this->getParam('id'))) {
-                $this->_objectId = intval($this->getParam('id'));
-                $this->_pathElementW2pObject = $this->_pluginsDataDocument . DIRECTORY_SEPARATOR . $this->_objectId;
+        // Data element w2p
+        $this->getDataElementW2p();
 
-                if (Extension::getInstance(Plugin::PLUGIN_NAME)->check()) {
-                    $this->getDataElementW2p();
-                }
-
-            }
-        }
     }
 
     /**

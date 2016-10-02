@@ -1,47 +1,36 @@
-<?= $this->includePathCss; ?>
+<?= $this->includePathCSS; ?>
+<style>
+    #activeWireframe #page-global {
+        background-image: url("<?= $this->template; ?>");
+        background-size: <?= $this->pageWidthLandmark; ?> <?= $this->pageHeightLandmark; ?>;
+    }
+    #activeWireframe .box-w2p-full {
+        width: <?= $this->pageWidthLandmark ?> !important;
+        height: <?= $this->pageHeightLandmark ?> !important;
+    }
+</style>
 <?php if ($this->editmode) { ?>
-
     <link href="/plugins/ActiveWireframe/static/css/pages/pages-editmode.css?v=<?= $this->version; ?>" rel="stylesheet">
     <style>
         #activeWireframe #page-global {
             width: <?= $this->pageWidthLandmark; ?> !important;
             height: <?= $this->pageHeightLandmark; ?> !important;
-            background-image: url("<?= $this->template; ?>");
-            background-size: <?= $this->pageWidthLandmark; ?> <?= $this->pageHeightLandmark; ?>;
         }
-
-        #activeWireframe .box-w2p-full {
-            width: <?= $this->pageWidthLandmark ?> !important;
-            height: <?= $this->pageHeightLandmark ?> !important;
-            position: absolute;
-        }
-
-        #activeWireframe .pimcore_area_dropzone {
-            width: <?= $this->pageWidthLandmark; ?> !important;
-            height: <?= $this->pageHeightLandmark; ?> !important;
-        }
-
         #slider-range-v .slider-handle-v {
             width: calc(<?= $this->pageWidthLandmark; ?> + 10px) !important;
         }
-
         #slider-range-h .slider-handle-h {
             height: calc(<?= $this->pageHeightLandmark; ?> + 10px) !important;
         }
     </style>
-
 <?php } else { ?>
-
     <link href="/plugins/ActiveWireframe/static/css/pages/pages-preview.css?v=<?= $this->version; ?>" rel="stylesheet">
     <style>
         #activeWireframe #page-global {
             width: <?= $this->pageWidth; ?> !important;
             height: <?= $this->pageHeight; ?> !important;
-            background-image: url("<?= $this->template; ?>");
-            background-size: <?= $this->pageWidthLandmark; ?> <?= $this->pageHeightLandmark; ?>;
         }
     </style>
-
 <?php } ?>
 
 <?php if ($this->editmode and $this->pageLock) { ?>

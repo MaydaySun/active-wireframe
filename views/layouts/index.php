@@ -26,7 +26,9 @@
     <!-- jQuery plugins -->
     <script
         src="/plugins/ActiveWireframe/static/jquery-plugins/jquery-ui-rotatable/jquery.ui.rotatable.min.js"></script>
-    <script src="/plugins/ActiveWireframe/static/jquery-plugins/jquery.scrollUp/jquery.scrollUp.js"></script>
+    <script src="/plugins/ActiveWireframe/static/jquery-plugins/jquery-scrollup/jquery-scrollup.min.js"></script>
+    <script src="/plugins/ActiveWireframe/static/jquery-plugins/jquery-lazyload/jquery.scrollstop.min.js"></script>
+    <script src="/plugins/ActiveWireframe/static/jquery-plugins/jquery-lazyload/jquery.lazyload.min.js"></script>
     <script src="/plugins/ActiveWireframe/static/js/jquery-plugins.js?v=<?= $this->version; ?>"></script>
 
     <!-- Editmode -->

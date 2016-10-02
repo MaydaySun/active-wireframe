@@ -12,13 +12,22 @@ $(document).ready(function () {
         activeOverlay: false
     });
 
-    // plugin jquery-ui
     $(".tabs").tabs();
+
     $(".accordion").accordion();
+
     $(".button").button();
+
     $(".radioset").buttonset();
-    $(".datepicker").datepicker({inline: true});
+
+    $(".datepicker").datepicker({
+        inline: true
+    });
+
     $(".tooltip").tooltip();
+
     $(".selectmenu").selectmenu();
+
+    $("img.lazy").lazyload();
 
 });
