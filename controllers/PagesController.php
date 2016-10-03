@@ -109,7 +109,7 @@ class ActiveWireframe_PagesController extends Action
         } else {
             $thumbnail = "active-wireframe-preview";
         }
-        $this->view->thumbnail = serialize($thumbnail);
+        $this->view->thumbnail = $thumbnail;
 
         // Get background template for only page in chapter
         if ($this->document->getParentId() != $cinfo['document_id']) {
