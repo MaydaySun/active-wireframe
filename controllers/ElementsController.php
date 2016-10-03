@@ -23,7 +23,6 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_ElementsController extends Action
 {
-
     /**
      * Init
      */

@@ -14,8 +14,8 @@ namespace ActiveWireframe;
 
 use ActivePublishing\Service\Tool;
 use ActiveWireframe\Db\Pages;
-use ActiveWireframe\Pimcore\Image\HtmlToImage;
 use Pimcore\File;
+use Pimcore\Image\HtmlToImage;
 use Pimcore\Logger;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Document;
@@ -40,16 +40,27 @@ class Helpers
     public static function reloadThumbnailForTree(Printcontainer $document, $width)
     {
         foreach ($document->getChilds() as $child) {
-
+            $widthPX = Helpers::convertMmToPx($width);
             if ($child instanceof Printpage) {
-                self::getPageThumbnailForTree($child, $width);
+                self::getPageThumbnailForTree($child, $widthPX);
             } elseif ($child instanceof Printcontainer) {
-                self::reloadThumbnailForTree($child, $width);
+                self::reloadThumbnailForTree($child, $widthPX);
             }
-
         }
-
         return true;
+    }
+
+    /**
+     * Convert mm to px
+     *
+     * @static
+     * @param $mm
+     * @param int $dpi
+     * @return float
+     */
+    public static function convertMmToPx($mm, $dpi = 96)
+    {
+        return ($dpi * $mm) / 25.4;
     }
 
     /**
@@ -57,29 +68,22 @@ class Helpers
      *
      * @static
      * @param Document $document
-     * @param $width
+     * @param $widthPX
      * @return bool
      */
-    public static function getPageThumbnailForTree(Document $document, $width)
+    public static function getPageThumbnailForTree(Document $document, $widthPX)
     {
-        $widthWk = number_format($width * 0.50);
-
-        // Dir tmp
         $dirTmp = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $document->getId();
+        $jpeg = $dirTmp . DIRECTORY_SEPARATOR . $document->getId() . '.jpeg';
+        $url = Tool::getHostUrl() . $document->getFullPath() . '?createThumbnail=true&forcearea=true';
+        $widthPX = intval(intval($widthPX) / 5);
 
         // path thumbnail
         if (!file_exists($dirTmp)) {
             File::mkdir($dirTmp, 0775, true);
         }
 
-        $url = Tool::getHostUrl() . $document->getFullPath() . '?forcearea=true';
-        $dst = $dirTmp . DIRECTORY_SEPARATOR . $document->getId() . '.jpeg';
-        $options = [
-            'width' => $widthWk,
-            'quality' => 90,
-            'zoom' => 0.50
-        ];
-        return HtmlToImage::convert($url, $dst, 'jpeg', $options);
+        return HtmlToImage::convert($url, $jpeg, $widthPX, "jpeg");
     }
 
     /**
@@ -179,19 +183,6 @@ class Helpers
     public static function convertPxToMm($pixels, $dpi = 96)
     {
         return ($pixels * 25.4) / $dpi;
-    }
-
-    /**
-     * Convert mm to px
-     *
-     * @static
-     * @param $mm
-     * @param int $dpi
-     * @return float
-     */
-    public static function convertMmToPx($mm, $dpi = 96)
-    {
-        return ($dpi * $mm) / 25.4;
     }
 
     /**
@@ -306,10 +297,7 @@ class Helpers
         }
 
         // User isn't admin and belong to a role
-        if ($user instanceof User
-            and !$user->isAdmin()
-            and !empty($roles)
-        ) {
+        if ($user instanceof User and !$user->isAdmin() and !empty($roles)) {
 
             foreach ($roles as $rid) {
 
@@ -325,7 +313,6 @@ class Helpers
             }
 
         } else if ($user instanceof User and $user->isAdmin()) {
-
             // User admin
             return $areaPath . '/admin';
         }
@@ -338,10 +325,10 @@ class Helpers
      * @static
      * @param Document $page
      * @param $cinfo
-     * @param $configThumbnail
+     * @param $thumbnail
      * @return bool|mixed|string
      */
-    public static function getBackgroundTemplate(Document $page, $cinfo, $configThumbnail)
+    public static function getBackgroundTemplate(Document $page, $cinfo, $thumbnail)
     {
         $assetTemplate = ($page->getKey() % 2)
             ? Asset::getById(intval($cinfo['template_odd']))
@@ -350,10 +337,9 @@ class Helpers
         if ($assetTemplate) {
 
             if ($assetTemplate instanceof Asset\Document) {
-                return $assetTemplate->getImageThumbnail($configThumbnail)->getPath();
+                return $assetTemplate->getImageThumbnail($thumbnail)->getPath();
 
             } else if ($assetTemplate instanceof Asset\Image) {
-                $thumbnail = $assetTemplate->getThumbnailConfig($configThumbnail);
                 return $assetTemplate->getThumbnail($thumbnail)->getPath();
             }
 

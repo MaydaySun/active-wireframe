@@ -15,6 +15,7 @@ use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Helpers;
 use ActiveWireframe\Plugin;
+use Pimcore\Tool\Session;
 use Website\Controller\Action;
 
 /**
@@ -103,44 +104,37 @@ class ActiveWireframe_PagesController extends Action
         // Element informations
         $this->view->elementsData = $this->getElements($this->document->getId());
 
-        // Thumbnail
-        $configThumbnail = [
-            'format' => 'PNG',
-            'width' => 1024,
-            'height' => null,
-            'aspectratio' => true,
-            'quality' => 90
-        ];
-        if (!$this->editmode or !$this->hasParam('nowkhtmltoimage')) {
-
-            $configThumbnail = [
-                'format' => 'PNG',
-                'width' => 1024,
-                'height' => null,
-                'aspectratio' => true,
-                'quality' => 100,
-                'highResolution' => 3.2
-            ];
-
+        if (!$this->editmode AND $this->hasParam('generateW2p')) {
+            $thumbnail = "active-wireframe-print";
+        } else {
+            $thumbnail = "active-wireframe-preview";
         }
-        $this->view->thumbnail = serialize($configThumbnail);
+        $this->view->thumbnail = serialize($thumbnail);
 
         // Get background template for only page in chapter
         if ($this->document->getParentId() != $cinfo['document_id']) {
-            $this->view->template = Helpers::getBackgroundTemplate($this->document, $cinfo, $configThumbnail);
+            $this->view->template = Helpers::getBackgroundTemplate($this->document, $cinfo, $thumbnail);
         }
 
         // Module Extensions
-//        if ($includeExt = Extension::getInstance(Plugin::PLUGIN_NAME)->check()){
-//            $this->view->includePathJS = $includeExt['js'];
-//            $this->view->includePathCSS = $includeExt['css'];
-//        }
+        if ($sessionExtension = Session::getOption('ActiveWireframeExtension')) {
+            $sessionExtension = unserialize($sessionExtension);
+            $this->view->includePathJS = $sessionExtension['includePathJS'];
+            $this->view->includePathCSS = $sessionExtension['includePathCSS'];
+        }
 
         // ActivePaginate Plugin integration
         if (Tool::pluginIsInstalled('ActivePaginate')) {
             $this->view->activepaginate = true;
             $this->view->gridCol = ($pinfo['grid_col'] != 0) ? $pinfo['grid_col'] : 3;
             $this->view->gridRow = ($pinfo['grid_row'] != 0) ? $pinfo['grid_row'] : 4;
+        }
+
+        if (!$this->editmode AND !$this->hasParam('pimcore_preview')
+            AND !$this->hasParam('createThumbnail')
+        ) {
+            $widthPX = Helpers::convertMmToPx($width);
+            Helpers::getPageThumbnailForTree($this->document, $widthPX);
         }
     }
 

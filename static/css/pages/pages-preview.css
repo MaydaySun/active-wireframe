@@ -113,7 +113,9 @@ body, html {
 }
 
 /* .box-w2p-full */
+/* .box-w2p-full */
 #activeWireframe .box-w2p-full {
+    position: absolute;
     z-index: 1;
     top: -5mm !important;
     left: -5mm !important;
