@@ -1,18 +1,5 @@
 <?php
 /**
- * Pimcore
- *
- * This source file is available under two different licenses:
- * - GNU General Public License version 3 (GPLv3)
- * - Pimcore Enterprise License (PEL)
- * Full copyright and license information is available in
- * LICENSE.md which is distributed with this source code.
- *
- * @copyright  Copyright (c) 2009-2016 pimcore GmbH (http://www.pimcore.org)
- * @license    http://www.pimcore.org/license     GPLv3 and PEL
- */
-
-/**
  * Active Publishing
  *
  * This source file is subject to the GNU General Public License version 3 (GPLv3)
@@ -26,6 +13,7 @@
 namespace ActiveWireframe\Pimcore\Web2Print\Processor;
 
 use ActiveWireframe\Db\Pages;
+use mikehaertl\wkhtmlto\Pdf;
 use Pimcore\Config;
 use Pimcore\Helper;
 use Pimcore\Logger;
@@ -36,49 +24,6 @@ use Pimcore\Tool;
 
 class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
 {
-    /**
-     * @var string
-     */
-    private $wkhtmltopdfBin;
-
-    /**
-     * @var
-     */
-    private $options;
-
-    /**
-     * @param string $wkhtmltopdfBin
-     * @param array $options key => value
-     */
-    public function __construct($wkhtmltopdfBin = null, $options = null)
-    {
-        parent::__construct();
-        $web2printConfig = Config::getWeb2PrintConfig();
-
-        if (empty($wkhtmltopdfBin)) {
-            $this->wkhtmltopdfBin = $web2printConfig->wkhtmltopdfBin;
-        } else {
-            $this->wkhtmltopdfBin = $wkhtmltopdfBin;
-        }
-
-        if (empty($options)) {
-            if ($web2printConfig->wkhtml2pdfOptions) {
-                $options = $web2printConfig->wkhtml2pdfOptions->toArray();
-            }
-        }
-
-        if ($options) {
-            foreach ($options as $key => $value) {
-                $this->options .= " --" . (string)$key;
-                if ($value !== null && $value !== "") {
-                    $this->options .= " " . (string)$value;
-                }
-            }
-        } else {
-            $this->options = "";
-        }
-    }
-
     /**
      * @param $documentId
      * @param $config
@@ -106,50 +51,12 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
             $args[] = "--environment=" . $env;
         }
 
-        $cmd = Tool\Console::getPhpCli() . " " . realpath(PIMCORE_PATH . DIRECTORY_SEPARATOR . "cli" . DIRECTORY_SEPARATOR . "console.php"). " web2printActivePublishing:pdf-creation " . implode(" ", $args);
+        $cmd = Tool\Console::getPhpCli() . " " .
+            realpath(PIMCORE_PATH . DIRECTORY_SEPARATOR . "cli" . DIRECTORY_SEPARATOR . "console.php") .
+            " web2printActivePublishing:pdf-creation " . implode(" ", $args);
         Logger::info($cmd);
 
         Tool\Console::execInBackground($cmd, PIMCORE_LOG_DIRECTORY . DIRECTORY_SEPARATOR . "web2print-output.log");
-
-//        if (!$config['disableBackgroundExecution']) {
-//            Tool\Console::execInBackground($cmd, PIMCORE_LOG_DIRECTORY . DIRECTORY_SEPARATOR . "web2print-output.log");
-//        } else {
-//            Processor::getInstance()->startPdfGeneration($jobConfig->documentId);
-//        }
-    }
-
-    /**
-     * @param $documentId
-     */
-    public function setOptionsCatalogs($documentId)
-    {
-        if ($catalog = Pages::getInstance()->getCatalogByDocumentId($documentId)) {
-
-            $options = [
-//                'enable-smart-shrinking' => null,
-                'encoding' => 'UTF-8',
-                'margin-top' => 0,
-                'margin-right' => 0,
-                'margin-bottom' => 0,
-                'margin-left' => 0,
-                'page-width' => $catalog['format_width'] . 'mm',
-                'page-height' => $catalog['format_height'] . 'mm',
-                'orientation' => $catalog['orientation'] != "auto" ? $catalog['orientation'] : "portrait",
-                'dpi' => 96,
-                'image-quality' => 90,
-                'image-dpi' => 96,
-                'zoom' => 1
-            ];
-
-            foreach ($options as $key => $value) {
-                $this->options .= " --" . (string)$key;
-                if ($value !== null and $value !== "") {
-                    $this->options .= " " . (string)$value;
-                }
-            }
-
-        }
-
     }
 
     /**
@@ -176,6 +83,7 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
             $creationDate = \Zend_Date::now();
             $document->setLastGenerated((intval($creationDate->get()) + 1));
             $document->save();
+
         } catch (\Exception $e) {
             $document->save();
             Logger::err($e);
@@ -183,7 +91,6 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
 
         Model\Tool\Lock::release($document->getLockKey());
         Model\Tool\TmpStore::delete($document->getLockKey());
-
         @unlink($this->getJobConfigFile($documentId));
     }
 
@@ -198,8 +105,9 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
     protected function buildPdf(Document\PrintAbstract $document, $config)
     {
         $web2printConfig = Config::getWeb2PrintConfig();
-
         $params = [];
+        $filePDF = '';
+
         $this->updateStatus($document->getId(), 10, "start_html_rendering");
         $html = $document->renderDocument($params);
 
@@ -208,17 +116,22 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
         $html = Helper\Mail::setAbsolutePaths($html, $document, $web2printConfig->wkhtml2pdfHostname);
 
         $this->updateStatus($document->getId(), 40, "finished_html_rendering");
-
-        file_put_contents(PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltorpdf-input.html", $html);
-
+        $fileHtml = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltorpdf-input.html";
+        file_put_contents($fileHtml, $html);
         $this->updateStatus($document->getId(), 45, "saved_html_file");
 
         try {
-            $this->updateStatus($document->getId(), 50, "pdf_conversion");
 
-            $pdf = $this->fromStringToStream($html);
+            $this->updateStatus($document->getId(), 50, "pdf_conversion");
+            $pdf = new Pdf($this->getOptionsCatalog($document->getId()));
+            $pdf->addPage($fileHtml);
+
+            if (!$filePDF = $pdf->toString()) {
+                throw new \Exception('Could not create PDF: ' . $pdf->getError());
+            }
 
             $this->updateStatus($document->getId(), 100, "saving_pdf_document");
+
         } catch (\Exception $e) {
             Logger::error($e);
             $document->setLastGenerateMessage($e->getMessage());
@@ -226,76 +139,46 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
         }
 
         $document->setLastGenerateMessage("");
-
-        return $pdf;
+        @unlink($fileHtml);
+        return $filePDF;
     }
 
-    /**
-     *
-     *
-     * @param string $htmlString
-     * @return string
-     */
-    public function fromStringToStream($htmlString)
-    {
-        $tmpFile = $this->fromStringToFile($htmlString);
-        $stream = file_get_contents($tmpFile);
-        @unlink($tmpFile);
-
-        return $stream;
-    }
 
     /**
-     *
-     *
-     * @param string $htmlString
-     * @param string $dstFile
-     * @return string
+     * @param $documentId
+     * @return array
      */
-    public function fromStringToFile($htmlString, $dstFile = null)
+    private function getOptionsCatalog($documentId)
     {
-        $id = uniqid();
-        $tmpHtmlFile = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . $id . ".htm";
-        file_put_contents($tmpHtmlFile, $htmlString);
-        $srcUrl = $this->getTempFileUrl() . basename($tmpHtmlFile);
+        if ($catalog = Pages::getInstance()->getCatalogByDocumentId($documentId)) {
+            return [
+                // Enable built in Xvfb support in the command
+                'commandOptions' => [
+                    'enableXvfb' => true,
 
-        $pdfFile = $this->convert($srcUrl, $dstFile);
+                    // Optional: Set your path to xvfb-run. Default is just 'xvfb-run'.
+                    // 'xvfbRunBinary' => '/usr/bin/xvfb-run',
 
-        @unlink($tmpHtmlFile);
-
-        return $pdfFile;
-    }
-
-    /**
-     *
-     *
-     * @param $srcUrl
-     * @param null $dstFile
-     * @return null|string
-     * @throws \Exception
-     */
-    protected function convert($srcUrl, $dstFile = null)
-    {
-        $outputFile = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltopdf.out";
-        if (empty($dstFile)) {
-            $dstFile = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . uniqid() . ".pdf";
+                    // Optional: Set options for xfvb-run. The following defaults are used.
+                    // 'xvfbRunOptions' =>  '--server-args="-screen 0, 1024x768x24"',
+                ],
+                'enable-smart-shrinking' => null,
+                'encoding' => 'UTF-8',
+                'margin-top' => 0,
+                'margin-right' => 0,
+                'margin-bottom' => 0,
+                'margin-left' => 0,
+                'page-width' => $catalog['format_width'] . 'mm',
+                'page-height' => $catalog['format_height'] . 'mm',
+                'orientation' => $catalog['orientation'] != "auto" ? $catalog['orientation'] : "portrait",
+                'dpi' => 96,
+                'image-quality' => 90,
+                'image-dpi' => 96,
+                'zoom' => 1
+            ];
         }
 
-        if (empty($srcUrl) || empty($dstFile) || empty($this->wkhtmltopdfBin)) {
-            throw new \Exception("srcUrl || dstFile || wkhtmltopdfBin is empty!");
-        }
-
-        $retVal = 0;
-        $cmd = $this->wkhtmltopdfBin . " " . $this->options . " " . escapeshellarg($srcUrl) . " " . escapeshellarg($dstFile) . " > " . $outputFile;
-        system($cmd, $retVal);
-        $output = file_get_contents($outputFile);
-        @unlink($outputFile);
-
-        if ($retVal != 0 && $retVal != 1) {
-            throw new \Exception("wkhtmltopdf reported error (" . $retVal . "): \n" . $output . "\ncommand was:" . $cmd);
-        }
-
-        return $dstFile;
+        return [];
     }
 
 }

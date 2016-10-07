@@ -33,7 +33,6 @@ class ActiveWireframe_PrintpageController extends \Pimcore\Controller\Action\Adm
     }
 
     /**
-     * Include options for wkhtmltopdf
      * @param $config
      */
     public function generatePdf($documentId, $config)
@@ -41,6 +40,10 @@ class ActiveWireframe_PrintpageController extends \Pimcore\Controller\Action\Adm
         Processor::getInstance()->preparePdfGeneration($documentId, $config);
     }
 
+    /**
+     * @param $documentId
+     * @param $options
+     */
     private function saveProcessingOptions($documentId, $options)
     {
         file_put_contents(PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "web2print-processingoptions-" . $documentId . "_" . $this->getUser()->getId() . ".psf", \Pimcore\Tool\Serialize::serialize($options));

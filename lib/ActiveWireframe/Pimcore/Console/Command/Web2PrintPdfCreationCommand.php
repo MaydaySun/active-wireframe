@@ -33,8 +33,6 @@ class Web2PrintPdfCreationCommand extends AbstractCommand
 
     protected function execute(InputInterface $input, OutputInterface $output)
     {
-        $processor = Processor::getInstance();
-        $processor->setOptionsCatalogs($input->getOption("processId"));
-        $processor->startPdfGeneration($input->getOption("processId"));
+        Processor::getInstance()->startPdfGeneration($input->getOption("processId"));
     }
 }
