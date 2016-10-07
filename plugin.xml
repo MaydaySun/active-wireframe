@@ -31,7 +31,6 @@
 
         <!-- js files with path relative to plugin-directory -->
         <pluginJsPaths>
-            <path>/plugins/ActiveWireframe/static/js/pimcore/document/printpages/pdf_preview.js</path>
             <path>/plugins/ActiveWireframe/static/js/pimcore/document/printcontainer.js</path>
             <path>/plugins/ActiveWireframe/static/js/startup.js</path>
         </pluginJsPaths>
