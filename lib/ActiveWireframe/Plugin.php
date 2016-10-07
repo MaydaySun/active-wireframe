@@ -13,11 +13,10 @@
 namespace ActiveWireframe;
 
 use ActivePublishing\Plugin\Service\Install;
+use ActiveWireframe\Pimcore\Console\Command\Web2PrintPdfCreationCommand;
 use Pimcore\API\Plugin as PluginLib;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ValidationException;
-
-//use ActiveWireframe\Pimcore\Console\Command\Web2PrintPdfCreationCommand;
 
 /**
  * Class Plugin
@@ -194,11 +193,11 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
             }
         });
 
-//        // add a single command
-//        \Pimcore::getEventManager()->attach('system.console.init', function (\Zend_EventManager_Event $e) {
-//            $application = $e->getTarget();
-//            $application->add(new Web2PrintPdfCreationCommand());
-//        });
+        // add a single command
+        \Pimcore::getEventManager()->attach('system.console.init', function (\Zend_EventManager_Event $e) {
+            $application = $e->getTarget();
+            $application->add(new Web2PrintPdfCreationCommand());
+        });
     }
 
 }
