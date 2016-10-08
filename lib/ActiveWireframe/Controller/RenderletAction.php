@@ -61,6 +61,11 @@ class RenderletAction extends Action
     public $_dataElementW2p;
 
     /**
+     * @var string
+     */
+    public $_thumbnail;
+
+    /**
      * Init overwritte
      */
     public function init()
@@ -77,13 +82,6 @@ class RenderletAction extends Action
             echo "Object failed."; exit();
         }
 
-        $this->_object = $object;
-        $this->_objectId = intval($object->getId());
-        $this->view->object = $object;
-        $this->view->htmlId = $object->getKey() . "-" . $object->getId();
-
-        $this->_pathElementW2pObject = $this->_pluginsDataDocument . DIRECTORY_SEPARATOR . $this->_objectId;
-
         if ($this->hasParam('documentId')) {
             $this->_document = Document::getById(intval($this->getParam('documentId')));
         } elseif ($this->hasParam('pimcore_parentDocument')) {
@@ -92,7 +90,13 @@ class RenderletAction extends Action
             echo "Document ID failed."; exit();
         }
 
+        $this->view->object = $this->_object = $object;
+        $this->view->objectId = $this->_objectId = intval($object->getId());
+        $this->view->htmlId = $object->getKey() . "-" . $object->getId();
+
         $this->_pluginsDataDocument = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $this->_document->getId();
+
+        $this->_pathElementW2pObject = $this->_pluginsDataDocument . DIRECTORY_SEPARATOR . $this->_objectId;
 
         // language
         $this->_language = $this->language;
@@ -102,13 +106,12 @@ class RenderletAction extends Action
         $this->view->baseAssets = PIMCORE_ASSET_DIRECTORY;
 
         // Config Thumbnail
-        $this->view->thumbnail = $this->hasParam('thumbnail') ?
+        $this->view->thumbnail = $this->_thumbnail = $this->hasParam('thumbnail') ?
             $this->getParam('thumbnail') :
             "active-wireframe-preview";
 
         // Data element w2p
         $this->getDataElementW2p();
-
     }
 
     /**
