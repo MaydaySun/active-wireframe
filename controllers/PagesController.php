@@ -53,13 +53,11 @@ class ActiveWireframe_PagesController extends Action
         $this->enableLayout();
         $this->setLayout("index");
 
-        $forcearea = $this->hasParam('forcearea');
-
         $this->view->documentId = $this->document->getId();
         $this->view->pageLock = $this->document->isLocked();
         $this->view->numPage = intval($this->document->getKey());
         $this->view->baseUrl = Tool::getHostUrl();
-        $this->view->areadir = Helpers::getAreaByRole($forcearea);
+        $this->view->areadir = Helpers::getAreaByRole($this->hasParam('forcearea'));
         $this->view->version = Tool::getPluginVersion(Plugin::PLUGIN_NAME);
 
         // instance ActiveWireframe\Db\Pages

@@ -277,9 +277,8 @@ class Helpers
 
     /**
      * Get areas for the current user
-     *
      * @static
-     * @param bool
+     * @param bool $forcearea
      * @return string
      */
     public static function getAreaByRole($forcearea = false)
@@ -300,14 +299,13 @@ class Helpers
         if ($user instanceof User and !$user->isAdmin() and !empty($roles)) {
 
             foreach ($roles as $rid) {
-
                 $role = User\Role::getById($rid);
 
                 // Role and directory exists
                 if ($role instanceof User\Role
-                    and file_exists($areaPathAbs . '/' . $role->getName())
+                    AND file_exists($areaPathAbs . DIRECTORY_SEPARATOR . mb_strtolower($role->getName()))
                 ) {
-                    return $areaPath . DIRECTORY_SEPARATOR . $role->getName();
+                    return $areaPath . DIRECTORY_SEPARATOR . mb_strtolower($role->getName());
                 }
 
             }
