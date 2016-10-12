@@ -45,100 +45,100 @@
 <input type="hidden" name="pageWidthLandmark" value="<?= $this->pageWidthLandmark; ?>"/>
 <input type="hidden" name="pageHeightLandmark" value="<?= $this->pageHeightLandmark; ?>"/>
 
-    <div id="page-w2p">
+<div id="page-w2p">
 
-        <!-- page width landmark-->
-        <div id="page-global">
+    <!-- page width landmark-->
+    <div id="page-global">
 
-        <?php if ($this->editmode) { ?>
-            <!-- sliders margin -->
-            <div id="slider-range-h"></div>
-            <div id="slider-range-v"></div>
+    <?php if ($this->editmode) { ?>
+        <!-- sliders margin -->
+        <div id="slider-range-h"></div>
+        <div id="slider-range-v"></div>
 
-            <!-- border #page-global -->
-            <div id="border-page-global"></div>
+        <!-- border #page-global -->
+        <div id="border-page-global"></div>
 
-            <!-- border #page -->
-            <div id="border-page"></div>
+        <!-- border #page -->
+        <div id="border-page"></div>
 
-            <!-- unselected area -->
-            <div id="unselected"></div>
-        <?php } ?>
+        <!-- unselected area -->
+        <div id="unselected"></div>
+    <?php } ?>
 
-            <!-- page area -->
-            <div id="page">
+        <!-- page area -->
+        <div id="page">
 
-                <?php
-                $areaBlock = $this->areablock("pages-editable", array(
-                        "manual" => true,
-                        "toolbar" => (!$this->pageLock) ? true : false,
-                        "areablock_toolbar" => array(
-                            "title" => "Elements",
-                            "buttonWidth" => 210,
-                            "buttonMaxCharacters" => 35,
-                        ),
-                        "areaDir" => $this->areadir
-                    )
-                )->start();
+            <?php
+            $areaBlock = $this->areablock("pages-editable", array(
+                    "manual" => true,
+                    "toolbar" => (!$this->pageLock) ? true : false,
+                    "areablock_toolbar" => array(
+                        "title" => "Elements",
+                        "buttonWidth" => 210,
+                        "buttonMaxCharacters" => 35,
+                    ),
+                    "areaDir" => $this->areadir
+                )
+            )->start();
 
-                while ($areaBlock->loop()) {
+            while ($areaBlock->loop()) {
 
-                    $currentIndex = $areaBlock->currentIndex['key'];
+                $currentIndex = $areaBlock->currentIndex['key'];
 
-                    // New areablock
-                    if (!array_key_exists($currentIndex, $this->elementsData)) {
+                // New areablock
+                if (!array_key_exists($currentIndex, $this->elementsData)) {
 
-                        $styles = "width: 70mm; height: 70mm; bottom: 0; top: inherit; right: 0mm; left: inherit;" .
-                            " transform: none; -webkit-transform: none; -moz-transform: none; -ms-transform: none;";
+                    $styles = "width: 70mm; height: 70mm; bottom: 0; top: inherit; right: 0mm; left: inherit;" .
+                        " transform: none; -webkit-transform: none; -moz-transform: none; -ms-transform: none;";
 
-                    } else {
+                } else {
 
-                        $styles = "width:" . $this->elementsData[$currentIndex]['e_width'] . "mm;";
-                        $styles .= " height:" . $this->elementsData[$currentIndex]['e_height'] . "mm;";
-                        $styles .= " top:" . $this->elementsData[$currentIndex]['e_top'] . "mm;";
-                        $styles .= " left:" . $this->elementsData[$currentIndex]['e_left'] . "mm;";
+                    $styles = "width:" . $this->elementsData[$currentIndex]['e_width'] . "mm;";
+                    $styles .= " height:" . $this->elementsData[$currentIndex]['e_height'] . "mm;";
+                    $styles .= " top:" . $this->elementsData[$currentIndex]['e_top'] . "mm;";
+                    $styles .= " left:" . $this->elementsData[$currentIndex]['e_left'] . "mm;";
 
-                        $zIndexNumber = ($this->elementsData[$currentIndex]['e_index'] > 10)
-                            ? $this->elementsData[$currentIndex]['e_index']
-                            : 10;
-                        $styles .= " z-index: " . $zIndexNumber . ";";
+                    $zIndexNumber = ($this->elementsData[$currentIndex]['e_index'] > 10)
+                        ? $this->elementsData[$currentIndex]['e_index']
+                        : 10;
+                    $styles .= " z-index: " . $zIndexNumber . ";";
 
-                        $styles .= " transform:" . $this->elementsData[$currentIndex]['e_transform'] . ";";
-                        $styles .= " -webkit-transform:" . $this->elementsData[$currentIndex]['e_transform'] . ";";
-                        $styles .= " -moz-transform:" . $this->elementsData[$currentIndex]['e_transform'] . ";";
-                        $styles .= " -ms-transform:" . $this->elementsData[$currentIndex]['e_transform'] . ";";
-
-                    }
-
-                    echo '<div class="box-w2p" data-key="' . $currentIndex . '"  style="' . $styles . '" >';
-                    echo '<div class="box-w2p-handle handle-top"></div>';
-                    echo '<div class="box-w2p-container">';
-
-                    $areaBlock->blockConstruct();
-                    $areaBlock->blockStart();
-                    $areaBlock->content();
-                    $areaBlock->blockEnd();
-                    $areaBlock->blockDestruct();
-
-                    echo '</div>';
-                    echo '<div class="box-w2p-handle handle-bottom"></div>';
-                    echo '</div>';
+                    $styles .= " transform:" . $this->elementsData[$currentIndex]['e_transform'] . ";";
+                    $styles .= " -webkit-transform:" . $this->elementsData[$currentIndex]['e_transform'] . ";";
+                    $styles .= " -moz-transform:" . $this->elementsData[$currentIndex]['e_transform'] . ";";
+                    $styles .= " -ms-transform:" . $this->elementsData[$currentIndex]['e_transform'] . ";";
 
                 }
 
-                $areaBlock->end();
-                ?>
+                echo '<div class="box-w2p" data-key="' . $currentIndex . '"  style="' . $styles . '" >';
+                echo '<div class="box-w2p-handle handle-top"></div>';
+                echo '<div class="box-w2p-container">';
 
-                <!-- Page number -->
-                <p id="number-page" class="numpage <?= ($this->numPage % 2) ? "numpageright" : "numpageleft" ?>">
-                    <?= $this->numPage; ?>
-                </p>
+                $areaBlock->blockConstruct();
+                $areaBlock->blockStart();
+                $areaBlock->content();
+                $areaBlock->blockEnd();
+                $areaBlock->blockDestruct();
 
-            </div>
+                echo '</div>';
+                echo '<div class="box-w2p-handle handle-bottom"></div>';
+                echo '</div>';
+
+            }
+
+            $areaBlock->end();
+            ?>
+
+            <!-- Page number -->
+            <p id="number-page" class="numpage <?= ($this->numPage % 2) ? "numpageright" : "numpageleft" ?>">
+                <?= $this->numPage; ?>
+            </p>
 
         </div>
 
     </div>
+
+</div>
 
 <?php if ($this->editmode) { ?>
     <script src="/plugins/ActiveWireframe/static/js/pages/pages-editmode.js?v=<?= $this->version; ?>"></script>

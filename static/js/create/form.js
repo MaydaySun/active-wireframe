@@ -173,7 +173,6 @@ $(document).ready(function () {
             complete: function (jqXHR, textStatus) {
                 pimcore.helpers.loadingHide();
             }
-
         });
     }
 

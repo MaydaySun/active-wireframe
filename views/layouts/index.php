@@ -126,7 +126,6 @@
 
             <!-- Informations sur le catalogue -->
             <li class="navbar-text fr"><?= $this->informationsPage; ?></li>
-
         </ul>
 
     </nav>
@@ -136,6 +135,12 @@
         <form>
             <input id="input-index-paginator" type="number" min="0" name='index'
                    placeholder="<?= $this->ts('active_wireframe_number_first_page'); ?>"/>
+<!--            <div>-->
+<!--                <input id="input-recursive" type="checkbox" name="recursive" />-->
+<!--                <label for="input-recursive">-->
+                    <?php // $this->ts('active_wireframe_number_recursive'); ?>
+<!--                </label>-->
+<!--            </div>-->
         </form>
     </div>
 

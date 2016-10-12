@@ -1,6 +1,12 @@
 /* #page-w2p */
 #activeWireframe #page-w2p {
-    padding: 50px 0 50px 300px
+    padding: 50px 0 50px 300px;
+    -webkit-transform-origin: top center;
+    -moz-transform-origin: top center;
+    transform-origin: top center;
+    -webkit-transform: scale(1);
+    -moz-transform: scale(1);
+    transform: scale(1);
 }
 
 /* #page-global */

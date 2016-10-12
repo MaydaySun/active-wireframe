@@ -25,7 +25,7 @@ $(document).ready(function () {
         clsIndicator.html('(' + (100 * scaleChange).toFixed(2) + '%)');
 
         // Modification de la valeur CSS scale
-        $("#main-section-page").css({
+        $("#page-w2p").css({
             "transform": "scale(" + scaleChange + ")",
             "-webkit-transform": "scale(" + scaleChange + ")",
             "-moz-transform": "scale(" + scaleChange + ")",
@@ -88,7 +88,6 @@ $(document).ready(function () {
                 documentId: $documentId
             },
             complete: function () {
-
                 // Rechargement de l'arbre
                 var store = pimcore.globalmanager.get("layout_document_tree").tree.getStore();
                 store.load({node: store.findRecord("id", 1)});
@@ -98,7 +97,6 @@ $(document).ready(function () {
 
                 // Supprime le loading
                 pimcore.helpers.loadingHide();
-
             }
         });
     }
@@ -157,7 +155,6 @@ $(document).ready(function () {
 
         // Génération des PDF
         reloadThumbnailTree();
-
     });
 
     /**

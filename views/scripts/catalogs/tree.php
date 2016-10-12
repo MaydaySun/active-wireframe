@@ -16,18 +16,15 @@
             width: calc((<?= $this->widthPage  . "mm" ?>/<?= $this->reduction ?>) * 2);
             height: calc(<?= $this->heightPage . "mm"?> / <?= $this->reduction?>);
         }
-
         #block-tree .preview-page {
             width: calc(<?= $this->widthPage . "mm"?> / <?= $this->reduction?>);
             height: calc(<?= $this->heightPage . "mm"?> / <?= $this->reduction?>);
         }
-
-        #main-section-tree.position-icon-th #block-tree .row-preview {
+        #block-tree.position-icon-th .row-preview {
             width: calc(((<?= $this->widthPage . "mm"?>/<?= $this->reduction ?>) * 2) / 2.5);
             height: calc((<?= $this->heightPage . "mm"?>/<?= $this->reduction ?>) / 2.5);
         }
-
-        #main-section-tree.position-icon-th #block-tree .row-preview .preview-page {
+        #block-tree.position-icon-th .row-preview .preview-page {
             width: calc((<?= $this->widthPage . "mm"?>/<?= $this->reduction ?>) / 2.5);
             height: calc((<?= $this->heightPage . "mm"?>/<?= $this->reduction ?>) / 2.5);
         }
