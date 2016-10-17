@@ -75,23 +75,27 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
             $pdf = $this->buildPdf($document, $jobConfigFile->config);
             file_put_contents($document->getPdfFileName(), $pdf);
 
-            \Pimcore::getEventManager()->trigger("document.print.postPdfGeneration", $document, [
-                "filename" => $document->getPdfFileName(),
-                "pdf" => $pdf
-            ]);
+//            \Pimcore::getEventManager()->trigger("document.print.postPdfGeneration", $document, [
+//                "filename" => $document->getPdfFileName(),
+//                "pdf" => $pdf
+//            ]);
+
+            Model\Tool\Lock::release($document->getLockKey());
+            Model\Tool\TmpStore::delete($document->getLockKey());
+            @unlink($this->getJobConfigFile($documentId));
 
             $creationDate = \Zend_Date::now();
-            $document->setLastGenerated((intval($creationDate->get()) + 1));
+            $document->setLastGenerated($creationDate->get() + 1);
             $document->save();
 
         } catch (\Exception $e) {
             $document->save();
+            Model\Tool\Lock::release($document->getLockKey());
+            Model\Tool\TmpStore::delete($document->getLockKey());
+            @unlink($this->getJobConfigFile($documentId));
             Logger::err($e);
         }
 
-        Model\Tool\Lock::release($document->getLockKey());
-        Model\Tool\TmpStore::delete($document->getLockKey());
-        @unlink($this->getJobConfigFile($documentId));
     }
 
     /**
@@ -106,7 +110,6 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
     {
         $web2printConfig = Config::getWeb2PrintConfig();
         $params = [];
-        $filePDF = '';
 
         $this->updateStatus($document->getId(), 10, "start_html_rendering");
         $html = $document->renderDocument($params);
@@ -152,16 +155,6 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
     {
         if ($catalog = Pages::getInstance()->getCatalogByDocumentId($documentId)) {
             return [
-                // Enable built in Xvfb support in the command
-                'commandOptions' => [
-                    'enableXvfb' => true,
-
-                    // Optional: Set your path to xvfb-run. Default is just 'xvfb-run'.
-                    // 'xvfbRunBinary' => '/usr/bin/xvfb-run',
-
-                    // Optional: Set options for xfvb-run. The following defaults are used.
-                    // 'xvfbRunOptions' =>  '--server-args="-screen 0, 1024x768x24"',
-                ],
                 'enable-smart-shrinking' => null,
                 'encoding' => 'UTF-8',
                 'margin-top' => 0,
@@ -171,9 +164,9 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
                 'page-width' => $catalog['format_width'] . 'mm',
                 'page-height' => $catalog['format_height'] . 'mm',
                 'orientation' => $catalog['orientation'] != "auto" ? $catalog['orientation'] : "portrait",
-                'dpi' => 96,
-                'image-quality' => 90,
-                'image-dpi' => 96,
+                'dpi' => 300,
+                'image-quality' => 100,
+                'image-dpi' => 300,
                 'zoom' => 1
             ];
         }
