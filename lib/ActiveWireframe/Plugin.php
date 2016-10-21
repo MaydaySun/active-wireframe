@@ -36,6 +36,8 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
     const ASSET_PAGES_TEMPLATES = "/gabarits-de-pages";
 
+    const AREA_WIREFRAME = PIMCORE_WEBSITE_PATH . '/views/areas/active-wireframe';
+
     public static $_needsReloadAfterInstall = false;
 
     /**

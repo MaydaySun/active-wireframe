@@ -280,5 +280,5 @@
 <!--JS-->
 <script src="/plugins/ActiveWireframe/static/js/create/form.js?v=<?= $this->version; ?>"></script>
 <?php if ($this->templateFormPaginate) { ?>
-    <script src="/plugins/ActivePaginate/static/js/form.js"></script>
+    <script src="/plugins/ActivePaginate/static/js/wireframe/form.js"></script>
 <?php } ?>

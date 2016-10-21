@@ -60,8 +60,7 @@ class ActiveWireframe_CreateController extends Action
         // Paginate Form
         $this->view->templateFormPaginate = false;
         if (Tool::pluginIsInstalled('ActivePaginate')) {
-            $pluginName = call_user_func("\\ActivePaginate\\Plugin::PLUGIN_NAME");
-            $this->view->templateFormPaginate = '/plugins/' . $pluginName . '/views/scripts/form.php';
+            $this->view->templateFormPaginate = '/plugins/ActivePaginate/views/scripts/wireframe/form.php';
         }
     }
 
@@ -91,16 +90,12 @@ class ActiveWireframe_CreateController extends Action
 
         // Format
         if ($this->getParam('format') != "null") {
-
             $formatPageArray = explode("x", $this->getParam('format'));
             $formatPageWidth = $formatPageArray[0];
             $formatPageHeight = $formatPageArray[1];
-
         } else {
-
             $formatPageWidth = $this->hasParam("format-width") ? $this->getParam("format-width") : 210;
             $formatPageHeight = $this->hasParam("format-height") ? $this->getParam("format-height") : 297;
-
         }
 
         // Margin

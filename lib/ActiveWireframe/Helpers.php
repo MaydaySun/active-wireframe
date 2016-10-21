@@ -13,6 +13,7 @@
 namespace ActiveWireframe;
 
 use ActivePublishing\Service\Tool;
+use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
 use Pimcore\File;
 use Pimcore\Image\HtmlToImage;
@@ -21,6 +22,7 @@ use Pimcore\Model\Asset;
 use Pimcore\Model\Document;
 use Pimcore\Model\Document\Printcontainer;
 use Pimcore\Model\Document\Printpage;
+use Pimcore\Model\Object\AbstractObject;
 use Pimcore\Model\User;
 
 /**
@@ -189,52 +191,6 @@ class Helpers
      * @static
      * @param $key
      * @param $parentId
-     * @param $catalogId
-     * @param array $configs
-     * @return Document
-     * @throws \Exception
-     */
-    public static function createPage($key, $parentId, $catalogId, $configs = [])
-    {
-        $parent = Printcontainer::getById($parentId);
-        if ($parent) {
-
-            // get valid key
-            $key = File::getValidFilename($key);
-            if ($key == "") {
-                $key = "undefined-page-key";
-            }
-
-            $i = 1;
-            while (Document\Service::pathExists($parent->getFullPath() . DIRECTORY_SEPARATOR . $key)) {
-                $key = $key . "-" . $i;
-                $i++;
-            }
-
-            $dataDocument = [
-                "key" => $key,
-                "published" => 1,
-                "module" => "ActiveWireframe",
-                "controller" => "pages",
-                "action" => "pages"
-            ];
-
-            // Page creation
-            $page = Printpage::create($parentId, $dataDocument);
-
-            // Insert BD
-            Pages::getInstance()->insertPage($page, $catalogId, $configs);
-
-            return $page;
-        }
-
-        throw new \Exception("Printconatiner CATALOG is not found");
-    }
-
-    /**
-     * @static
-     * @param $key
-     * @param $parentId
      * @return Document
      * @throws \Exception
      */
@@ -344,6 +300,202 @@ class Helpers
         }
 
         return false;
+    }
+
+    /**
+     * Create page with areablock
+     *
+     * @static
+     * @param $documentKey
+     * @param $parentId
+     * @param $catalogId
+     * @param int $row
+     * @param int $col
+     * @return bool|Document
+     */
+    public static function createPageWithAreablock($documentKey, $parentId, $catalogId, $row = 0, $col = 0)
+    {
+        $conf = [
+            'grid' => [
+                'row' => $row,
+                'col' => $col
+            ]
+        ];
+
+        if ($page = self::createPage($documentKey, $parentId, $catalogId, $conf) AND $page instanceof Printpage) {
+            try {
+                $areablock = new Document\Tag\Areablock();
+                $areablock->setName('pages-editable');
+                $areablock->setDocumentId($page->getId());
+                $areablock->setDataFromEditmode([]);
+                $page->setElement('pages-editable', $areablock);
+                $page->save();
+                return $page;
+
+            } catch (\Exception $ex) {
+                Logger::err($ex->getMessage());
+            }
+        }
+
+        return FALSE;
+    }
+
+    /**
+     * @static
+     * @param $key
+     * @param $parentId
+     * @param $catalogId
+     * @param array $configs
+     * @return Document
+     * @throws \Exception
+     */
+    public static function createPage($key, $parentId, $catalogId, $configs = [])
+    {
+        $parent = Printcontainer::getById($parentId);
+        if ($parent) {
+
+            // get valid key
+            $key = File::getValidFilename($key);
+            if ($key == "") {
+                $key = "undefined-page-key";
+            }
+
+            $i = 1;
+            while (Document\Service::pathExists($parent->getFullPath() . DIRECTORY_SEPARATOR . $key)) {
+                $key = $key . "-" . $i;
+                $i++;
+            }
+
+            $dataDocument = [
+                "key" => $key,
+                "published" => 1,
+                "module" => "ActiveWireframe",
+                "controller" => "pages",
+                "action" => "pages"
+            ];
+
+            // Page creation
+            $page = Printpage::create($parentId, $dataDocument);
+
+            // Insert BD
+            Pages::getInstance()->insertPage($page, $catalogId, $configs);
+
+            return $page;
+        }
+
+        throw new \Exception("Printconatiner CATALOG is not found");
+    }
+
+    /**
+     * Create a tag renderlet with object
+     *
+     * @static
+     * @param Printpage $document
+     * @param $areaId
+     * @param $objectId
+     * @param $catalogId
+     * @return bool|mixed
+     */
+    public static function CreateTagRenderlet(Printpage $document, $areaId, $objectId, $catalogId)
+    {
+        if ($areaId !== '') {
+
+            $blocArea = $document->getElement('pages-editable');
+
+            // init tag
+            $indices = $blocArea->getValue();
+            $index = (string)(count($indices) + 1);
+            $indices[] = ['key' => $index, 'type' => $areaId];
+            $blocArea->setDataFromEditmode($indices);
+
+            // create new tag
+            $renderlet = new Document\Tag\Renderlet();
+            $renderlet->setName($areaId . 'pages-editable' . $index);
+            $renderlet->setDataFromEditmode(['id' => $objectId, 'type' => 'object', 'subtype' => 'object']);
+
+            // Add renderlet to page
+            $document->setElement($areaId . 'pages-editable' . $index, $renderlet);
+
+            // save
+            return Elements::getInstance()->insert([
+                'document_id' => $document->getId(),
+                'document_parent_id' => $document->getParentId(),
+                'document_root_id' => $catalogId,
+                'page_key' => $document->getKey(),
+                'e_id' => 1,
+                'e_key' => $index,
+                'e_top' => null,
+                'e_left' => null,
+                'e_index' => 10
+            ]);
+        }
+
+        return FALSE;
+    }
+
+    /**
+     * Check children has child
+     *
+     * @static
+     * @param AbstractObject $node
+     * @return bool
+     */
+    public static function hasChildsRecursives(AbstractObject $node)
+    {
+        if ($node->hasChilds()) {
+            foreach ($node->getChilds() as $child) {
+                if ($child instanceof AbstractObject AND $child->hasChilds()) {
+                    return TRUE;
+                }
+            }
+        }
+        return FALSE;
+    }
+
+    /**
+     * Create a tag renderlet for an asset
+     *
+     * @static
+     * @param Printpage $document
+     * @param string $areaId
+     * @return bool|mixed
+     */
+    public static function createTagRenderletForAsset(Printpage $document, $catalogId, $areaId = '')
+    {
+        if ($areaId != '') {
+
+            $blocArea = $document->getElement('pages-editable');
+            $indices = $blocArea->getValue();
+            $index = (string)(count($indices) + 1);
+            $indices[] = ['key' => $index, 'type' => $areaId];
+            $blocArea->setDataFromEditmode($indices);
+
+            try {
+
+                $renderlet = new Document\Tag\Image();
+                $renderlet->setName($areaId . "pages-editable" . $index);
+                $document->setElement($areaId . "pages-editable" . $index, $renderlet);
+                $document->save();
+
+                return Elements::getInstance()->insert(array(
+                    'document_id' => $document->getId(),
+                    'document_parent_id' => $document->getParentId(),
+                    'document_root_id' => $catalogId,
+                    'page_key' => $document->getKey(),
+                    'e_id' => 1,
+                    'e_key' => $index,
+                    'e_top' => null,
+                    'e_left' => null,
+                    'e_index' => 10
+                ));
+
+            } catch (\Exception $ex) {
+                Logger::err($ex->getMessage());
+            }
+
+        }
+
+        return FALSE;
     }
 
 }
