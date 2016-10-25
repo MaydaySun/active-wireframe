@@ -82,7 +82,7 @@ class ActiveWireframe_CreateController extends Action
 
         $indexPage = 1;
 
-        $catalogId = $this->getParam('documentId');
+        $catalogId = intval($this->getParam('documentId'));
         $catalog = Printcontainer::getById($catalogId);
 
         // Orientation
@@ -149,7 +149,8 @@ class ActiveWireframe_CreateController extends Action
 
             // Active Paginate
             if (Tool::pluginIsInstalled('ActivePaginate')) {
-                $indexPage = $this->createWithPaginate($indexPage, $catalogId);
+                $lastPage = $this->createWithPaginate($indexPage, $catalogId);
+                $indexPage = $lastPage + 1;
             }
 
             // Crate chapter
@@ -202,60 +203,66 @@ class ActiveWireframe_CreateController extends Action
      * Create page with Active Paginate module
      *
      * @param $indexPage
-     * @param $documentId
+     * @param $catalogId
      * @return bool
      */
-    public function createWithPaginate($indexPage, $documentId)
+    public function createWithPaginate($indexPage, $catalogId)
     {
-        // check if possible
-        if (($this->hasParam('filenames') and ($this->getParam('filenames') != ''))
-            or ($this->hasParam('targetClassFamily') and ($this->getParam('targetClassFamily') != '-1'))
+        $conf = [
+            'catalogId' => $catalogId,
+            'index' => $indexPage
+        ];
+
+        //Import by files // File is priority
+        if (array_key_exists('paginatefile', $_FILES) and !empty($_FILES['paginatefile'])) {
+
+            $conf['file'] = $_FILES['paginatefile'];
+            $conf['col-chapter'] = $this->getParam('file-col-chap');
+            $conf['col-page'] = $this->getParam('file-col-page');
+            $conf['col-object'] = $this->getParam('file-col-object');
+            $conf['col-area'] = $this->getParam('file-col-area');
+            $conf['gridrow'] = $this->getParam('file-gridRow');
+            $conf['gridcol'] = $this->getParam('file-gridCol');
+
+            $classPaginate = "\\ActivePaginate\\Paginate";
+            return call_user_func_array([$classPaginate, "getInstance"], ['file', $conf]);
+
+        } elseif ($this->hasParam('targetClassFamily') and $this->getParam('targetClassFamily') != '-1'
+            and $this->hasParam('targetFamily') and $this->getParam('targetFamily') != '0'
+            and $this->hasParam('targetClassObject') and $this->getParam('targetClassObject') != '-1'
         ) {
 
-            $import = [];
-            $import['index'] = $indexPage;
-            $import['templateId'] = $this->hasParam('targetTemplate') ? trim($this->getParam('targetTemplate')) : '';
-            $import['grid'] = [
-                'row' => $this->hasParam('gridRow') ? intval($this->getParam('gridRow')) : 0,
-                'col' => $this->hasParam('gridCol') ? intval($this->getParam('gridCol')) : 0
-            ];
-
-            // flyleaf
-            if ($this->hasParam('frontPage') and intval($this->getParam('frontPage')) == 1) {
-                $import['frontPage'] = [
-                    'type' => $this->getParam('frontPageTypeOption'),
-                    'template' => $this->hasParam('selectOTemplate')
-                        ? trim($this->getParam('selectOTemplate'))
-                        : '',
-                    'templateLvl' => $this->hasParam('selectOTemplateLvl')
-                        ? intval($this->getParam('selectOTemplateLvl'))
-                        : 1,
-                    'qteProduct' => $this->hasParam('selectQteProduct')
-                        ? intval($this->getParam('selectQteProduct'))
-                        : 0
-                ];
-            }
-
-            //Import by CSV files
-            if ($this->hasParam('filenames') and $this->getParam('filenames') != '') {
-
-                $import['csv'] = $this->getParam('filenames');
-                $indexPage = call_user_func("\\ActivePaginate\\Form::ProductsImport", $documentId, $import, 'csv');
-
-            } elseif ($this->hasParam('targetClassFamily') and $this->getParam('targetClassFamily') != '-1'
-                and $this->hasParam('targetFamily') and $this->getParam('targetFamily') != '0'
-                and $this->hasParam('targetClassObject') and $this->getParam('targetClassObject') != '-1'
-            ) {
-
-                // Import by tree
-                $import['tree'] = [
-                    'familyClassId' => $this->getParam('targetClassFamily'),
-                    'familyId' => $this->getParam('targetFamily'),
-                    'objectClassId' => $this->getParam('targetClassObject')
-                ];
-
-                $indexPage = call_user_func("\\ActivePaginate\\Form::ProductsImport", $documentId, $import, 'tree');
-            }
+//            $conf['index'] = $indexPage;
+//            $conf['templateId'] = $this->hasParam('targetTemplate') ?
+//                trim($this->getParam('targetTemplate'))
+//                : NULL;
+//            $conf['grid'] = [
+//                'row' => $this->hasParam('gridRow') ? intval($this->getParam('gridRow')) : 0,
+//                'col' => $this->hasParam('gridCol') ? intval($this->getParam('gridCol')) : 0
+//            ];
+//
+//            // flyleaf
+//            if ($this->hasParam('frontPage') and intval($this->getParam('frontPage')) == 1) {
+//                $conf['frontPage'] = [
+//                    'type' => $this->getParam('frontPageTypeOption'),
+//                    'template' => $this->hasParam('selectOTemplate')
+//                        ? trim($this->getParam('selectOTemplate'))
+//                        : '',
+//                    'templateLvl' => $this->hasParam('selectOTemplateLvl')
+//                        ? intval($this->getParam('selectOTemplateLvl'))
+//                        : 1,
+//                    'qteProduct' => $this->hasParam('selectQteProduct')
+//                        ? intval($this->getParam('selectQteProduct'))
+//                        : 0
+//                ];
+//            }
+//
+//            // Import by tree
+//            $conf['tree'] = [
+//                'familyClassId' => $this->getParam('targetClassFamily'),
+//                'familyId' => $this->getParam('targetFamily'),
+//                'objectClassId' => $this->getParam('targetClassObject')
+//            ];
         }
 
         return $indexPage;
@@ -333,45 +340,6 @@ class ActiveWireframe_CreateController extends Action
         }
 
         return $files;
-    }
-
-    /**
-     * Download files
-     */
-    public function uploadFilesAction()
-    {
-        $this->disableLayout();
-        $this->disableViewAutoRender();
-        $this->disableBrowserCache();
-
-        $files = [];
-        $uploaddir = PIMCORE_TEMPORARY_DIRECTORY;
-
-        if (!empty($_FILES)) {
-            foreach ($_FILES as $file) {
-
-                $filename = basename($file['name']);
-                $filepath = PIMCORE_TEMPORARY_DIRECTORY . "/" . $filename;
-
-                // Clear
-                if (file_exists($filepath)) {
-                    @unlink($filepath);
-                }
-
-                // Download file
-                if (move_uploaded_file($file['tmp_name'], $filepath)) {
-                    $files[] = $uploaddir . "/" . $file['name'];
-
-                } else {
-                    return Tool::sendJson([
-                        'success' => false,
-                        'msg' => Translation::get('active_wireframe_error_uploadfiles')
-                    ]);
-                }
-            }
-        }
-
-        return Tool::sendJson(['success' => true, 'msg' => '', 'files' => $files]);
     }
 
 }

@@ -11,8 +11,8 @@
             <![CDATA[Plugin for managing briefs of your catalogs, brochures, flyers, books, magazines...]]></pluginDescription>
 
         <!-- meta data -->
-        <pluginVersion>2.3.2</pluginVersion>
-        <pluginRevision>8</pluginRevision>
+        <pluginVersion>2.3.3</pluginVersion>
+        <pluginRevision>0</pluginRevision>
         <pluginBuildTimestamp>0</pluginBuildTimestamp>
 
         <!-- className of the plugin which extends Pimcore_API_Plugin_Abstract-->

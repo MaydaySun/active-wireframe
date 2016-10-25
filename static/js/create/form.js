@@ -106,131 +106,57 @@ $(document).ready(function () {
     var oInit = $selectOrientation.find(':selected').val();
     getThumbsTemplates(fInit, oInit);
 
-    /**
-     * prepareUpload
-     * @param event
-     */
-    var files = false;
-    var prepareUpload = function (event) {
-        files = event.target.files;
-    };
-
-    // Upload de fichiers
-    $('#fileToUpload').on('change', prepareUpload);
-
     // Submit
-    $("#btnSubmit").on('click', function (event) {
-        event.preventDefault();
-
-        // files exist
-        if (files && (files.hasOwnProperty('length'))) {
-
-            // Create a formdata object and add the files
-            var filesData = new FormData();
-            if (files.hasOwnProperty('length')) {
-                $.each(files, function (key, value) {
-                    filesData.append(key, value);
-                });
-            }
-            uploadFiles(filesData);
-
-        } else {
-            submitForm()
-        }
-    });
-
-    /**
-     * Upload files
-     * @param data
-     */
-    function uploadFiles(data) {
-
-        $.ajax({
-            url: '/plugin/ActiveWireframe/create/upload-files',
-            type: 'POST',
-            cache: false,
-            processData: false,
-            dataType: 'json',
-            data: data,
-            contentType: false,
-
-            beforeSend: function (jqXHR, settings) {
-                pimcore.helpers.loadingShow();
-            },
-
-            success: function (data, textStatus, jqXHR) {
-                if (data.success) {
-                    submitForm(data);
-                } else {
-                    pimcore.helpers.showNotification(t('error'), data.msg, 'error');
-                }
-            },
-
-            error: function (jqXHR, textStatus) {
-                pimcore.helpers.showNotification(t('error'), 'ERRORS: ' + textStatus, 'error');
-            },
-
-            complete: function (jqXHR, textStatus) {
-                pimcore.helpers.loadingHide();
-            }
-        });
-    }
+    $("#btnSubmit").on('click', submitForm);
 
     /**
      * Submit form for creation of catalog
-     * @param filesData
      */
-    function submitForm(filesData) {
+    function submitForm() {
+        $('#form').submit(function(e) {
 
-        // Create a jQuery object from the form
-        var $form = $('#form');
+            // Serialize the form data
+            var data = new FormData(this);
+            data.append('documentId', $documentId);
 
-        // Serialize the form data
-        var formData = $form.serialize() + '&documentId=' + $documentId;
+            $.ajax({
+                url: '/plugin/ActiveWireframe/create/catalog',
+                type: 'POST',
+                cache: false,
+                dataType: 'json',
+                data: data,
+                processData: false,
+                contentType: false,
 
-        // You should sterilise the file names
-        if ((filesData !== undefined) && (filesData.files !== "")) {
-            if (filesData.files.hasOwnProperty('length')) {
-                $.each(filesData.files, function (key, value) {
-                    formData = formData + '&filenames[]=' + value;
-                });
-            }
-        }
+                beforeSend: function (jqXHR, settings) {
+                    pimcore.helpers.loadingShow();
+                },
 
-        $.ajax({
-            url: '/plugin/ActiveWireframe/create/catalog',
-            type: 'POST',
-            cache: false,
-            dataType: 'json',
-            data: formData,
+                success: function (data, textStatus, jqXHR) {
+                    if (data.success) {
+                        pimcore.helpers.showNotification(t('success'), data.msg);
+                    } else {
+                        pimcore.helpers.showNotification(t('error'), data.msg, 'error');
+                    }
+                },
 
-            beforeSend: function (jqXHR, settings) {
-                pimcore.helpers.loadingShow();
-            },
+                error: function (jqXHR, textStatus) {
+                    pimcore.helpers.showNotification(t('error'), 'ERRORS: ' + textStatus, 'error');
+                },
 
-            success: function (data, textStatus, jqXHR) {
-                if (data.success) {
-                    pimcore.helpers.showNotification(t('success'), data.msg);
-                } else {
-                    pimcore.helpers.showNotification(t('error'), data.msg, 'error');
+                complete: function () {
+                    // Reload tree
+                    var store = pimcore.globalmanager.get("layout_document_tree").tree.getStore();
+                    store.load({node: store.findRecord("id", 1)});
+
+                    // close and open document
+                    pimcore.helpers.closeDocument($documentId);
+                    pimcore.helpers.openDocument($documentId, 'printcontainer');
+                    pimcore.helpers.loadingHide();
                 }
-            },
-
-            error: function (jqXHR, textStatus) {
-                pimcore.helpers.showNotification(t('error'), 'ERRORS: ' + textStatus, 'error');
-            },
-
-            complete: function () {
-                // Reload tree
-                var store = pimcore.globalmanager.get("layout_document_tree").tree.getStore();
-                store.load({node: store.findRecord("id", 1)});
-
-                // close and open document
-                pimcore.helpers.closeDocument($documentId);
-                pimcore.helpers.openDocument($documentId, 'printcontainer');
-                pimcore.helpers.loadingHide();
-            }
-        });
+            });
+            e.preventDefault();
+        })
     }
 
     // Next and back creation step

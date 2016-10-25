@@ -142,13 +142,23 @@
 
                 </div>
 
-                <div class="areaBtn">
-                    <button class="button btn-next btn-nav-role fr custom_pimcore_icon pimcore_icon_arrowright"
-                            data-nav-id="tabs-2">
-                        <?= $this->ts('active_wireframe_next'); ?>
-                    </button>
-                    <p class="row"></p>
-                </div>
+                <?php if ($this->templateFormPaginate) { ?>
+                    <div class="areaBtn">
+                        <button class="button btn-next btn-nav-role fr custom_pimcore_icon pimcore_icon_arrowright"
+                                data-nav-id="tabs-1bis">
+                            <?= $this->ts('active_wireframe_next'); ?>
+                        </button>
+                        <p class="row"></p>
+                    </div>
+                <?php } else { ?>
+                    <div class="areaBtn">
+                        <button class="button btn-next btn-nav-role fr custom_pimcore_icon pimcore_icon_arrowright"
+                                data-nav-id="tabs-2">
+                            <?= $this->ts('active_wireframe_next'); ?>
+                        </button>
+                        <p class="row"></p>
+                    </div>
+                <?php } ?>
 
             </div>
 
@@ -226,17 +236,35 @@
 
                 </div>
 
-                <div class="areaBtn">
-                    <button class="button btn-back btn-nav-role fl custom_pimcore_icon pimcore_icon_arrowleft"
-                            data-nav-id="tabs-1">
-                        <?= $this->ts('active_wireframe_back'); ?>
-                    </button>
-                    <button class="button btn-next btn-nav-role fr custom_pimcore_icon pimcore_icon_arrowright"
-                            data-nav-id="tabs-3">
-                        <?= $this->ts('active_wireframe_next'); ?>
-                    </button>
-                    <p class="row"></p>
-                </div>
+                <?php if ($this->templateFormPaginate) { ?>
+
+                    <div class="areaBtn">
+                        <button class="button btn-back btn-nav-role fl custom_pimcore_icon pimcore_icon_arrowleft"
+                                data-nav-id="tabs-1bis">
+                            <?= $this->ts('active_wireframe_back'); ?>
+                        </button>
+                        <button class="button btn-next btn-nav-role fr custom_pimcore_icon pimcore_icon_arrowright"
+                                data-nav-id="tabs-3">
+                            <?= $this->ts('active_wireframe_next'); ?>
+                        </button>
+                        <p class="row"></p>
+                    </div>
+
+                <?php } else { ?>
+
+                    <div class="areaBtn">
+                        <button class="button btn-back btn-nav-role fl custom_pimcore_icon pimcore_icon_arrowleft"
+                                data-nav-id="tabs-1">
+                            <?= $this->ts('active_wireframe_back'); ?>
+                        </button>
+                        <button class="button btn-next btn-nav-role fr custom_pimcore_icon pimcore_icon_arrowright"
+                                data-nav-id="tabs-3">
+                            <?= $this->ts('active_wireframe_next'); ?>
+                        </button>
+                        <p class="row"></p>
+                    </div>
+
+                <?php } ?>
 
             </div>
 

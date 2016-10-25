@@ -10,4 +10,5 @@ Versions:
     * 2.2.0 : Active Paginate integration 
     * 2.3.0 : Active Web2print integration 
     * 2.3.1 : Integration ActiveWireframe Extensions
-    * 2.3.2 : Add controller WireframeAction
+    * 2.3.2 : Add controller RenderletAction
+    * 2.3.3 : Adaptation active paginate (file import)

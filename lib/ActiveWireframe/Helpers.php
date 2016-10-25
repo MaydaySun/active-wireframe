@@ -247,28 +247,17 @@ class Helpers
         $areaPath = '/website/views/areas';
         $areaPathAbs = PIMCORE_WEBSITE_PATH . '/views/areas';
 
-        if ($forcearea) {
-            return $areaPath . '/admin';
-        }
-
         // User isn't admin and belong to a role
         if ($user instanceof User and !$user->isAdmin() and !empty($roles)) {
-
             foreach ($roles as $rid) {
                 $role = User\Role::getById($rid);
-
                 // Role and directory exists
                 if ($role instanceof User\Role
                     AND file_exists($areaPathAbs . DIRECTORY_SEPARATOR . mb_strtolower($role->getName()))
                 ) {
                     return $areaPath . DIRECTORY_SEPARATOR . mb_strtolower($role->getName());
                 }
-
             }
-
-        } else if ($user instanceof User and $user->isAdmin()) {
-            // User admin
-            return $areaPath . '/admin';
         }
 
         // Default area path
@@ -394,9 +383,10 @@ class Helpers
      * @param $areaId
      * @param $objectId
      * @param $catalogId
+     * @param $conf
      * @return bool|mixed
      */
-    public static function CreateTagRenderlet(Printpage $document, $areaId, $objectId, $catalogId)
+    public static function CreateTagRenderlet(Printpage $document, $areaId, $objectId, $catalogId, $conf = [])
     {
         if ($areaId !== '') {
 
@@ -416,8 +406,7 @@ class Helpers
             // Add renderlet to page
             $document->setElement($areaId . 'pages-editable' . $index, $renderlet);
 
-            // save
-            return Elements::getInstance()->insert([
+            $dataElements = array_merge([
                 'document_id' => $document->getId(),
                 'document_parent_id' => $document->getParentId(),
                 'document_root_id' => $catalogId,
@@ -427,7 +416,10 @@ class Helpers
                 'e_top' => null,
                 'e_left' => null,
                 'e_index' => 10
-            ]);
+            ], $conf);
+
+            // save
+            return Elements::getInstance()->insert($dataElements);
         }
 
         return FALSE;

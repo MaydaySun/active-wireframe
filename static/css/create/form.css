@@ -35,7 +35,7 @@
     width: 170px;
 }
 
-#form input:not([type="radio"]):not(.button) {
+#form input:not([type="radio"]):not(.button):not([type="file"]) {
     margin-bottom: 5px;
     padding: 2px 2px 2px 5px;
 }
@@ -143,4 +143,13 @@ a.ui-button:active,
     border-image: initial;
     background: none repeat scroll 0 0 #009EE0;
     border: 1px solid #007cc0;
+}
+
+#form #paginate-tabs-1 label {
+    width: 150px;
+}
+
+label.myLabel input[type="file"] {
+    position: fixed;
+    top: -1000px;
 }
