@@ -87,9 +87,7 @@
 
                 // New areablock
                 if (!array_key_exists($currentIndex, $this->elementsData)) {
-
-                    $styles = "width: 70mm; height: 70mm; bottom: 0; top: inherit; right: 0mm; left: inherit;" .
-                        " transform: none; -webkit-transform: none; -moz-transform: none; -ms-transform: none;";
+                    $styles = "bottom: 0; top: inherit; left: inherit;";
 
                 } else {
 

@@ -65,15 +65,14 @@
 
 /* .box-w2p */
 #activeWireframe .box-w2p {
+    box-sizing: border-box;
     position: absolute;
     top: 0;
     left: 0;
-    width: 350px;
-    height: 150px;
-    min-height: 50px;
-    min-width: 50px;
     border: 2px solid transparent;
     z-index: 3;
+    width: 50mm;
+    height: 50mm;
 }
 
 #activeWireframe .box-w2p .pimcore_area_entry.pimcore_block_entry.pages-editable,

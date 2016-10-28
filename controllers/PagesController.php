@@ -128,9 +128,7 @@ class ActiveWireframe_PagesController extends Action
             $this->view->gridRow = ($pinfo['grid_row'] != 0) ? $pinfo['grid_row'] : 4;
         }
 
-        if (!$this->editmode AND !$this->hasParam('pimcore_preview')
-            AND !$this->hasParam('createThumbnail')
-        ) {
+        if (!$this->editmode and !$this->hasParam('pimcore_preview') and !$this->hasParam('createThumbnail')) {
             $widthPX = Helpers::convertMmToPx($width);
             Helpers::getPageThumbnailForTree($this->document, $widthPX);
         }
