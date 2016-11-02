@@ -12,6 +12,7 @@
 
 namespace ActiveWireframe\Pimcore\Web2Print\Processor;
 
+use ActivePublishing\Service\Pdf as APS_Pdf;
 use ActiveWireframe\Db\Pages;
 use mikehaertl\wkhtmlto\Pdf;
 use Pimcore\Config;
@@ -73,7 +74,12 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
 
         try {
             $pdf = $this->buildPdf($document, $jobConfigFile->config);
-            file_put_contents($document->getPdfFileName(), $pdf);
+            $pdfTmp = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "web2print-document-" . $documentId . ".pdf";
+
+            // single page
+            if (file_put_contents($pdfTmp, $pdf)) {
+                APS_Pdf::cut($pdfTmp, $document->getPdfFileName(), 1);
+            }
 
 //            \Pimcore::getEventManager()->trigger("document.print.postPdfGeneration", $document, [
 //                "filename" => $document->getPdfFileName(),
