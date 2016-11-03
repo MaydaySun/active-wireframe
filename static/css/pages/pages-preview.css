@@ -37,7 +37,6 @@ body, html {
     height: 150px;
     min-height: 50px;
     min-width: 50px;
-    border: 2px solid transparent;
     z-index: 3;
 }
 
@@ -61,10 +60,6 @@ body, html {
 #activeWireframe .box-w2p:hover > .ui-rotatable-handle {
     display: block;
     z-index: 100;
-}
-
-#activeWireframe .box-w2p.selected {
-    border: 2px solid #707;
 }
 
 #activeWireframe .box-w2p.selected .box-w2p-handle {
