@@ -1,14 +1,19 @@
 #Active Wireframe
-####Plugin for managing briefs of your catalogs, brochures, flyers, books, magazines...
+*Plugin for managing briefs of your catalogs, brochures, flyers, books, magazines...*
 
-Require: activepublishing/pimcore-v4-lib.git
+__Require:__
+- "activepublishing/pimcore-v4-lib.git" : "dev-release"
+- "mikehaertl/phpwkhtmltopdf": "~2.2"
+- "mikehaertl/php-pdftk": "0.3.*",
+- "mikehaertl/pdftk2-precise-amd64": "^2.02"
 
-Versions:
-
-    * 2.0.0 : Update for Pimcore 4
-    * 2.1.0 : Update licence and translation (FR and EN)
-    * 2.2.0 : Active Paginate integration 
-    * 2.3.0 : Active Web2print integration 
-    * 2.3.1 : Integration ActiveWireframe Extensions
-    * 2.3.2 : Add controller RenderletAction
-    * 2.3.3 : Adaptation active paginate (file import)
+__Versions:__
+- 2.4.1 : Debug pdf.
+- 2.4.0 : Adaptation w2p bloc.
+- 2.3.3 : Adaptation active paginate (file import).
+- 2.3.2 : Add controller RenderletAction.
+- 2.3.1 : Integration ActiveWireframe Extensions.
+- 2.3.0 : Active Web2print integration.
+- 2.2.0 : Active Paginate integration.
+- 2.1.0 : Update licence and translation (FR and EN).
+- 2.0.0 : Update for Pimcore 4.
