@@ -46,6 +46,8 @@ class ActiveWireframe_PrintpageController extends \Pimcore\Controller\Action\Adm
      */
     private function saveProcessingOptions($documentId, $options)
     {
-        file_put_contents(PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "web2print-processingoptions-" . $documentId . "_" . $this->getUser()->getId() . ".psf", \Pimcore\Tool\Serialize::serialize($options));
+        $file = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR .
+            "web2print-processingoptions-" . $documentId . "_" . $this->getUser()->getId() . ".psf";
+        file_put_contents($file, \Pimcore\Tool\Serialize::serialize($options));
     }
 }
