@@ -15,19 +15,36 @@ pimcore.document.tags.renderlet = Ext.extend(pimcore.document.tags.renderlet, {
         if (this.options.webtoprint) {
             var self = this;
 
-            $(document).ready(function () {
-                var element = $('div[id="' + self.getBody().id + '"]');
-                var width = element.find('.w2p-renderlet').width();
-                var height = element.find('.w2p-renderlet').height();
+            var frag = this.getBody().dom,
+                images = [],
+                i = 0;
 
-                var elBoxW2p = element.parent().parent().parent().parent().parent().parent();
-                elBoxW2p.css("width", width + "px").css("height", height + "px");
+            function imageLoaded() {
+                ++i;
+                if (images.ready && i == images.length) {
+                    $('div[id="' + self.getBody().id + '"]').ready(function () {
+                        var element = $('div[id="' + self.getBody().id + '"]');
+                        var width = element.find('.w2p-renderlet').width();
+                        var height = element.find('.w2p-renderlet').height();
 
-                self.getBody().setStyle({
-                    height: height + "px",
-                    width: width + "px"
-                });
+                        var elBoxW2p = element.parent().parent().parent().parent().parent().parent();
+                        elBoxW2p.css("width", width + "px").css("height", height + "px");
+
+                        self.getBody().setStyle({
+                            height: height + "px",
+                            width: width + "px"
+                        });
+                    });
+                }
+            }
+
+            $(frag).find('img').each(function() {
+                var i = new Image();
+                i.onload = i.onerror = imageLoaded;
+                i.src = this.src;
+                images[images.length] = i;
             });
+            images.ready = true;
 
         } else {
             this.getBody().setStyle({
@@ -35,4 +52,5 @@ pimcore.document.tags.renderlet = Ext.extend(pimcore.document.tags.renderlet, {
             });
         }
     }
+
 });
