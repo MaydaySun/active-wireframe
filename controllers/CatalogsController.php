@@ -57,7 +57,6 @@ class ActiveWireframe_CatalogsController extends Action
     {
         $document = $this->getParam("document");
         if ($this->editmode) {
-
             $this->enableLayout();
             $this->setLayout("index");
 
@@ -75,7 +74,7 @@ class ActiveWireframe_CatalogsController extends Action
                 $currentPage = $allPages['pages'][0];
                 $this->view->indiceFirstPage = $currentPage['indice'];
 
-                // Retrieve the dats of catalog
+                // Retrieve the datas of catalog
                 $dbCatalogs = Catalogs::getInstance();
                 $catalog = $dbCatalogs->getCatalogByDocumentId($document->getId());
 
@@ -99,12 +98,6 @@ class ActiveWireframe_CatalogsController extends Action
             }
 
             $this->renderScript('catalogs/tree.php');
-
-        } else {
-            $document = $this->getParam("document");
-            $allChildren = $document->getAllChildren();
-            $this->view->allChildren = $allChildren;
-            $this->renderScript('catalogs/webtoprint.php');
         }
     }
 
@@ -141,8 +134,8 @@ class ActiveWireframe_CatalogsController extends Action
                     }
 
                     $indice = ctype_digit($child->getKey())
-                        ? $child->getKey()
-                        : $indice + 1;
+                        ? intval($child->getKey())
+                        : ++$indice;
 
                     // Instance
                     $pages[] = [

@@ -9,8 +9,6 @@
     </div>
 
 <?php } else { ?>
-
-    <!-- CSS -->
     <style>
         #block-tree .row-preview {
             width: calc((<?= $this->widthPage  . "mm" ?>/<?= $this->reduction ?>) * 2);
@@ -30,69 +28,35 @@
         }
     </style>
 
-    <!-- Corps -->
     <div id="block-tree" class="chapter-tree container-lazy">
         <?php
 
-        $start = true;
-        $iCount = 1;
-        $count = count($this->pages);
-
-        foreach ($this->pages as $document) {
-
-            if ($start or ($document['indice'] % 2 == 0)
-                or $document['key'] == $this->ts('active_wireframe_first_cover')
-                or $document['key'] == $this->ts('active_wireframe_second_cover')
-                or $document['key'] == $this->ts('active_wireframe_fourth_cover')
-            ) {
+        $startBloc = true;
+        $endBlock = $this->pages[0]['indice']%2;
+        foreach ($this->pages as $keyDocument => $document) {
+            // start bloc
+            if ($startBloc) {
                 echo "<div class='row-preview'>";
             }
 
-            $classDocumentLock = $document['lock'] ? "document-lock" : "";
-            $classPagePosition = ($document['indice'] % 2 == 0) ? 'page-left' : 'page-right';
-
-            if (($document['key'] == $this->ts('active_wireframe_second_cover'))
-                or ($document['key'] == $this->ts('active_wireframe_fourth_cover'))
-            ) {
-                $classPagePosition = 'page-left';
+            // Start page odd
+            if ($startBloc and $endBlock) {
+                $startBloc = false;
             }
 
-            if (($document['key'] == $this->ts('active_wireframe_first_cover'))
-                or ($document['key'] == $this->ts('active_wireframe_third_cover'))
-            ) {
-                $classPagePosition = 'page-right';
-            }
+            // position
+            $classPagePosition = ($document['indice']%2 == 0) ? 'page-left' : 'page-right';
 
+            // notes
             $popoverNotes = "";
             $classNote = "";
             if (!empty($document['notes'])) {
                 $classNote = "document-notes";
-                $txtNote = "";
-                foreach ($document['notes']['notes'] as $note) {
-
-                    if ($note instanceof \Pimcore\Model\Element\Note) {
-                        $txtNote = $txtNote . '<li>'
-                            . $note->getTitle()
-                            . ' : <span>'
-                            . $note->getDescription()
-                            . '</span></li>';
-                    }
-
-                }
-
-                // popover
-                $popoverNotes = '<button 
-                type="button" 
-                class="btn btn-warning btn-page-note icon-book" 
-                data-container="body" 
-                data-toggle="popover" 
-                data-placement="bottom" 
-                data-content="<ul>' . $txtNote . '</ul>" 
-                data-html="true" 
-                title="Notes de la page"><span class="badge"></span></button>';
+                $popoverNotes = '<button type="button" class="btn btn-warning btn-page-note icon-book"
+                <span class="badge"></span></button>';
             }
 
-            // Plugin Workflow
+            // Workflow
             $strStyleWorkflow = "";
             if (is_array($document['workflow']) and !empty($document['workflow'])) {
                 $strStyleWorkflow = "border-color: " . $document['workflow']['color'];
@@ -100,41 +64,46 @@
 
             $divStart = '<div class="preview-page ' . $classNote . ' ' . $classPagePosition . '">';
 
-            $file = "/website/plugins-data"
-                . DIRECTORY_SEPARATOR . \ActiveWireframe\Plugin::PLUGIN_NAME
-                . DIRECTORY_SEPARATOR . $document['documentId']
-                . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
-
-            $absoluteFile  = \ActiveWireframe\Plugin::PLUGIN_PATH_DATA
-                . DIRECTORY_SEPARATOR . $document['documentId']
-                . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
+            $filename = DIRECTORY_SEPARATOR . $document['documentId'] . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
+            $file = "/website/plugins-data" . DIRECTORY_SEPARATOR . \ActiveWireframe\Plugin::PLUGIN_NAME . $filename;
+            $absoluteFile  = \ActiveWireframe\Plugin::PLUGIN_PATH_DATA . $filename;
 
             if (file_exists($absoluteFile)) {
-                $img = '<img class="lazy page-image page-border ' . $classDocumentLock . '" data-original="' . $file
+                $img = '<img class="lazy page-image page-border" data-original="' . $file
                     . '?_t=' . time() . '" title="' . $document['key'] . '" style="' . $strStyleWorkflow . '"/>';
             } else {
-                $img = '<div class="no-preview page-image page-border ' . $classDocumentLock . '"></div>';
+                $img = '<div class="no-preview page-image page-border"></div>';
             }
 
             $pageNumber = '<p class="titre-page">' . $document['key'] . '</p>';
             $divEnd = "</div>";
             echo $divStart . $img . $pageNumber . $popoverNotes . $divEnd;
 
-            if (($document['indice'] % 2 == 1)
-                or $document['key'] == $this->ts('active_wireframe_first_cover')
-                or $document['key'] == $this->ts('active_wireframe_third_cover')
-                or $document['key'] == $this->ts('active_wireframe_fourth_cover')
-                or ($iCount == $count)
-            ) {
+            if ($endBlock) {
                 echo '</div>';
             }
 
-            $start = false;
-            $iCount++;
+            if ($document['indice']%2 == 1 and $this->pages[$keyDocument+1]['indice']%2 == 0) { //even
+                // n = impair et n+1 == paire
+                $startBloc = $startBloc ? false : true;
+                $endBlock = $endBlock ? false : true;
+
+            } elseif ($document['indice']%2 == 0 and $this->pages[$keyDocument+1]['indice']%2 == 1) {
+                // n = pair et n+1 == impair
+                $startBloc = $startBloc ? false : true;
+                $endBlock = $endBlock ? false : true;
+
+            } elseif ($document['indice']%2 == 0 and $this->pages[$keyDocument+1]['indice']%2 == 0) {
+                // n = pair et n+1 = pair
+                echo '</div>'; // end
+
+            } elseif ($document['indice']%2 == 1 and $this->pages[$keyDocument+1]['indice']%2 == 1) {
+                // n = impaire et n+1 = impair
+                echo "<div class='row-preview'>"; // new block
+            }
         }
 
         ?>
         <p class="clear"></p>
     </div>
-
 <?php } ?>

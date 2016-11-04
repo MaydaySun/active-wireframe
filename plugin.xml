@@ -10,7 +10,7 @@
         </pluginDescription>
         <!-- meta data -->
         <pluginVersion>2.4.1</pluginVersion>
-        <pluginRevision>2</pluginRevision>
+        <pluginRevision>3</pluginRevision>
         <pluginBuildTimestamp>0</pluginBuildTimestamp>
         <!-- className of the plugin which extends Pimcore_API_Plugin_Abstract-->
         <pluginClassName>\ActiveWireframe\Plugin</pluginClassName>
