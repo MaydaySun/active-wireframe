@@ -50,20 +50,20 @@
     <!-- page width landmark-->
     <div id="page-global">
 
-    <?php if ($this->editmode) { ?>
-        <!-- sliders margin -->
-        <div id="slider-range-h"></div>
-        <div id="slider-range-v"></div>
+        <?php if ($this->editmode) { ?>
+            <!-- sliders margin -->
+            <div id="slider-range-h"></div>
+            <div id="slider-range-v"></div>
 
-        <!-- border #page-global -->
-        <div id="border-page-global"></div>
+            <!-- border #page-global -->
+            <div id="border-page-global"></div>
 
-        <!-- border #page -->
-        <div id="border-page"></div>
+            <!-- border #page -->
+            <div id="border-page"></div>
 
-        <!-- unselected area -->
-        <div id="unselected"></div>
-    <?php } ?>
+            <!-- unselected area -->
+            <div id="unselected"></div>
+        <?php } ?>
 
         <!-- page area -->
         <div id="page">
@@ -139,8 +139,10 @@
 </div>
 
 <?php if ($this->editmode) { ?>
-    <script src="/plugins/ActiveWireframe/static/js/pages/pages-editmode.js?v=<?= $this->version; ?>"></script>
+    <script src="/plugins/ActiveWireframe/static/js/pages/editmode.js?v=<?= $this->version; ?>"></script>
     <?= $this->includePathJS; ?>
+<?php } else { ?>
+    <script src="/plugins/ActiveWireframe/static/js/pages/preview.js?v=<?= $this->version; ?>"></script>
 <?php } ?>
 
 <script>
