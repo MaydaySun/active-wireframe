@@ -143,7 +143,7 @@ class RenderletAction extends Action
 
                 }
 
-                $this->_dataElementsW2p = $dataElementsW2p;
+                $this->view->dataElementsW2p = $this->_dataElementsW2p = $dataElementsW2p;
             }
         }
     }

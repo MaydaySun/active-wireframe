@@ -13,10 +13,12 @@
 namespace ActiveWireframe;
 
 use ActivePublishing\Plugin\Service\Install;
+use ActivePublishing\Service\Extension;
 use ActiveWireframe\Pimcore\Console\Command\Web2PrintPdfCreationCommand;
 use Pimcore\API\Plugin as PluginLib;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ValidationException;
+use Pimcore\Tool\Session\Container;
 
 /**
  * Class Plugin
@@ -200,6 +202,15 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
             $application = $e->getTarget();
             $application->add(new Web2PrintPdfCreationCommand());
         });
+
+        // Module extends
+        if ($addin = Extension::getInstance(self::PLUGIN_NAME)->check()) {
+            $session = new Container(self::PLUGIN_NAME);
+            $session->__set('ActiveWireframeExtension', [
+                'includePathJS' => $addin['js'],
+                'includePathCSS' => $addin['css']
+            ]);
+        }
     }
 
 }

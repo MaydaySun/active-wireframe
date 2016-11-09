@@ -60,9 +60,9 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
         boxW2p.oId = 0;
         boxW2p.elements = [];
 
-        if (bData.select('.box-w2p-content').elements.length !== 0) {
-            boxW2p.oId = bData.select('.box-w2p-content').elements[0].getAttribute('data-o-id');
-            var elementW2p = bData.select('.element-w2p');
+        if (bData.select('.w2p-extension').elements.length !== 0) {
+            boxW2p.oId = bData.select('.w2p-extension').elements[0].getAttribute('data-o-id');
+            var elementW2p = bData.select('.w2p-element');
 
             elementW2p.each(function (eData) {
                 var dataElement = {};

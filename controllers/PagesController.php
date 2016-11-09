@@ -15,7 +15,7 @@ use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Helpers;
 use ActiveWireframe\Plugin;
-use Pimcore\Tool\Session;
+use Pimcore\Tool\Session\Container;
 use Website\Controller\Action;
 
 /**
@@ -23,6 +23,11 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_PagesController extends Action
 {
+    /**
+     * @var Container
+     */
+    private $_session;
+
     /**
      * Init
      */
@@ -43,6 +48,9 @@ class ActiveWireframe_PagesController extends Action
             echo 'ERROR: Active Publishing - Plugin does not installed.';
             exit();
         }
+
+        // Session
+        $this->_session = new Container(Plugin::PLUGIN_NAME);
     }
 
     /**
@@ -115,8 +123,7 @@ class ActiveWireframe_PagesController extends Action
         }
 
         // Module Extensions
-        if ($sessionExtension = Session::getOption('ActiveWireframeExtension')) {
-            $sessionExtension = unserialize($sessionExtension);
+        if ($sessionExtension = $this->_session->__get('ActiveWireframeExtension')) {
             $this->view->includePathJS = $sessionExtension['includePathJS'];
             $this->view->includePathCSS = $sessionExtension['includePathCSS'];
         }
