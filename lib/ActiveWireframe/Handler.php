@@ -87,7 +87,7 @@ class Handler
                     $pageCatalogue = $dbPages->getPageByDocumentId($sourceId);
                     if ($pageCatalogue) {
 
-                        $pageInChapter = (($pageCatalogue['document_parent_id'] == $pageCatalogue['document_root_id'])
+                        $pageInChapter = (($pageCatalogue['document_parent_id'] != $pageCatalogue['document_root_id'])
                             and ($pageCatalogue['document_type'] == 'page'));
 
                         unset($pageCatalogue['id']);

@@ -97,15 +97,15 @@ class ActiveWireframe_PagesController extends Action
 
         // Retrieve margin
         $this->view->paddingLeft = ($this->document->getKey() % 2)
-            ? $cinfo['margin_little'] . "mm"
-            : $cinfo['margin_great'] . "mm";
+            ? floatval($cinfo['margin_little']). "mm"
+            : floatval($cinfo['margin_great']) . "mm";
 
         $this->view->paddingRight = ($this->document->getKey() % 2)
-            ? $cinfo['margin_great'] . "mm"
-            : $cinfo['margin_little'] . "mm";
+            ? floatval($cinfo['margin_great']) . "mm"
+            : floatval($cinfo['margin_little']) . "mm";
 
-        $this->view->paddingTop = $cinfo['margin_top'] . "mm";
-        $this->view->paddingBottom = $cinfo['margin_bottom'] . "mm";
+        $this->view->paddingTop = floatval($cinfo['margin_top']) . "mm";
+        $this->view->paddingBottom = floatval($cinfo['margin_bottom']) . "mm";
 
         // Element informations
         $this->view->elementsData = $this->getElements($this->document->getId());

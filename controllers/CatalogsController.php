@@ -120,18 +120,18 @@ class ActiveWireframe_CatalogsController extends Action
 
                     // Workflow plugin is installed
                     $pageStateWorkflow = false;
-                    if (Tool::pluginIsInstalled('ActiveWorkflow')) {
-
-                        $classAWPages = "\\ActiveWorkflow\\Db\\Pages";
-                        $dbAWPages = new $classAWPages();
-                        $dataAWPage = call_user_func_array([$dbAWPages, "getData"], [$child->getId()]);
-
-                        if (is_array($dataAWPage)) {
-                            $classAWStates = "\\ActiveWorkflow\\Db\\States";
-                            $dbAWState = new $classAWStates();
-                            $pageStateWorkflow = call_user_func_array([$dbAWState, "getState"], [$dataAWPage['state_id']]);
-                        }
-                    }
+//                    if (Tool::pluginIsInstalled('ActiveWorkflow')) {
+//
+//                        $classAWPages = "\\ActiveWorkflow\\Db\\Pages";
+//                        $dbAWPages = new $classAWPages();
+//                        $dataAWPage = call_user_func_array([$dbAWPages, "getData"], [$child->getId()]);
+//
+//                        if (is_array($dataAWPage)) {
+//                            $classAWStates = "\\ActiveWorkflow\\Db\\States";
+//                            $dbAWState = new $classAWStates();
+//                            $pageStateWorkflow = call_user_func_array([$dbAWState, "getState"], [$dataAWPage['state_id']]);
+//                        }
+//                    }
 
                     $indice = ctype_digit($child->getKey())
                         ? intval($child->getKey())
