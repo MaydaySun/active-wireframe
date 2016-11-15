@@ -14,6 +14,7 @@ namespace ActiveWireframe\Controller;
 use ActivePublishing\Service\File;
 use ActivePublishing\Service\Tool;
 use ActiveWireframe\Plugin;
+use Pimcore\Config;
 use Pimcore\Model\Document;
 use Pimcore\Model\Object;
 use Website\Controller\Action;
@@ -102,7 +103,7 @@ class RenderletAction extends Action
         $this->_language = $this->language;
 
         // send var in view
-        $this->view->baseHost = Tool::getHostUrl();
+        $this->view->baseHost = $this->getHostUrl();
         $this->view->baseAssets = PIMCORE_ASSET_DIRECTORY;
 
         // Config Thumbnail
@@ -112,6 +113,16 @@ class RenderletAction extends Action
 
         // Data element w2p
         $this->getDataElementW2p();
+    }
+
+    private function getHostUrl()
+    {
+        $web2printConfig = Config::getWeb2PrintConfig();
+        if ($web2printConfig->wkhtml2pdfHostname != "") {
+            return $web2printConfig->wkhtml2pdfHostname;
+        }
+
+        return Tool::getHostUrl();
     }
 
     /**

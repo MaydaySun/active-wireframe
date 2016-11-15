@@ -8,6 +8,7 @@ __Require:__
 * "mikehaertl/pdftk2-precise-amd64": "^2.02"
 
 __Versions:__
+* 2.4.2 : Fixed bug.
 * 2.4.1 : Debug pdf.
 * 2.4.0 : Adaptation w2p bloc.
 * 2.3.3 : Adaptation active paginate (file import).
