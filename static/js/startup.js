@@ -60,8 +60,11 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
         boxW2p.oId = 0;
         boxW2p.elements = [];
 
-        if (bData.select('.w2p-extension').elements.length !== 0) {
-            boxW2p.oId = bData.select('.w2p-extension').elements[0].getAttribute('data-o-id');
+        if (bData.select('.w2p-renderlet').elements.length !== 0) {
+            boxW2p.oId = bData.select('.w2p-renderlet').elements[0].getAttribute('data-o-id');
+        }
+
+        if (bData.select('.w2p-element').elements.length !== 0) {
             var elementW2p = bData.select('.w2p-element');
 
             elementW2p.each(function (eData) {
@@ -76,6 +79,7 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
                 boxW2p.elements.push(dataElement)
             });
         }
+
         return boxW2p;
     }
 
