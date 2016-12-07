@@ -83,6 +83,10 @@ class RenderletAction extends Action
             echo "Object failed."; exit();
         }
 
+        if(!$object->isPublished()) {
+            exit();
+        }
+
         if ($this->hasParam('documentId')) {
             $this->_document = Document::getById(intval($this->getParam('documentId')));
         } elseif ($this->hasParam('pimcore_parentDocument')) {

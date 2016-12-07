@@ -157,8 +157,20 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     public static function isInstalled()
     {
         if (file_exists(self::PLUGIN_VAR_PATH_INSTALL)) {
-            $conf= new \Zend_Config_Json(self::PLUGIN_VAR_PATH_INSTALL);
-            return intval($conf->get('installed'));
+            $conf = new \Zend_Config_Json(self::PLUGIN_VAR_PATH_INSTALL);
+
+            if ($isInstalled = intval($conf->get('installed'))) {
+                // Module extends
+                if ($addin = Extension::getInstance(self::PLUGIN_NAME)->check()) {
+                    $session = new Container(self::PLUGIN_NAME);
+                    $session->__set('ActiveWireframeExtension', [
+                        'includePathJS' => $addin['js'],
+                        'includePathCSS' => $addin['css']
+                    ]);
+                }
+            }
+
+            return $isInstalled;
         }
         return 0;
     }
@@ -202,15 +214,6 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
             $application = $e->getTarget();
             $application->add(new Web2PrintPdfCreationCommand());
         });
-
-        // Module extends
-        if ($addin = Extension::getInstance(self::PLUGIN_NAME)->check()) {
-            $session = new Container(self::PLUGIN_NAME);
-            $session->__set('ActiveWireframeExtension', [
-                'includePathJS' => $addin['js'],
-                'includePathCSS' => $addin['css']
-            ]);
-        }
     }
 
 }
