@@ -234,10 +234,9 @@ class Helpers
     /**
      * Get areas for the current user
      * @static
-     * @param bool $forcearea
      * @return string
      */
-    public static function getAreaByRole($forcearea = false)
+    public static function getAreaByRole()
     {
         // Get user and role
         $user = Tool::getCurrentUser();

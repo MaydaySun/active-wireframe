@@ -382,7 +382,6 @@
 }
 #activeWireframe .x-window.pimcore_areablock_toolbar > .x-window-body {
     overflow-y: auto;
-    max-height: 350px;
 }
 #activeWireframe .x-window.pimcore_areablock_toolbar > div {
     background: none repeat scroll 0 0 #222;

@@ -34,15 +34,13 @@ class ActiveWireframe_CatalogsController extends Action
         if (!Plugin::composerExists()) {
             $this->disableLayout();
             $this->disableViewAutoRender();
-            echo 'ERROR: Active Publishing - Composer librairies for this plugin is not installed.';
-            exit();
+            exit('ERROR: Active Publishing - Composer librairies for this plugin is not installed.');
         }
 
         if (!Plugin::isInstalled()) {
             $this->disableLayout();
             $this->disableViewAutoRender();
-            echo 'ERROR: Active Publishing - Plugin does not installed.';
-            exit();
+            exit('ERROR: Active Publishing - Plugin does not installed.');
         }
 
         $this->view->baseUrl = Tool::getHostUrl();
@@ -56,7 +54,9 @@ class ActiveWireframe_CatalogsController extends Action
     public function treeAction()
     {
         $document = $this->getParam("document");
+
         if ($this->editmode) {
+
             $this->enableLayout();
             $this->setLayout("index");
 

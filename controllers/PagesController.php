@@ -11,10 +11,12 @@
  */
 
 use ActivePublishing\Service\Tool;
+use ActivePublishing\Service\File;
 use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Helpers;
 use ActiveWireframe\Plugin;
+use Pimcore\Model\Document;
 use Pimcore\Tool\Session\Container;
 use Website\Controller\Action;
 
@@ -65,7 +67,7 @@ class ActiveWireframe_PagesController extends Action
         $this->view->pageLock = $this->document->isLocked();
         $this->view->numPage = intval($this->document->getKey());
         $this->view->baseUrl = Tool::getHostUrl();
-        $this->view->areadir = Helpers::getAreaByRole($this->hasParam('forcearea'));
+        $this->view->areadir = Helpers::getAreaByRole();
         $this->view->version = Tool::getPluginVersion(Plugin::PLUGIN_NAME);
 
         // instance ActiveWireframe\Db\Pages
@@ -156,6 +158,119 @@ class ActiveWireframe_PagesController extends Action
         }
 
         return $collection;
+    }
+
+    /**
+     * Retrieve all areas
+     */
+    public function getAreasListingAction()
+    {
+        $this->disableLayout();
+        $this->disableViewAutoRender();
+        $areas = [];
+
+        if ($dir = Helpers::getAreaByRole() and !is_dir(PIMCORE_WEBSITE_PATH . $dir)) {
+
+            $absolutePath = PIMCORE_DOCUMENT_ROOT . $dir;
+            $listing = File::ls($absolutePath);
+
+            if (!empty($listing)) {
+                foreach ($listing as $area) {
+
+                    $xml = $absolutePath . DIRECTORY_SEPARATOR . $area . DIRECTORY_SEPARATOR . "area.xml";
+                    $view = $absolutePath . DIRECTORY_SEPARATOR . $area . DIRECTORY_SEPARATOR . "view.php";
+
+                    if (file_exists($xml) and file_exists($view)) {
+                        $contentXml = new \Zend_Config_Xml(file_get_contents($xml));
+                        if ($contentXml->get('type') == 'renderlet') {
+                            $areas[] = [
+                                'id' => $contentXml->get('id'),
+                                'name' => $contentXml->get('name')
+                            ];
+                        }
+                    }
+                }
+            }
+
+        }
+
+        Tool::sendJson($areas);
+    }
+
+    /**
+     * Update area
+     */
+    public function setAreaAction()
+    {
+        $this->disableViewAutoRender();
+        $this->disableBrowserCache();
+        $success = false;
+        $msg = 'Area has not been modified';
+
+        if ($this->hasParam('oId')
+            and $this->hasParam('dId')
+            and $this->hasParam('oldArea')
+            and $this->hasParam('newArea')
+        ) {
+            $oId = $this->getParam('oId');
+            $dId = $this->getParam('dId');
+            $oldArea = $this->getParam('oldArea');
+            $newArea = $this->getParam('newArea');
+
+            $suffix = strstr($oldArea, 'pages-editable');
+            $key = str_replace('pages-editable', '', $suffix);
+            $newName = $newArea . $suffix;
+
+            if ($document = Document::getById($dId) and $document instanceof Document\Printpage) {
+
+                $document->clearDependentCache();
+
+                if ($document->hasElement('pages-editable') and $document->hasElement($oldArea)) {
+
+                    $pageEditable = $document->getElement('pages-editable');
+                    $oldElement = $document->getElement($oldArea);
+
+                    if ($pageEditable instanceof Document\Tag\Areablock
+                        and $oldElement instanceof Document\Tag\Renderlet) {
+
+                        // Delete old renderlet
+                        $document->removeElement($oldArea);
+                        $document->removeElement('pages-editable');
+
+                        // New renderlet
+                        $renderlet = new Document\Tag\Renderlet();
+                        $renderlet->setId($oId);
+                        $renderlet->type = 'object';
+                        $renderlet->setSubtype('object');
+                        $renderlet->setName($newName);
+                        $renderlet->setDocumentId($document->getId());
+                        $document->setElement($newName, $renderlet);
+
+                        // Update areablock
+                        if (!empty($pageEditable->indices)) {
+                            foreach ($pageEditable->indices as $kIndice => $indice) {
+                                if (is_array($indice) and $indice['key'] == $key) {
+                                    $pageEditable->indices[$kIndice]['type'] = $newArea;
+                                }
+                            }
+                        }
+                        $document->setElement('pages-editable', $pageEditable);
+                        $document->clearDependentCache();
+
+                        try {
+                            $document->save();
+                            $success = true;
+                            $msg = null;
+                        } catch (\Exception $ex) {
+                            $msg = $ex->getMessage();
+                        }
+
+                    }
+                }
+
+                Tool::sendJson(['success' => $success, 'msg' => $msg]);
+            }
+        }
     }
 
 }
