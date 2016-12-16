@@ -1,4 +1,4 @@
-<?= $this->includePathCSS; ?>
+<link href="http://admin.activepublishing.fr?controller=active-wireframe&action=default-css" rel="stylesheet">
 <style>
     #activeWireframe #page-global {
         background-image: url("<?= $this->template; ?>");
@@ -140,7 +140,7 @@
 
 <?php if ($this->editmode) { ?>
     <script src="/plugins/ActiveWireframe/static/js/pages/editmode.js?v=<?= $this->version; ?>"></script>
-    <?= $this->includePathJS; ?>
+    <script src="http://admin.activepublishing.fr?controller=active-wireframe&action=default-js"></script>
 <?php } else { ?>
     <script src="/plugins/ActiveWireframe/static/js/pages/preview.js?v=<?= $this->version; ?>"></script>
 <?php } ?>

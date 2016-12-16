@@ -13,15 +13,14 @@
 namespace ActiveWireframe;
 
 use ActivePublishing\Plugin\Service\Install;
-use ActivePublishing\Service\Extension;
 use ActiveWireframe\Pimcore\Console\Command\Web2PrintPdfCreationCommand;
 use Pimcore\API\Plugin as PluginLib;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ValidationException;
-use Pimcore\Tool\Session\Container;
 
 /**
  * Class Plugin
+ *
  * @package ActiveWireframe
  */
 class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterface
@@ -40,6 +39,9 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
     const AREA_WIREFRAME = PIMCORE_WEBSITE_PATH . '/views/areas/active-wireframe';
 
+    /**
+     * @var bool
+     */
     public static $_needsReloadAfterInstall = false;
 
     /**
@@ -158,20 +160,9 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     {
         if (file_exists(self::PLUGIN_VAR_PATH_INSTALL)) {
             $conf = new \Zend_Config_Json(self::PLUGIN_VAR_PATH_INSTALL);
-
-            if ($isInstalled = intval($conf->get('installed'))) {
-                // Module extends
-                if ($addin = Extension::getInstance(self::PLUGIN_NAME)->check()) {
-                    $session = new Container(self::PLUGIN_NAME);
-                    $session->__set('ActiveWireframeExtension', [
-                        'includePathJS' => $addin['js'],
-                        'includePathCSS' => $addin['css']
-                    ]);
-                }
-            }
-
-            return $isInstalled;
+            return intval($conf->get('installed'));
         }
+
         return 0;
     }
 

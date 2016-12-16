@@ -60,7 +60,11 @@ class ActiveWireframe_CreateController extends Action
         // Paginate Form
         $this->view->templateFormPaginate = false;
         if (Tool::pluginIsInstalled('ActivePaginate')) {
-            $this->view->templateFormPaginate = '/plugins/ActivePaginate/views/scripts/wireframe/form.php';
+            $template = Tool::getHttpData('http://admin.activepublishing.fr', [
+                'controller' => 'active-paginate',
+                'action' => "default"
+            ]);
+            $this->view->templateFormPaginate = $template;
         }
     }
 

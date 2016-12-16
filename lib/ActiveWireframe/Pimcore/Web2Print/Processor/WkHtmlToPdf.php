@@ -9,90 +9,52 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-
 namespace ActiveWireframe\Pimcore\Web2Print\Processor;
 
 use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Db\Pages;
+use ActiveWireframe\Pimcore\Web2Print\Processor;
 use mikehaertl\pdftk\Pdf as MKH_Pdftk;
 use mikehaertl\wkhtmlto\Pdf as MKH_Pdf;
 use Pimcore\Config;
 use Pimcore\Helper;
 use Pimcore\Logger;
-use Pimcore\Model;
 use Pimcore\Model\Document;
 use Pimcore\Placeholder;
-use Pimcore\Tool;
 
-class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
+/**
+ * Class WkHtmlToPdf
+ *
+ * @package ActiveWireframe\Pimcore\Web2Print\Processor
+ */
+class WkHtmlToPdf extends Processor
 {
     /**
-     * @param $documentId
-     * @param $config
-     * @throws \Exception
+     * @var string
      */
-    public function preparePdfGeneration($documentId, $config)
+    private $wkhtmltopdfBin;
+
+    /**
+     * @param string $wkhtmltopdfBin
+     * @param array $options key => value
+     */
+    public function __construct($wkhtmltopdfBin = null, $options = null)
     {
-        $document = $this->getPrintDocument($documentId);
-        if (Model\Tool\TmpStore::get($document->getLockKey())) {
-            throw new \Exception("Process with given document alredy running.");
+        $web2printConfig = Config::getWeb2PrintConfig();
+
+        if (empty($wkhtmltopdfBin)) {
+            $this->wkhtmltopdfBin = $web2printConfig->wkhtmltopdfBin;
+        } else {
+            $this->wkhtmltopdfBin = $wkhtmltopdfBin;
         }
-        Model\Tool\TmpStore::add($document->getLockKey(), true);
-
-        $jobConfig = new \stdClass();
-        $jobConfig->documentId = $documentId;
-        $jobConfig->config = $config;
-
-        $this->saveJobConfigObjectFile($jobConfig);
-        $this->updateStatus($documentId, 0, "prepare_pdf_generation");
-
-        $args = ["-p " . $jobConfig->documentId];
-
-        $env = Config::getEnvironment();
-        if ($env !== false) {
-            $args[] = "--environment=" . $env;
-        }
-
-        $cmd = Tool\Console::getPhpCli() . " " .
-            realpath(PIMCORE_PATH . DIRECTORY_SEPARATOR . "cli" . DIRECTORY_SEPARATOR . "console.php") .
-            " web2printActivePublishing:pdf-creation " . implode(" ", $args);
-        Logger::info($cmd);
-
-        Tool\Console::execInBackground($cmd, PIMCORE_LOG_DIRECTORY . DIRECTORY_SEPARATOR . "web2print-output.log");
     }
 
     /**
-     * @param $documentId
-     * @throws \Exception
+     * @return array
      */
-    public function startPdfGeneration($documentId)
+    public function getProcessingOptions()
     {
-        $jobConfigFile = $this->loadJobConfigObject($documentId);
-        $document = $this->getPrintDocument($documentId);
-
-        // check if there is already a generating process running, wait if so ...
-        Model\Tool\Lock::acquire($document->getLockKey(), 0);
-
-        try {
-
-            $this->buildPdf($document, $jobConfigFile->config);
-
-            Model\Tool\Lock::release($document->getLockKey());
-            Model\Tool\TmpStore::delete($document->getLockKey());
-            @unlink($this->getJobConfigFile($documentId));
-
-            $creationDate = \Zend_Date::now();
-            $document->setLastGenerated($creationDate->get() + 1);
-            $document->save();
-
-        } catch (\Exception $e) {
-            $document->save();
-            Model\Tool\Lock::release($document->getLockKey());
-            Model\Tool\TmpStore::delete($document->getLockKey());
-            @unlink($this->getJobConfigFile($documentId));
-            Logger::err($e);
-        }
-
+        return [];
     }
 
     /**
@@ -105,10 +67,13 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
     protected function buildPdf(Document\PrintAbstract $document, $config)
     {
         if ($document instanceof Document\Printpage) {
-            $this->buildPdfPrintpage($document, $config);
+            $this->buildPdfPrintpage($document);
         } elseif ($document instanceof Document\Printcontainer) {
-            $this->buildPdfPrintcontainer($document, $config);
+            $this->buildPdfPrintcontainer($document);
         }
+
+        $document->setLastGenerateMessage("");
+
         return true;
     }
 
@@ -116,20 +81,31 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
      * Built page PDF
      *
      * @param Document\Printpage $document
-     * @param $config
      * @return bool|string
      * @throws \Exception
      */
-    private function buildPdfPrintpage(Document\Printpage $document, $config)
+    private function buildPdfPrintpage(Document\Printpage $document)
     {
+        $web2printConfig = Config::getWeb2PrintConfig();
+
+        $params = [];
+        $this->updateStatus($document->getId(), 10, "start_html_rendering");
+        $html = $document->renderDocument($params);
+        $placeholder = new \Pimcore\Placeholder();
+        $html = $placeholder->replacePlaceholders($html);
+        $html = \Pimcore\Helper\Mail::setAbsolutePaths($html, $document, $web2printConfig->wkhtml2pdfHostname);
+
+        $this->updateStatus($document->getId(), 40, "finished_html_rendering");
+
+        file_put_contents(PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltorpdf-input.html", $html);
+
+        $this->updateStatus($document->getId(), 45, "saved_html_file");
+
         try {
-            $params = [];
 
-            $html = $this->getHtml($document, $params);
-            $fileHTML = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltorpdf-input.html";
-            file_put_contents($fileHTML, $html);
-
-            $this->createPdf($document, $fileHTML);
+            $this->updateStatus($document->getId(), 50, "pdf_conversion");
+            $pdf = $this->createPdf($document, $html);
+            $this->updateStatus($document->getId(), 100, "saving_pdf_document");
 
         } catch (\Exception $e) {
             Logger::error($e);
@@ -138,52 +114,32 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
         }
 
         $document->setLastGenerateMessage("");
-        return true;
-    }
 
-    /**
-     * render document
-     *
-     * @param Document\Printpage $document
-     * @param $params
-     * @return mixed|string
-     */
-    private function getHtml(Document\Printpage $document, $params)
-    {
-        $this->updateStatus($document->getId(), 10, "start_html_rendering");
-
-        $web2printConfig = Config::getWeb2PrintConfig();
-        $html = $document->renderDocument($params);
-
-        $placeholder = new Placeholder();
-        $html = $placeholder->replacePlaceholders($html);
-        $html = Helper\Mail::setAbsolutePaths($html, $document, $web2printConfig->wkhtml2pdfHostname);
-
-        $this->updateStatus($document->getId(), 40, "finished_html_rendering");
-        return $html;
+        return $pdf;
     }
 
     /**
      * create pdf
      *
      * @param Document\Printpage $document
-     * @param $fileHTML
+     * @param $html
      * @return bool
      * @throws \Exception
      */
-    private function createPdf(Document\Printpage $document, $fileHTML)
+    private function createPdf(Document\Printpage $document, $html)
     {
-        $this->updateStatus($document->getId(), 50, "pdf_conversion");
         $pdf = new MKH_Pdf($this->getOptionsCatalog($document->getId(), "printpage"));
-        $pdf->addPage($fileHTML);
+        $pdf->ignoreWarnings = true;
+        $pdf->addPage($html);
+
         if (!$pdf->saveAs($document->getPdfFileName())) {
             throw new \Exception('Could not create PDF: ' . $pdf->getError());
         }
 
-        $this->updateStatus($document->getId(), 100, "saving_pdf_document");
         $pdftk = new MKH_Pdftk($document->getPdfFileName());
         $pdftk->cat(1)->saveAs($document->getPdfFileName()); // single page
-        @unlink($fileHTML);
+
+        @unlink($html);
 
         return $document->getPdfFileName();
     }
@@ -228,11 +184,10 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
      * Built catalog or chapter pdf
      *
      * @param Document\Printcontainer $document
-     * @param $config
      * @return bool|string
      * @throws \Exception
      */
-    private function buildPdfPrintcontainer(Document\Printcontainer $document, $config)
+    private function buildPdfPrintcontainer(Document\Printcontainer $document)
     {
         try {
             $params = [];
@@ -240,13 +195,16 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
             // get all pdf of container
             $arrayPDF = $this->getPdfFromContainer($document, $params);
 
-
             // assemble all pdf
             if (!empty($arrayPDF)) {
+
                 $pdf = new MKH_Pdftk($arrayPDF);
-                $pdf->saveAs($document->getPdfFileName());
+                if (!$pdf->saveAs($document->getPdfFileName())) {
+                    throw new \Exception('Could not create PDF: ' . $pdf->getError());
+                }
+
             } else {
-                throw new \Exception('Error $arrayPDF is empty:');
+                throw new \Exception('Could not create PDF: No pdf to assemble');
             }
 
             $this->updateStatus($document->getId(), 100, "saving_pdf_document");
@@ -274,15 +232,19 @@ class WkHtmlToPdf extends \Pimcore\Web2Print\Processor\WkHtmlToPdf
         if ($document->hasChilds()) {
 
             foreach ($document->getChilds() as $child) {
+
                 // Chapter case
                 if ($child instanceof Document\Printcontainer and $child->hasChilds()) {
-                    $this->getPdfFromContainer($child, $params, $arrayPDF);
+
+                    $arrayPDF = $this->getPdfFromContainer($child, $params, $arrayPDF);
 
                 } elseif ($child instanceof Document\Printpage) { // Page case
-                    $filename = uniqid("webtoprint-page");
-                    $fileHtml = PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . $filename . ".html";
-                    file_put_contents($fileHtml, $this->getHtml($child, $params));
-                    $arrayPDF[] = $this->createPdf($child, $fileHtml);
+
+                    try {
+                        $pdf = $this->buildPdfPrintpage($child);
+                        $arrayPDF[] = $pdf;
+                    } catch (\Exception $ex) {}
+
                 }
             }
 

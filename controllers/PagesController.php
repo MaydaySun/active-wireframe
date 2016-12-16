@@ -9,15 +9,12 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-
 use ActivePublishing\Service\Tool;
 use ActivePublishing\Service\File;
-use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Helpers;
 use ActiveWireframe\Plugin;
 use Pimcore\Model\Document;
-use Pimcore\Tool\Session\Container;
 use Website\Controller\Action;
 
 /**
@@ -25,11 +22,6 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_PagesController extends Action
 {
-    /**
-     * @var Container
-     */
-    private $_session;
-
     /**
      * Init
      */
@@ -50,9 +42,6 @@ class ActiveWireframe_PagesController extends Action
             echo 'ERROR: Active Publishing - Plugin does not installed.';
             exit();
         }
-
-        // Session
-        $this->_session = new Container(Plugin::PLUGIN_NAME);
     }
 
     /**
@@ -110,7 +99,7 @@ class ActiveWireframe_PagesController extends Action
         $this->view->paddingBottom = floatval($cinfo['margin_bottom']) . "mm";
 
         // Element informations
-        $this->view->elementsData = $this->getElements($this->document->getId());
+        $this->view->elementsData = Helpers::getElements($this->document->getId());
 
         if (!$this->editmode AND $this->hasParam('generateW2p')) {
             $thumbnail = "active-wireframe-print";
@@ -124,12 +113,6 @@ class ActiveWireframe_PagesController extends Action
             $this->view->template = Helpers::getBackgroundTemplate($this->document, $cinfo, $thumbnail);
         }
 
-        // Module Extensions
-        if ($sessionExtension = $this->_session->__get('ActiveWireframeExtension')) {
-            $this->view->includePathJS = $sessionExtension['includePathJS'];
-            $this->view->includePathCSS = $sessionExtension['includePathCSS'];
-        }
-
         // ActivePaginate Plugin integration
         if (Tool::pluginIsInstalled('ActivePaginate')) {
             $this->view->activepaginate = true;
@@ -141,23 +124,6 @@ class ActiveWireframe_PagesController extends Action
             $widthPX = Helpers::convertMmToPx($width);
             Helpers::getPageThumbnailForTree($this->document, $widthPX);
         }
-    }
-
-    /**
-     * Get Data elements
-     *
-     * @param $documentId
-     * @return array
-     */
-    public function getElements($documentId)
-    {
-        $elements = Elements::getInstance()->getElementsByDocumentId(intval($documentId));
-        $collection = [];
-        foreach ($elements as $element) {
-            $collection[$element['e_key']] = $element;
-        }
-
-        return $collection;
     }
 
     /**

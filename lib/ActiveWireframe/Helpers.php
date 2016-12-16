@@ -325,7 +325,7 @@ class Helpers
             }
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
@@ -421,7 +421,7 @@ class Helpers
             return Elements::getInstance()->insert($dataElements);
         }
 
-        return FALSE;
+        return false;
     }
 
     /**
@@ -436,11 +436,11 @@ class Helpers
         if ($node->hasChilds()) {
             foreach ($node->getChilds() as $child) {
                 if ($child instanceof AbstractObject AND $child->hasChilds()) {
-                    return TRUE;
+                    return true;
                 }
             }
         }
-        return FALSE;
+        return false;
     }
 
     /**
@@ -486,7 +486,25 @@ class Helpers
 
         }
 
-        return FALSE;
+        return false;
+    }
+
+    /**
+     * Get Data wireframe-elements
+     *
+     * @static
+     * @param $documentId
+     * @return array
+     */
+    public static function getElements($documentId)
+    {
+        $elements = Elements::getInstance()->getElementsByDocumentId(intval($documentId));
+        $collection = [];
+        foreach ($elements as $element) {
+            $collection[$element['e_key']] = $element;
+        }
+
+        return $collection;
     }
 
 }
