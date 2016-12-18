@@ -72,7 +72,7 @@ abstract class Processor
         $pathConsole = "'" . PIMCORE_PATH . DIRECTORY_SEPARATOR . "cli" . DIRECTORY_SEPARATOR . "console.php" . "'";
         $args = implode(" ", $args);
         $cmd = Tool\Console::getPhpCli() . " " . $pathConsole . " web2printActivePublishing:pdf-creation $args";
-        Logger::err($cmd);
+        Logger::info($cmd);
 
         $logfile = "'" . PIMCORE_LOG_DIRECTORY . DIRECTORY_SEPARATOR . "web2print-output.log" . "'";
         Tool\Console::execInBackground($cmd, $logfile);
