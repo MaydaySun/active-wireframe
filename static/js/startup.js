@@ -20,6 +20,20 @@ pimcore.plugin.activewireframe = Class.create(pimcore.plugin.admin, {
         }
     },
 
+    postSaveDocument: function (document) {
+        if ((document.data.module == "ActiveWireframe") && ((document.data.action == "pages"))) {
+            Ext.Ajax.request({
+                url: '/plugin/ActiveWireframe/pages/get-thumbnail',
+                method: 'GET',
+                cache: false,
+                params: {
+                    documentId: document.id
+                },
+                success: function (xhr) {}
+            });
+        }
+    },
+
     saveBoxW2p: function (document) {
         var documentDom = Ext.get('document_iframe_' + document.id);
         var iframe = documentDom.dom.contentWindow.Ext;

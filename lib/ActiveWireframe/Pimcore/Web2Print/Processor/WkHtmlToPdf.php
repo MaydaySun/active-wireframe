@@ -33,8 +33,9 @@ class WkHtmlToPdf extends Processor
     private $wkhtmltopdfBin;
 
     /**
-     * @param string $wkhtmltopdfBin
-     * @param array $options key => value
+     * WkHtmlToPdf constructor.
+     * @param null $wkhtmltopdfBin
+     * @param null $options
      */
     public function __construct($wkhtmltopdfBin = null, $options = null)
     {
@@ -56,31 +57,25 @@ class WkHtmlToPdf extends Processor
     }
 
     /**
-     * create a page pdf or chapter/catalog pdf
-     *
      * @param Document\PrintAbstract $document
      * @param $config
      * @return bool
      */
     protected function buildPdf(Document\PrintAbstract $document, $config)
     {
+        $document->setLastGenerateMessage("");
+
         if ($document instanceof Document\Printpage) {
             $this->buildPdfPrintpage($document);
         } elseif ($document instanceof Document\Printcontainer) {
             $this->buildPdfPrintcontainer($document);
         }
 
-        $document->setLastGenerateMessage("");
-
         return true;
     }
 
     /**
-     * Built page PDF
-     *
      * @param Document\Printpage $document
-     * @return bool|string
-     * @throws \Exception
      */
     private function buildPdfPrintpage(Document\Printpage $document)
     {
@@ -88,8 +83,9 @@ class WkHtmlToPdf extends Processor
 
         $params = [];
         $this->updateStatus($document->getId(), 10, "start_html_rendering");
-        $html = $document->renderDocument($params);
+
         $placeholder = new \Pimcore\Placeholder();
+        $html = $document->renderDocument($params);
         $html = $placeholder->replacePlaceholders($html);
         $html = Mail::setAbsolutePaths($html, $document, $web2printConfig->wkhtml2pdfHostname);
 
@@ -102,26 +98,18 @@ class WkHtmlToPdf extends Processor
         try {
 
             $this->updateStatus($document->getId(), 50, "pdf_conversion");
-            $pdf = $this->createPdf($document, $html);
+            $this->createPdf($document, $html);
             $this->updateStatus($document->getId(), 100, "saving_pdf_document");
 
         } catch (\Exception $e) {
-            Logger::error($e);
+            Logger::error($e->getMessage());
             $document->setLastGenerateMessage($e->getMessage());
-            throw new \Exception("Error during REST-Request:" . $e->getMessage());
         }
-
-        $document->setLastGenerateMessage("");
-
-        return $pdf;
     }
 
     /**
-     * create pdf
-     *
      * @param Document\Printpage $document
      * @param $html
-     * @return bool
      * @throws \Exception
      */
     private function createPdf(Document\Printpage $document, $html)
@@ -133,10 +121,6 @@ class WkHtmlToPdf extends Processor
         if (!$pdf->saveAs($document->getPdfFileName())) {
             throw new \Exception('Could not create PDF: ' . $pdf->getError());
         }
-
-        @unlink($html);
-
-        return $document->getPdfFileName();
     }
 
     /**
@@ -176,46 +160,31 @@ class WkHtmlToPdf extends Processor
     }
 
     /**
-     * Built catalog or chapter pdf
-     *
      * @param Document\Printcontainer $document
-     * @return bool|string
-     * @throws \Exception
      */
     private function buildPdfPrintcontainer(Document\Printcontainer $document)
     {
-        try {
-            $params = [];
+        $params = [];
+        $arrayhtml = $this->getPdfFromContainer($document, $params);
 
-            // get all pdf of container
-            $arrayhtml = $this->getPdfFromContainer($document, $params);
+        if (!empty($arrayhtml)) {
 
-            // assemble all pdf
-            if (!empty($arrayhtml)) {
+            $pdf = new MKH_Pdf();
+            $pdf->ignoreWarnings = true;
 
-                $pdf = new MKH_Pdf();
-                $pdf->ignoreWarnings = true;
-                foreach ($arrayhtml as $html) {
-                    $pdf->addPage($html);
-                }
-                if (!$pdf->saveAs($document->getPdfFileName())) {
-                    throw new \Exception('Could not create PDF: ' . $pdf->getError());
-                }
+            foreach ($arrayhtml as $html) {
+                $pdf->addPage($html);
+            }
 
-            } else {
-                throw new \Exception('Could not create PDF: No pdf to assemble');
+            if (!$pdf->saveAs($document->getPdfFileName())) {
+                $document->setLastGenerateMessage('Could not create PDF: ' . $pdf->getError());
             }
 
             $this->updateStatus($document->getId(), 100, "saving_pdf_document");
 
-        } catch (\Exception $e) {
-            Logger::error($e);
-            $document->setLastGenerateMessage($e->getMessage());
-            throw new \Exception("Error during REST-Request:" . $e->getMessage());
+        } else {
+            $document->setLastGenerateMessage('Could not create PDF: No pdf to assemble');
         }
-
-        $document->setLastGenerateMessage("");
-        return true;
     }
 
     /**
@@ -238,9 +207,14 @@ class WkHtmlToPdf extends Processor
                     $arrayHtml = $this->getPdfFromContainer($child, $params, $arrayHtml);
 
                 } elseif ($child instanceof Document\Printpage) { // Page case
+
                     try {
+
                         $arrayHtml[] = $this->buildPdfPrintpageForPrintcontainer($document, $child);
+                        $this->updateStatus($child->getId(), 75, "saved_html_file");
+
                     } catch (\Exception $ex) {}
+
                 }
             }
 
@@ -263,16 +237,13 @@ class WkHtmlToPdf extends Processor
 
         $params = [];
         $this->updateStatus($container->getId(), 25, "start_html_rendering");
-        $html = $document->renderDocument($params);
+
         $placeholder = new \Pimcore\Placeholder();
+        $html = $document->renderDocument($params);
         $html = $placeholder->replacePlaceholders($html);
         $html = \Pimcore\Helper\Mail::setAbsolutePaths($html, $document, $web2printConfig->wkhtml2pdfHostname);
 
         $this->updateStatus($container->getId(), 50, "finished_html_rendering");
-
-        file_put_contents(PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltorpdf-input.html", $html);
-
-        $this->updateStatus($container->getId(), 75, "saved_html_file");
 
         return $html;
     }

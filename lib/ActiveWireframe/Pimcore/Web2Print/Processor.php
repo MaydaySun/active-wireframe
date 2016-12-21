@@ -11,8 +11,8 @@
  */
 namespace ActiveWireframe\Pimcore\Web2Print;
 
-use ActiveWireframe\Plugin;
 use ActiveWireframe\Pimcore\Web2Print\Processor\WkHtmlToPdf;
+use ActiveWireframe\Plugin;
 use Pimcore\Config;
 use Pimcore\Web2Print\Processor\PdfReactor8;
 use Pimcore\Tool;
@@ -140,9 +140,6 @@ abstract class Processor
      */
     public function startPdfGeneration($documentId)
     {
-        $session = new \Zend_Session_Namespace(Plugin::PLUGIN_NAME);
-        $session->startPdfGeneration = true;
-
         $jobConfigFile = $this->loadJobConfigObject($documentId);
 
         $document = $this->getPrintDocument($documentId);
@@ -150,32 +147,21 @@ abstract class Processor
         // check if there is already a generating process running, wait if so ...
         Model\Tool\Lock::acquire($document->getLockKey(), 0);
 
-        try {
-            $this->buildPdf($document, $jobConfigFile->config);
-
-            $creationDate = \Zend_Date::now();
-            $document->setLastGenerated(($creationDate->get() + 1));
-            $document->save();
-
-        } catch (\Exception $e) {
-            $document->save();
-            Logger::err($e);
-        }
+        $this->buildPdf($document, $jobConfigFile->config);
 
         Model\Tool\Lock::release($document->getLockKey());
         Model\Tool\TmpStore::delete($document->getLockKey());
 
         @unlink($this->getJobConfigFile($documentId));
 
-        $session->startPdfGeneration = true;
+        $document->setLastGenerated(time());
+        $document->save();
     }
 
     /**
-     * create a page pdf or chapter/catalog pdf
-     *
      * @param Document\PrintAbstract $document
      * @param $config
-     * @return bool
+     * @return mixed
      */
     abstract protected function buildPdf(Document\PrintAbstract $document, $config);
 

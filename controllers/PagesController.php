@@ -112,7 +112,7 @@ class ActiveWireframe_PagesController extends Action
         }
 
         if (!$this->editmode and !$this->hasParam('pimcore_preview') and !$this->hasParam('createThumbnail')) {
-            Helpers::getPageThumbnailForTree($this->document);
+            Helpers::createDocumentThumbnail($this->document);
         }
     }
 
@@ -151,6 +151,25 @@ class ActiveWireframe_PagesController extends Action
         }
 
         Tool::sendJson($areas);
+    }
+
+    /**
+     * Generate thumbnail of document
+     */
+    public function getThumbnailAction()
+    {
+        $this->disableLayout();
+        $this->disableViewAutoRender();
+
+        if ($this->hasParam('documentId')) {
+
+            $documentId = intval($this->getParam('documentId'));
+            $document = Document::getById($documentId);
+
+            if ($document instanceof Document\Printpage) {
+                Helpers::createDocumentThumbnail($document);
+            }
+        }
     }
 
     /**

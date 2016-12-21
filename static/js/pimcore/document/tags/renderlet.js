@@ -59,45 +59,41 @@ pimcore.document.tags.renderlet = Ext.extend(pimcore.document.tags.renderlet, {
 
         if(this.data["id"]) {
 
-            // Renderlet for web2print
-            if (this.options.webtoprint) {
+            // get allowed areas
+            var url = '/plugin/ActiveWireframe/pages/get-areas-listing';
+            this.sendAjax(url, null, 'GET', false, function(store) {
 
-                // get allowed areas
-                var url = '/plugin/ActiveWireframe/pages/get-areas-listing';
-                this.sendAjax(url, null, 'GET', false, function(store) {
-
-                    // The data store containing the list of states
-                    var dataStore = Ext.create('Ext.data.Store', {
-                        fields: ['id', 'name'],
-                        sorters: 'name',
-                        data : store
-                    });
-
-                    var subMenu = [];
-                    dataStore.each(function(record) {
-
-                        var oId = self.data['id'];
-                        var dId = self.data['documentId'];
-                        var oldArea = self.name;
-                        var newArea = record.data.id;
-
-                        subMenu.push({
-                            text: record.data.name,
-                            iconCls: "pimcore_icon_clone",
-                            handler: function () {
-                                self.updateArea(oId, dId, oldArea, newArea);
-                            }
-                        });
-                    });
-
-                    menu.add(new Ext.menu.Item({
-                        text: "Changer de Template",
-                        iconCls: "pimcore_icon_printpage",
-                        menu: subMenu
-                    }));
-
+                // The data store containing the list of states
+                var dataStore = Ext.create('Ext.data.Store', {
+                    fields: ['id', 'name'],
+                    sorters: 'name',
+                    data : store
                 });
-            }
+
+                var subMenu = [];
+                dataStore.each(function(record) {
+
+                    var oId = self.data['id'];
+                    var dId = self.data['documentId'];
+                    var oldArea = self.name;
+                    var newArea = record.data.id;
+
+                    subMenu.push({
+                        text: record.data.name,
+                        iconCls: "pimcore_icon_clone",
+                        handler: function () {
+                            self.updateArea(oId, dId, oldArea, newArea);
+                        }
+                    });
+                });
+
+                menu.add(new Ext.menu.Item({
+                    text: "Changer de Template",
+                    iconCls: "pimcore_icon_printpage",
+                    menu: subMenu
+                }));
+
+            });
 
             menu.add(new Ext.menu.Item({
                 text: t('empty'),

@@ -88,7 +88,7 @@ class ActiveWireframe_MenuController extends Action
             and ($document->getAction() == "tree")
             and $document->hasChilds()
         ) {
-            Helpers::reloadThumbnailForTree($document);
+            Helpers::reloadDocumentThumbnail($document);
         }
 
         return Tool::sendJson(['success' => true]);

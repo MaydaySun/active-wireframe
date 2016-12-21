@@ -26,7 +26,6 @@ use Pimcore\Model\Document;
 class Handler
 {
     /**
-     * @static
      * @var Handler
      */
     protected static $_instance;
@@ -47,7 +46,6 @@ class Handler
 
     /**
      * @param \Zend_EventManager_Event $e
-     * @return bool
      */
     public function postAdd(\Zend_EventManager_Event $e)
     {
@@ -168,7 +166,6 @@ class Handler
                         $selectPage['document_parent_id'] = $document->getParentId();
                         $selectPage['document_root_id'] = $document->getParentId();
                     }
-
                 }
 
                 $selectPage['page_key'] = $document->getKey();
@@ -198,18 +195,14 @@ class Handler
             }
 
         }
-
-        return true;
     }
 
     /**
      * @param \Zend_EventManager_Event $e
-     * @return bool
      */
     public function postUpdate(\Zend_EventManager_Event $e)
     {
         $document = $e->getTarget();
-        $session = new \Zend_Session_Namespace(Plugin::PLUGIN_NAME);
 
         if (($document instanceof Document\Printcontainer or $document instanceof Document\Printpage)
             and ($document->getModule() == Plugin::PLUGIN_NAME)
@@ -233,6 +226,7 @@ class Handler
                     } else {
 
                         $cinfo = $dbCatalogs->getCatalogByDocumentId($document->getParentId());
+
                         // Parent is a catalog
                         if ($cinfo) {
                             $pinfo['document_parent_id'] = $document->getParentId();
@@ -247,11 +241,6 @@ class Handler
                     // Update
                     $where = $dbpage->getAdapter()->quoteInto('id = ?', $pinfo['id']);
                     $dbpage->update($pinfo, $where);
-
-                    // Created Thumbnail
-                    if (!isset($session->startPdfGeneration) or !$session->startPdfGeneration) {
-                        Helpers::getPageThumbnailForTree($document);
-                    }
                 }
 
             } elseif ($document instanceof Document\Printcontainer) {
@@ -290,8 +279,6 @@ class Handler
             }
 
         }
-
-        return true;
     }
 
     /**

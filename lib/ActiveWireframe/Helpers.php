@@ -39,13 +39,13 @@ class Helpers
      * @param Printcontainer $document
      * @return int
      */
-    public static function reloadThumbnailForTree(Printcontainer $document)
+    public static function reloadDocumentThumbnail(Printcontainer $document)
     {
         foreach ($document->getChilds() as $child) {
             if ($child instanceof Printpage) {
-                self::getPageThumbnailForTree($child);
+                self::createDocumentThumbnail($child);
             } elseif ($child instanceof Printcontainer) {
-                self::reloadThumbnailForTree($child);
+                self::reloadDocumentThumbnail($child);
             }
         }
         return true;
@@ -55,10 +55,10 @@ class Helpers
      * Create a thumbnail for each  page
      *
      * @static
-     * @param Document $document
+     * @param Printpage $document
      * @return bool
      */
-    public static function getPageThumbnailForTree(Document $document)
+    public static function createDocumentThumbnail(Printpage $document)
     {
         $dirTmp = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $document->getId();
         $outputFile = $dirTmp . DIRECTORY_SEPARATOR . $document->getId() . '.jpeg';
@@ -68,46 +68,38 @@ class Helpers
             File::mkdir($dirTmp, 0775, true);
         }
 
-        return self::createPdfThumbnail($document, $outputFile);
-    }
+        $web2printConfig = Config::getWeb2PrintConfig();
 
-    /**
-     * @static
-     * @param Document $document
-     * @param $outputFile
-     * @param int $width
-     * @param string $format
-     * @return bool
-     */
-    public static function createPdfThumbnail(Document $document, $outputFile, $width = 300, $format = "jpeg")
-    {
         // add parameter pimcore_preview to prevent inclusion of google analytics code, cache, etc.
-        $url = Tool::getHostUrl() . $document->getFullPath() . '?createThumbnail=true';
+        $url = $web2printConfig->wkhtml2pdfHostname . $document->getFullPath() . '?createThumbnail=true';
         $url .= (strpos($url, "?") ? "&" : "?") . "pimcore_preview=true";
 
-        if ($html = file_get_contents($url)) {
+        try {
+            $html = file_get_contents($url);
+            $html = Mail::setAbsolutePaths($html, null, $web2printConfig->wkhtml2pdfHostname);
+        } catch (\Exception $ex) {
+            $html = "";
+        }
 
-            file_put_contents(PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltoimage-input.html", $html);
+        file_put_contents(PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltoimage-input.html", $html);
 
-            $image = new Image([
-                'width' => $width,
-                'format' => $format
-            ]);
-            $image->setPage($html);
-            $image->ignoreWarnings = true;
+        $image = new Image([
+            'width' => 300,
+            'format' => 'jpeg'
+        ]);
+        $image->setPage($html);
+        $image->ignoreWarnings = true;
 
-            if ($image->saveAs($outputFile)
-                and file_exists($outputFile)
-                and (filesize($outputFile) > 1000)
-            ) {
-                return true;
-            } else {
+        if ($image->saveAs($outputFile)
+            and file_exists($outputFile)
+            and (filesize($outputFile) > 1000)
+        ) {
 
-                $logfile = " \"" . PIMCORE_LOG_DIRECTORY . "/wkhtmltoimage.log\"";
-                File::put($logfile, $image->getError());
+            return true;
 
-            }
-
+        } else {
+            $logfile = " \"" . PIMCORE_LOG_DIRECTORY . "/wkhtmltoimage.log\"";
+            File::put($logfile, $image->getError());
         }
 
         return false;
