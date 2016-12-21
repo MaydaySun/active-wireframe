@@ -8,7 +8,7 @@ __Require:__
 * "mikehaertl/pdftk2-precise-amd64": "^2.02"
 
 __Versions:__
-* 2.5.1 : Bugfixed 
+* 2.5.3 : Bugfixed 
 * 2.5.0 : New feature, update area renderlet in webtoprint page
 * 2.4.2 : Fixed bug.
 * 2.4.1 : Debug pdf.

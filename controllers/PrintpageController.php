@@ -9,7 +9,6 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-
 use ActiveWireframe\Pimcore\Web2Print\Processor;
 use Pimcore\Model\Document\Printpage;
 

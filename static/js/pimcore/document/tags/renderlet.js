@@ -83,7 +83,7 @@ pimcore.document.tags.renderlet = Ext.extend(pimcore.document.tags.renderlet, {
 
                         subMenu.push({
                             text: record.data.name,
-                            iconCls: false,
+                            iconCls: "pimcore_icon_clone",
                             handler: function () {
                                 self.updateArea(oId, dId, oldArea, newArea);
                             }
@@ -91,7 +91,7 @@ pimcore.document.tags.renderlet = Ext.extend(pimcore.document.tags.renderlet, {
                     });
 
                     menu.add(new Ext.menu.Item({
-                        text: "Modifier l'area",
+                        text: "Changer de Template",
                         iconCls: "pimcore_icon_printpage",
                         menu: subMenu
                     }));

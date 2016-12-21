@@ -9,7 +9,6 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-
 namespace ActiveWireframe;
 
 use ActivePublishing\Service\Tool;
@@ -108,8 +107,10 @@ class Helpers
         ) {
             return true;
         } else {
+
             $logfile = " \"" . PIMCORE_LOG_DIRECTORY . "/wkhtmltoimage.log\"";
             File::put($logfile, $image->getError());
+
         }
 
         return false;
@@ -271,6 +272,7 @@ class Helpers
 
     /**
      * Get areas for the current user
+     *
      * @static
      * @return string
      */

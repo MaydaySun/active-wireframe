@@ -17,8 +17,16 @@ use Symfony\Component\Console\Input\InputInterface;
 use Symfony\Component\Console\Input\InputOption;
 use Symfony\Component\Console\Output\OutputInterface;
 
+/**
+ * Class Web2PrintPdfCreationCommand
+ *
+ * @package ActiveWireframe\Pimcore\Console\Command
+ */
 class Web2PrintPdfCreationCommand extends AbstractCommand
 {
+    /**
+     * Init commande
+     */
     protected function configure()
     {
         $this
@@ -31,6 +39,10 @@ class Web2PrintPdfCreationCommand extends AbstractCommand
             );
     }
 
+    /**
+     * @param InputInterface $input
+     * @param OutputInterface $output
+     */
     protected function execute(InputInterface $input, OutputInterface $output)
     {
         Processor::getInstance()->startPdfGeneration($input->getOption("processId"));

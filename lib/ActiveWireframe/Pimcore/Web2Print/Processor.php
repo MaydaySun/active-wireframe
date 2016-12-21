@@ -22,6 +22,7 @@ use Pimcore\Logger;
 
 /**
  * Class Processor
+ *
  * @package ActiveWireframe\Pimcore\Web2Print
  */
 abstract class Processor

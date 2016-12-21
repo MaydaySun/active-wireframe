@@ -9,7 +9,6 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-
 use ActivePublishing\Service\Tool;
 use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Helpers;
@@ -33,9 +32,7 @@ class ActiveWireframe_MenuController extends Action
         $this->disableViewAutoRender();
         $this->disableBrowserCache();
 
-        if (!Plugin::composerExists()
-            or !Plugin::isInstalled()
-        ) {
+        if (!Plugin::composerExists() or !Plugin::isInstalled()) {
             exit();
         }
     }

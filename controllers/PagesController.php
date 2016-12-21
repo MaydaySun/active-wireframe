@@ -32,15 +32,13 @@ class ActiveWireframe_PagesController extends Action
         if (!Plugin::composerExists()) {
             $this->disableLayout();
             $this->disableViewAutoRender();
-            echo 'ERROR: Active Publishing - Composer librairies for this plugin is not installed.';
-            exit();
+            exit('ERROR: Active Publishing - Composer librairies for this plugin is not installed.');
         }
 
         if (!Plugin::isInstalled()) {
             $this->disableLayout();
             $this->disableViewAutoRender();
-            echo 'ERROR: Active Publishing - Plugin does not installed.';
-            exit();
+            exit('ERROR: Active Publishing - Plugin does not installed.');
         }
     }
 
@@ -113,16 +111,8 @@ class ActiveWireframe_PagesController extends Action
             $this->view->template = Helpers::getBackgroundTemplate($this->document, $cinfo, $thumbnail);
         }
 
-        // ActivePaginate Plugin integration
-        if (Tool::pluginIsInstalled('ActivePaginate')) {
-            $this->view->activepaginate = true;
-            $this->view->gridCol = ($pinfo['grid_col'] != 0) ? $pinfo['grid_col'] : 3;
-            $this->view->gridRow = ($pinfo['grid_row'] != 0) ? $pinfo['grid_row'] : 4;
-        }
-
         if (!$this->editmode and !$this->hasParam('pimcore_preview') and !$this->hasParam('createThumbnail')) {
-            $widthPX = Helpers::convertMmToPx($width);
-            Helpers::getPageThumbnailForTree($this->document, $widthPX);
+            Helpers::getPageThumbnailForTree($this->document);
         }
     }
 
