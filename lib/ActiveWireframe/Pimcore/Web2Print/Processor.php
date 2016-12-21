@@ -11,6 +11,7 @@
  */
 namespace ActiveWireframe\Pimcore\Web2Print;
 
+use ActiveWireframe\Plugin;
 use ActiveWireframe\Pimcore\Web2Print\Processor\WkHtmlToPdf;
 use Pimcore\Config;
 use Pimcore\Web2Print\Processor\PdfReactor8;
@@ -138,6 +139,9 @@ abstract class Processor
      */
     public function startPdfGeneration($documentId)
     {
+        $session = new \Zend_Session_Namespace(Plugin::PLUGIN_NAME);
+        $session->startPdfGeneration = true;
+
         $jobConfigFile = $this->loadJobConfigObject($documentId);
 
         $document = $this->getPrintDocument($documentId);
@@ -161,6 +165,8 @@ abstract class Processor
         Model\Tool\TmpStore::delete($document->getLockKey());
 
         @unlink($this->getJobConfigFile($documentId));
+
+        $session->startPdfGeneration = true;
     }
 
     /**

@@ -85,8 +85,7 @@ class Helpers
         $web2printConfig = Config::getWeb2PrintConfig();
 
         // add parameter pimcore_preview to prevent inclusion of google analytics code, cache, etc.
-        $url = $document->getFullPath() . '?createThumbnail=true';
-        $url = Mail::setAbsolutePaths($url, null, $web2printConfig->wkhtml2pdfHostname);
+        $url = Tool::getHostUrl() . $document->getFullPath() . '?createThumbnail=true';
         $url .= (strpos($url, "?") ? "&" : "?") . "pimcore_preview=true";
 
         $html = file_get_contents($url);

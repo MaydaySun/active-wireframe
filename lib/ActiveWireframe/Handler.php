@@ -209,6 +209,7 @@ class Handler
     public function postUpdate(\Zend_EventManager_Event $e)
     {
         $document = $e->getTarget();
+        $session = new \Zend_Session_Namespace(Plugin::PLUGIN_NAME);
 
         if (($document instanceof Document\Printcontainer or $document instanceof Document\Printpage)
             and ($document->getModule() == Plugin::PLUGIN_NAME)
@@ -219,8 +220,8 @@ class Handler
 
                 $dbpage = new Pages();
                 $pinfo = $dbpage->getPageByDocumentId($document->getId());
-                if ($pinfo) {
 
+                if ($pinfo) {
                     $parentInfo = $dbpage->getPageByDocumentId($document->getParentId());
 
                     // Parent is a chapter
@@ -228,11 +229,10 @@ class Handler
 
                         $pinfo['document_parent_id'] = $document->getParentId();
                         $pinfo['document_root_id'] = $document->getParent()->getParentId();
-                        $cinfo = $dbCatalogs->getCatalogByDocumentId($document->getParent()->getParentId());
 
                     } else {
-                        $cinfo = $dbCatalogs->getCatalogByDocumentId($document->getParentId());
 
+                        $cinfo = $dbCatalogs->getCatalogByDocumentId($document->getParentId());
                         // Parent is a catalog
                         if ($cinfo) {
                             $pinfo['document_parent_id'] = $document->getParentId();
@@ -249,7 +249,9 @@ class Handler
                     $dbpage->update($pinfo, $where);
 
                     // Created Thumbnail
-                    Helpers::getPageThumbnailForTree($document);
+                    if (isset($session->startPdfGeneration) and !$session->startPdfGeneration) {
+                        Helpers::getPageThumbnailForTree($document);
+                    }
                 }
 
             } elseif ($document instanceof Document\Printcontainer) {
