@@ -87,16 +87,11 @@ class ActiveWireframe_MenuController extends Action
     public function reloadCatalogAction()
     {
         $document = Printcontainer::getById($this->getParam('documentId'));
-        if ($document instanceof Printcontainer and $document->getAction() == "tree" and $document->hasChilds()) {
-
-            $dbCatalog = Catalogs::getInstance();
-            $catalog = $dbCatalog->getCatalogByDocumentId($document->getId());
-
-            if (!$catalog) {
-                $catalog = $dbCatalog->getCatalogByDocumentId($document->getParentId());
-            }
-
-            Helpers::reloadThumbnailForTree($document, $catalog['format_width']);
+        if ($document instanceof Printcontainer
+            and ($document->getAction() == "tree")
+            and $document->hasChilds()
+        ) {
+            Helpers::reloadThumbnailForTree($document);
         }
 
         return Tool::sendJson(['success' => true]);

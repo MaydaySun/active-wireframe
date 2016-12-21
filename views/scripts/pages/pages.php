@@ -1,7 +1,9 @@
 <link href="http://admin.activepublishing.fr?controller=active-wireframe&action=default-css" rel="stylesheet">
 <style>
     #activeWireframe #page-global {
+        <?php if($this->template) { ?>
         background-image: url("<?= $this->template; ?>");
+        <?php } ?>
         background-size: <?= $this->pageWidthLandmark; ?> <?= $this->pageHeightLandmark; ?>;
     }
     #activeWireframe .box-w2p-full {
@@ -16,6 +18,10 @@
             width: <?= $this->pageWidthLandmark; ?> !important;
             height: <?= $this->pageHeightLandmark; ?> !important;
         }
+        #activeWireframe #page {
+            width: <?= $this->pageWidth; ?> !important;
+            height: <?= $this->pageHeight; ?> !important;
+        }
         #slider-range-v .slider-handle-v {
             width: calc(<?= $this->pageWidthLandmark; ?> + 10px) !important;
         }
@@ -26,7 +32,7 @@
 <?php } else { ?>
     <link href="/plugins/ActiveWireframe/static/css/pages/preview.css?v=<?= $this->version; ?>" rel="stylesheet">
     <style>
-        #activeWireframe #page-global {
+        #activeWireframe #page-global, #activeWireframe #page {
             width: <?= $this->pageWidth; ?> !important;
             height: <?= $this->pageHeight; ?> !important;
         }

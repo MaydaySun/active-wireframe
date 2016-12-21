@@ -15,8 +15,9 @@ namespace ActiveWireframe;
 use ActivePublishing\Service\Tool;
 use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
+use mikehaertl\wkhtmlto\Image;
+use Pimcore\Config;
 use Pimcore\File;
-use Pimcore\Image\HtmlToImage;
 use Pimcore\Logger;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Document;
@@ -36,20 +37,80 @@ class Helpers
      *
      * @static
      * @param Printcontainer $document
-     * @param $width
      * @return int
      */
-    public static function reloadThumbnailForTree(Printcontainer $document, $width)
+    public static function reloadThumbnailForTree(Printcontainer $document)
     {
         foreach ($document->getChilds() as $child) {
-            $widthPX = Helpers::convertMmToPx($width);
             if ($child instanceof Printpage) {
-                self::getPageThumbnailForTree($child, $widthPX);
+                self::getPageThumbnailForTree($child);
             } elseif ($child instanceof Printcontainer) {
-                self::reloadThumbnailForTree($child, $widthPX);
+                self::reloadThumbnailForTree($child);
             }
         }
         return true;
+    }
+
+    /**
+     * Create a thumbnail for each  page
+     *
+     * @static
+     * @param Document $document
+     * @return bool
+     */
+    public static function getPageThumbnailForTree(Document $document)
+    {
+        $dirTmp = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $document->getId();
+        $outputFile = $dirTmp . DIRECTORY_SEPARATOR . $document->getId() . '.jpeg';
+
+        // path thumbnail
+        if (!file_exists($dirTmp)) {
+            File::mkdir($dirTmp, 0775, true);
+        }
+
+        return self::createPdfThumbnail($document, $outputFile);
+    }
+
+    /**
+     * @static
+     * @param Document $document
+     * @param $outputFile
+     * @param int $width
+     * @param string $format
+     * @return bool
+     */
+    public static function createPdfThumbnail(Document $document, $outputFile, $width = 300, $format = "jpeg")
+    {
+        // add parameter pimcore_preview to prevent inclusion of google analytics code, cache, etc.
+        $url = Tool::getHostUrl() . $document->getFullPath() . '?createThumbnail=true';
+        $url .= (strpos($url, "?") ? "&" : "?") . "pimcore_preview=true";
+
+        $html = file_get_contents($url);
+        $placeholder = new \Pimcore\Placeholder();
+        $html = $placeholder->replacePlaceholders($html);
+
+        $web2printConfig = Config::getWeb2PrintConfig();
+        $html = \Pimcore\Helper\Mail::setAbsolutePaths($html, $document, $web2printConfig->wkhtml2pdfHostname);
+        file_put_contents(PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltoimage-input.html", $html);
+
+        $image = new Image([
+            'width' => $width,
+            'format' => $format
+        ]);
+        $image->setPage($html);
+        $image->ignoreWarnings = true;
+
+        if ($image->saveAs($outputFile)
+            and file_exists($outputFile)
+            and (filesize($outputFile) > 1000)
+        ) {
+            return true;
+        } else {
+            $logfile = " \"" . PIMCORE_LOG_DIRECTORY . "/wkhtmltoimage.log\"";
+            File::put($logfile, $image->getError());
+        }
+
+        return false;
     }
 
     /**
@@ -63,29 +124,6 @@ class Helpers
     public static function convertMmToPx($mm, $dpi = 96)
     {
         return ($dpi * $mm) / 25.4;
-    }
-
-    /**
-     * Create a thumbnail for each  page
-     *
-     * @static
-     * @param Document $document
-     * @param $widthPX
-     * @return bool
-     */
-    public static function getPageThumbnailForTree(Document $document, $widthPX)
-    {
-        $dirTmp = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $document->getId();
-        $jpeg = $dirTmp . DIRECTORY_SEPARATOR . $document->getId() . '.jpeg';
-        $url = Tool::getHostUrl() . $document->getFullPath() . '?createThumbnail=true&forcearea=true';
-        $widthPX = intval(intval($widthPX) / 5);
-
-        // path thumbnail
-        if (!file_exists($dirTmp)) {
-            File::mkdir($dirTmp, 0775, true);
-        }
-
-        return HtmlToImage::convert($url, $jpeg, $widthPX, "jpeg");
     }
 
     /**
@@ -109,7 +147,6 @@ class Helpers
             if (($page instanceof Printpage) and (!in_array($page->getKey(), $noRename))) {
 
                 if (ctype_digit($page->getKey())) {
-
                     try {
                         $page->setKey($index);
                         $page->save();
@@ -117,7 +154,6 @@ class Helpers
                         Logger::err($ex->getMessage());
                         return 0;
                     }
-
                 }
 
                 $index++;

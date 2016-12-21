@@ -249,8 +249,7 @@ class Handler
                     $dbpage->update($pinfo, $where);
 
                     // Created Thumbnail
-                    $widthPX = Helpers::convertMmToPx($cinfo['format_width']);
-                    Helpers::getPageThumbnailForTree($document, $widthPX);
+                    Helpers::getPageThumbnailForTree($document);
                 }
 
             } elseif ($document instanceof Document\Printcontainer) {
@@ -341,7 +340,6 @@ class Handler
                     $selectCat = $dbCatalogs->getCatalogByDocumentId($document->getId());
 
                     if (is_array($selectCat)) {
-
                         // Delete in DB
                         $where = $dbCatalogs->getAdapter()->quoteInto('document_id = ?', $document->getId());
                         $dbCatalogs->delete($where);

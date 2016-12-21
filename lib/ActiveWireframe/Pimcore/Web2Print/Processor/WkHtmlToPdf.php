@@ -17,6 +17,7 @@ use ActiveWireframe\Pimcore\Web2Print\Processor;
 use mikehaertl\wkhtmlto\Pdf as MKH_Pdf;
 use Pimcore\Config;
 use Pimcore\Logger;
+use Pimcore\Helper\Mail;
 use Pimcore\Model\Document;
 
 /**
@@ -90,7 +91,7 @@ class WkHtmlToPdf extends Processor
         $html = $document->renderDocument($params);
         $placeholder = new \Pimcore\Placeholder();
         $html = $placeholder->replacePlaceholders($html);
-        $html = \Pimcore\Helper\Mail::setAbsolutePaths($html, $document, $web2printConfig->wkhtml2pdfHostname);
+        $html = Mail::setAbsolutePaths($html, $document, $web2printConfig->wkhtml2pdfHostname);
 
         $this->updateStatus($document->getId(), 40, "finished_html_rendering");
 

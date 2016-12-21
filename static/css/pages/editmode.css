@@ -27,8 +27,6 @@
 /* #page */
 #activeWireframe #page {
     position: absolute;
-    width: calc(100% - 10mm);
-    height: calc(100% - 10mm);
     top: 5mm;
     left: 5mm;
     background-color: transparent;
