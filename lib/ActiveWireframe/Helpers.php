@@ -81,35 +81,32 @@ class Helpers
      */
     public static function createPdfThumbnail(Document $document, $outputFile, $width = 300, $format = "jpeg")
     {
-        $web2printConfig = Config::getWeb2PrintConfig();
-
         // add parameter pimcore_preview to prevent inclusion of google analytics code, cache, etc.
         $url = Tool::getHostUrl() . $document->getFullPath() . '?createThumbnail=true';
         $url .= (strpos($url, "?") ? "&" : "?") . "pimcore_preview=true";
 
-        $html = file_get_contents($url);
-        $placeholder = new \Pimcore\Placeholder();
-        $html = $placeholder->replacePlaceholders($html);
+        if ($html = file_get_contents($url)) {
 
-        $html = Mail::setAbsolutePaths($html, $document, $web2printConfig->wkhtml2pdfHostname);
-        file_put_contents(PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltoimage-input.html", $html);
+            file_put_contents(PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltoimage-input.html", $html);
 
-        $image = new Image([
-            'width' => $width,
-            'format' => $format
-        ]);
-        $image->setPage($html);
-        $image->ignoreWarnings = true;
+            $image = new Image([
+                'width' => $width,
+                'format' => $format
+            ]);
+            $image->setPage($html);
+            $image->ignoreWarnings = true;
 
-        if ($image->saveAs($outputFile)
-            and file_exists($outputFile)
-            and (filesize($outputFile) > 1000)
-        ) {
-            return true;
-        } else {
+            if ($image->saveAs($outputFile)
+                and file_exists($outputFile)
+                and (filesize($outputFile) > 1000)
+            ) {
+                return true;
+            } else {
 
-            $logfile = " \"" . PIMCORE_LOG_DIRECTORY . "/wkhtmltoimage.log\"";
-            File::put($logfile, $image->getError());
+                $logfile = " \"" . PIMCORE_LOG_DIRECTORY . "/wkhtmltoimage.log\"";
+                File::put($logfile, $image->getError());
+
+            }
 
         }
 
