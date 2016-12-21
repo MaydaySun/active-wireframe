@@ -249,7 +249,7 @@ class Handler
                     $dbpage->update($pinfo, $where);
 
                     // Created Thumbnail
-                    if (isset($session->startPdfGeneration) and !$session->startPdfGeneration) {
+                    if (!isset($session->startPdfGeneration) or !$session->startPdfGeneration) {
                         Helpers::getPageThumbnailForTree($document);
                     }
                 }
