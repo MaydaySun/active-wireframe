@@ -179,6 +179,7 @@ class ActiveWireframe_PagesController extends Action
     {
         $this->disableViewAutoRender();
         $this->disableBrowserCache();
+
         $success = false;
         $msg = 'Area has not been modified';
 

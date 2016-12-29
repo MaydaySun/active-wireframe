@@ -48,20 +48,23 @@ class ActiveWireframe_MenuController extends Action
         if ($document instanceof Printcontainer) {
 
             $index = $this->hasParam('index') ? $this->getParam('index') : 1;
+            $recursive = $this->hasParam('recursive') ? $this->getParam('recursive') : false;
             $noRename = [];
 
             // Document is a chapter
             if (!Catalogs::getInstance()->getCatalogByDocumentId($document->getId())) {
+                if ($recursive === "true") { // recursive
 
-                foreach ($document->getParent()->getChilds() as $child) {
-                    if (($child instanceof Printpage or $child instanceof Printcontainer)
-                        and ($child->getIndex() < $document->getIndex())
-                    ) {
-                        $noRename[] = $child->getKey();
+                    foreach ($document->getParent()->getChilds() as $child) {
+                        if (($child instanceof Printpage or $child instanceof Printcontainer)
+                            and ($child->getIndex() < $document->getIndex())
+                        ) {
+                            $noRename[] = $child->getKey();
+                        }
                     }
-                }
 
-                $document = $document->getParent();
+                    $document = $document->getParent();
+                }
             }
 
             // New pagination

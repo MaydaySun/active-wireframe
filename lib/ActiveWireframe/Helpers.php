@@ -138,14 +138,12 @@ class Helpers
 
             if (($page instanceof Printpage) and (!in_array($page->getKey(), $noRename))) {
 
-                if (ctype_digit($page->getKey())) {
-                    try {
-                        $page->setKey($index);
-                        $page->save();
-                    } catch (\Exception $ex) {
-                        Logger::err($ex->getMessage());
-                        return 0;
-                    }
+                try {
+                    $page->setKey(File::getValidFilename($index));
+                    $page->save();
+                } catch (\Exception $ex) {
+                    echo $ex->getMessage();
+                    Logger::err($ex->getMessage());
                 }
 
                 $index++;

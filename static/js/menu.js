@@ -84,7 +84,8 @@ $(document).ready(function () {
             cache: false,
             dataType: 'json',
             data: {
-                index: $('#input-index-paginator').val(),
+                index: $('input[name="inputPaginator"]').val(),
+                recursive: $('input[name="inputRecursive"]').is(':checked'),
                 documentId: $documentId
             },
             complete: function () {

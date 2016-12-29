@@ -15,6 +15,7 @@ use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Pimcore\Web2Print\Processor;
 use mikehaertl\wkhtmlto\Pdf as MKH_Pdf;
+use mikehaertl\pdftk\Pdf as MKH_Pdftk;
 use Pimcore\Config;
 use Pimcore\Logger;
 use Pimcore\Helper\Mail;
@@ -165,16 +166,12 @@ class WkHtmlToPdf extends Processor
     private function buildPdfPrintcontainer(Document\Printcontainer $document)
     {
         $params = [];
-        $arrayhtml = $this->getPdfFromContainer($document, $params);
+        $arrayPdf = $this->getPdfFromContainer($document, $params);
 
-        if (!empty($arrayhtml)) {
+        if (!empty($arrayPdf)) {
 
-            $pdf = new MKH_Pdf();
+            $pdf = new MKH_Pdftk($arrayPdf);
             $pdf->ignoreWarnings = true;
-
-            foreach ($arrayhtml as $html) {
-                $pdf->addPage($html);
-            }
 
             if (!$pdf->saveAs($document->getPdfFileName())) {
                 $document->setLastGenerateMessage('Could not create PDF: ' . $pdf->getError());
@@ -208,12 +205,9 @@ class WkHtmlToPdf extends Processor
 
                 } elseif ($child instanceof Document\Printpage) { // Page case
 
-                    try {
-
-                        $arrayHtml[] = $this->buildPdfPrintpageForPrintcontainer($document, $child);
-                        $this->updateStatus($child->getId(), 75, "saved_html_file");
-
-                    } catch (\Exception $ex) {}
+                    if ($result = $this->buildPdfPrintpageForPrintcontainer($document, $child)) {
+                        $arrayHtml[] = $result;
+                    }
 
                 }
             }
@@ -229,7 +223,6 @@ class WkHtmlToPdf extends Processor
      * @param Document\Printcontainer $container
      * @param Document\Printpage $document
      * @return bool|string
-     * @throws \Exception
      */
     private function buildPdfPrintpageForPrintcontainer(Document\Printcontainer $container, Document\Printpage $document)
     {
@@ -245,7 +238,13 @@ class WkHtmlToPdf extends Processor
 
         $this->updateStatus($container->getId(), 50, "finished_html_rendering");
 
-        return $html;
+        $this->updateStatus($container->getId(), 75, "pdf_conversion");
+        try {
+            $this->createPdf($document, $html);
+            return $document->getPdfFileName();
+        } catch (\Exception $ex) {}
+
+        return false;
     }
 
 }

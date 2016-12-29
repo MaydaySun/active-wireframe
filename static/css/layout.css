@@ -79,13 +79,10 @@ body {
     color: #000;
 }
 
-#activeWireframe #input-index-paginator {
-    width: 200px;
+#activeWireframe #input-index-paginator,
+#activeWireframe #paginator_recursive {
+    width: 260px;
     display: block;
     margin: auto;
     padding: 5px;
 }
-
-/*#activeWireframe .ui-selectmenu-menu > .ui-menu {*/
-/*max-height: 200px;*/
-/*}*/

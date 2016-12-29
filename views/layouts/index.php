@@ -133,14 +133,14 @@
 
     <div id="dialog-form-pagination">
         <form>
-            <input id="input-index-paginator" type="number" min="0" name='index'
+            <input id="input-index-paginator" type="number" min="0" name='inputPaginator'
                    placeholder="<?= $this->ts('active_wireframe_number_first_page'); ?>"/>
-<!--            <div>-->
-<!--                <input id="input-recursive" type="checkbox" name="recursive" />-->
-<!--                <label for="input-recursive">-->
-                    <?php // $this->ts('active_wireframe_number_recursive'); ?>
-<!--                </label>-->
-<!--            </div>-->
+            <div id="paginator_recursive">
+                <label for="input-recursive">
+                    <input type="checkbox" name="inputRecursive" />
+                    <?= $this->ts('active_wireframe_number_recursive'); ?>
+                </label>
+            </div>
         </form>
     </div>
 
