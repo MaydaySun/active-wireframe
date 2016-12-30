@@ -11,7 +11,11 @@
  */
 namespace ActiveWireframe;
 
-use ActivePublishing\Plugin\Service\Install;
+use ActivePublishing\Service\DocType;
+use ActivePublishing\Service\File;
+use ActivePublishing\Service\Table;
+use ActivePublishing\Service\Translation;
+use ActivePublishing\Service\Plugin as APS_Plugin;
 use ActiveWireframe\Pimcore\Console\Command\Web2PrintPdfCreationCommand;
 use Pimcore\API\Plugin as PluginLib;
 use Pimcore\Model\Asset;
@@ -34,7 +38,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
     const PLUGIN_VAR_PATH_INSTALL = self::PLUGIN_VAR_PATH . "/install.json";
 
-    const ASSET_PAGES_TEMPLATES = "/gabarits-de-pages";
+    const ASSET_PAGES_TEMPLATES = "/active-wireframe";
 
     const AREA_WIREFRAME = PIMCORE_WEBSITE_PATH . '/views/areas/active-wireframe';
 
@@ -64,14 +68,14 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
         try {
 
+            self::installTranslationAdmin(self::PLUGIN_PATH . "/static/install/texts.csv");
+            self::installTable(self::PLUGIN_PATH . "/static/install/tables.json");
+            self::installDocType(self::PLUGIN_PATH . "/static/install/doctypes.json");
+            self::installAreas(self::PLUGIN_PATH . "/static/install/areas.zip", self::AREA_WIREFRAME);
             self::createThumbnails();
             self::createDirectoryTemplates();
-            Install::installTable(self::PLUGIN_PATH . "/static/install/tables.json");
-            Install::installDocType(self::PLUGIN_PATH . "/static/install/doctypes.json");
-            Install::installAreas(self::PLUGIN_PATH . "/static/install/areas.zip",
-                PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "views/areas/active-wireframe");
-            Install::installTranslationAdmin(self::PLUGIN_PATH . "/static/install/texts.csv");
-            Install::createLogInstall(1, self::PLUGIN_VAR_PATH_INSTALL);
+
+            APS_Plugin::createLogInstall(1, self::PLUGIN_VAR_PATH_INSTALL);
 
         } catch (\Exception $ex) {
             return $ex->getMessage();
@@ -127,8 +131,91 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     private static function createDirectoryTemplates()
     {
         if (!Asset\Service::pathExists(self::ASSET_PAGES_TEMPLATES)) {
-            Asset\Service::createFolderByPath(self::ASSET_PAGES_TEMPLATES);
+
+            // Befor v2.6.1
+            if (Asset\Service::pathExists("/gabarits-de-pages")
+                and $assetFolder = Asset::getByPath("/gabarits-de-pages")
+            ) {
+                $assetFolder->setFilename('active-wireframe');
+                $assetFolder->save();
+            } else {
+                Asset\Service::createFolderByPath(self::ASSET_PAGES_TEMPLATES);
+            }
         }
+    }
+
+    /**
+     * Add area directory
+     *
+     * @static
+     * @param $zip
+     * @param $dst
+     * @throws \Exception
+     */
+    public static function installAreas($zip, $dst)
+    {
+        if (!file_exists($zip) ) {
+            Throw new \Exception("File not exist");
+        }
+
+        if (!file_exists($dst)) {
+            if (!File::decompressZip($zip, $dst)) {
+                Throw new \Exception("Decompression of zip is failed");
+            }
+        }
+    }
+
+    /**
+     * Install Doctype
+     *
+     * @static
+     * @param $jsonDefinition
+     * @throws \Exception
+     */
+    public static function installDocType($jsonDefinition)
+    {
+        if (!file_exists($jsonDefinition)) {
+            Throw new \Exception("File not exist");
+        }
+
+        if (!DocType::createDocTypeFromJson($jsonDefinition)) {
+            Throw new \Exception("Creation doctypes is failed");
+        }
+    }
+
+    /**
+     * Install Table in database
+     *
+     * @static
+     * @param $jsonDefinition
+     * @throws \Exception
+     */
+    public static function installTable($jsonDefinition)
+    {
+        if (!file_exists($jsonDefinition)) {
+            Throw new \Exception("File not exist");
+        }
+
+        if (!Table::getInstance()->createTableOrUpdateFromJson($jsonDefinition)) {
+            Throw new \Exception("Creation table in database is failed");
+        }
+    }
+
+    /**
+     * Install translation Admin
+     *
+     * @static
+     * @param $translationFile
+     * @return array|bool
+     * @throws \Exception
+     */
+    public static function installTranslationAdmin($translationFile)
+    {
+        if(!file_exists($translationFile)) {
+            Throw new \Exception("File not exist");
+        }
+
+        return Translation::createFromFile($translationFile);
     }
 
     /**
@@ -142,7 +229,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
         }
 
         try {
-            Install::createLogInstall(0, self::PLUGIN_VAR_PATH_INSTALL);
+            APS_Plugin::createLogInstall(0, self::PLUGIN_VAR_PATH_INSTALL);
         } catch (\Exception $ex) {
             return $ex->getMessage();
         }
@@ -199,7 +286,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
             }
         });
 
-        // add a single command
+        // add a single command for webtoprint
         \Pimcore::getEventManager()->attach('system.console.init', function (\Zend_EventManager_Event $e) {
             $application = $e->getTarget();
             $application->add(new Web2PrintPdfCreationCommand());
