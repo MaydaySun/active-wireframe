@@ -8,7 +8,7 @@ __Require:__
 * "mikehaertl/pdftk2-precise-amd64": "^2.02"
 
 __Versions:__
-* 2.5.5 : New paginate only current chapter 
+* 2.6.0 : New paginate only current chapter 
 * 2.5.2-3-4 : Bugfixed PDF
 * 2.5.0 : New feature, update area renderlet in webtoprint page
 * 2.4.2 : Fixed bug.
