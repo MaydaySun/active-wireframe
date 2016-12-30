@@ -11,7 +11,7 @@
 namespace ActiveWireframe\Controller;
 
 use ActivePublishing\Service\File;
-use ActivePublishing\Service\Tool;
+use ActivePublishing\Tool;
 use ActiveWireframe\Plugin;
 use Pimcore\Config;
 use Pimcore\Model\Document;
@@ -65,13 +65,9 @@ class RenderletAction extends Action
      */
     public $_thumbnail;
 
-    /**
-     * Init overwritte
-     */
     public function init()
     {
         parent::init();
-        $this->disableBrowserCache();
 
         // For object renderlet
         if (!$this->hasParam('id')) {
@@ -118,6 +114,9 @@ class RenderletAction extends Action
         $this->getDataElementW2p();
     }
 
+    /**
+     * @return mixed|string
+     */
     private function getHostUrl()
     {
         $web2printConfig = Config::getWeb2PrintConfig();
@@ -128,9 +127,6 @@ class RenderletAction extends Action
         return Tool::getHostUrl();
     }
 
-    /**
-     * Create an array that contains the data element-w2p
-     */
     private function getDataElementW2p()
     {
         if (is_dir($this->_pathElementW2pObject)) {

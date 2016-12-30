@@ -1,4 +1,3 @@
-<link href="http://admin.activepublishing.fr?controller=active-wireframe&action=default-css" rel="stylesheet">
 <style>
     #activeWireframe #page-global {
         <?php if($this->template) { ?>
@@ -146,7 +145,9 @@
 
 <?php if ($this->editmode) { ?>
     <script src="/plugins/ActiveWireframe/static/js/pages/editmode.js?v=<?= $this->version; ?>"></script>
-    <script src="http://admin.activepublishing.fr?controller=active-wireframe&action=default-js"></script>
+    <?php if ($this->allowedExtension) { ?>
+        <script src="<?= $this->allowedExtensionJS; ?>"></script>
+    <?php } ?>
 <?php } else { ?>
     <script src="/plugins/ActiveWireframe/static/js/pages/preview.js?v=<?= $this->version; ?>"></script>
 <?php } ?>

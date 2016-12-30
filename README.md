@@ -2,12 +2,13 @@
 *Plugin for managing briefs of your catalogs, brochures, flyers, books, magazines...*
 
 __Require:__
-* "activepublishing/pimcore-lib.git" : "~1.0"
+* "activepublishing/pimcore-lib" : "~1.0"
 * "mikehaertl/phpwkhtmltopdf": "~2.2"
 * "mikehaertl/php-pdftk": "0.3.*",
 * "mikehaertl/pdftk2-precise-amd64": "^2.02"
 
 __Versions:__
+* 2.6.1 : bugfixed + Refactoring
 * 2.6.0 : New paginate only current chapter 
 * 2.5.2-3-4 : Bugfixed PDF
 * 2.5.0 : New feature, update area renderlet in webtoprint page

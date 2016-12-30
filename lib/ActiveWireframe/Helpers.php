@@ -11,7 +11,8 @@
  */
 namespace ActiveWireframe;
 
-use ActivePublishing\Service\Tool;
+use ActivePublishing\Tool;
+use ActivePublishing\Service\User;
 use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
 use mikehaertl\wkhtmlto\Image;
@@ -23,7 +24,7 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Document\Printcontainer;
 use Pimcore\Model\Document\Printpage;
 use Pimcore\Model\Object\AbstractObject;
-use Pimcore\Model\User;
+use Pimcore\Model\User as Pimcore_User;
 use Pimcore\Helper\Mail;
 
 /**
@@ -33,32 +34,31 @@ use Pimcore\Helper\Mail;
 class Helpers
 {
     /**
-     * Reload thumbnail of catalog and chapter
-     *
      * @static
      * @param Printcontainer $document
-     * @return int
+     * @return bool
      */
     public static function reloadDocumentThumbnail(Printcontainer $document)
     {
         foreach ($document->getChilds() as $child) {
+
             if ($child instanceof Printpage) {
                 self::createDocumentThumbnail($child);
             } elseif ($child instanceof Printcontainer) {
                 self::reloadDocumentThumbnail($child);
             }
+
         }
+
         return true;
     }
 
     /**
-     * Create a thumbnail for each  page
-     *
      * @static
-     * @param Printpage $document
+     * @param Document $document
      * @return bool
      */
-    public static function createDocumentThumbnail(Printpage $document)
+    public static function createDocumentThumbnail(Document $document)
     {
         $dirTmp = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $document->getId();
         $outputFile = $dirTmp . DIRECTORY_SEPARATOR . $document->getId() . '.jpeg';
@@ -106,8 +106,6 @@ class Helpers
     }
 
     /**
-     * Convert mm to px
-     *
      * @static
      * @param $mm
      * @param int $dpi
@@ -119,8 +117,6 @@ class Helpers
     }
 
     /**
-     * Create a new pagination
-     *
      * @static
      * @param Printcontainer $document
      * @param int $index
@@ -161,8 +157,6 @@ class Helpers
     }
 
     /**
-     * Reduction for thumb
-     *
      * @static
      * @param $widthPage
      * @return int
@@ -201,12 +195,10 @@ class Helpers
     }
 
     /**
-     * Convert px to mm
-     *
      * @static
      * @param $pixels
      * @param int $dpi
-     * @return float
+     * @return float|int
      */
     public static function convertPxToMm($pixels, $dpi = 96)
     {
@@ -254,20 +246,18 @@ class Helpers
             return $chapter;
         }
 
-        throw new \Exception("Printconatiner CATALOG is not found");
+        throw new \Exception("Printcontainer CATALOG is not found");
     }
 
     /**
-     * Get areas for the current user
-     *
      * @static
      * @return string
      */
     public static function getAreaByRole()
     {
         // Get user and role
-        $user = Tool::getCurrentUser();
-        $roles = Tool::getRolesFromCurrentUser();
+        $user = User::getCurrentUser();
+        $roles = User::getRolesFromCurrentUser();
 
         // Default path
         $areaPath = '/website/views/areas';
@@ -276,9 +266,9 @@ class Helpers
         // User isn't admin and belong to a role
         if ($user instanceof User and !$user->isAdmin() and !empty($roles)) {
             foreach ($roles as $rid) {
-                $role = User\Role::getById($rid);
+                $role = Pimcore_User\Role::getById($rid);
                 // Role and directory exists
-                if ($role instanceof User\Role
+                if ($role instanceof Pimcore_User\Role
                     AND file_exists($areaPathAbs . DIRECTORY_SEPARATOR . mb_strtolower($role->getName()))
                 ) {
                     return $areaPath . DIRECTORY_SEPARATOR . mb_strtolower($role->getName());
@@ -318,8 +308,6 @@ class Helpers
     }
 
     /**
-     * Create page with areablock
-     *
      * @static
      * @param $documentKey
      * @param $parentId
@@ -402,8 +390,6 @@ class Helpers
     }
 
     /**
-     * Create a tag renderlet with object
-     *
      * @static
      * @param Printpage $document
      * @param $areaId
@@ -452,8 +438,6 @@ class Helpers
     }
 
     /**
-     * Check children has child
-     *
      * @static
      * @param AbstractObject $node
      * @return bool
@@ -471,8 +455,6 @@ class Helpers
     }
 
     /**
-     * Create a tag renderlet for an asset
-     *
      * @static
      * @param Printpage $document
      * @param string $areaId
@@ -517,8 +499,6 @@ class Helpers
     }
 
     /**
-     * Get Data wireframe-elements
-     *
      * @static
      * @param $documentId
      * @return array

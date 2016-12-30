@@ -9,7 +9,7 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-use ActivePublishing\Service\Tool;
+use ActivePublishing\Tool;
 use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Helpers;
@@ -22,28 +22,17 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_ElementsController extends Action
 {
-    /**
-     * Init
-     */
     public function init()
     {
         parent::init();
         $this->disableLayout();
         $this->disableViewAutoRender();
-        $this->disableBrowserCache();
 
-        if (!Plugin::composerExists()
-            or !Plugin::isInstalled()
-        ) {
+        if (!Plugin::composerExists() or !Plugin::isInstalled()) {
             exit();
         }
     }
 
-    /**
-     * Save box-w2p
-     *
-     * @return int
-     */
     public function saveBoxW2pAction()
     {
         // Retrieve elements for saving
@@ -87,12 +76,10 @@ class ActiveWireframe_ElementsController extends Action
 
         }
 
-        return Tool::sendJson(["success" => true]);
+        Tool::sendJson(["success" => true]);
     }
 
     /**
-     * Save data in database
-     *
      * @param Printpage $document
      * @param $elementW2p
      * @param $oId

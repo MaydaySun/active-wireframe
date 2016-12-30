@@ -35,6 +35,7 @@ class WkHtmlToPdf extends Processor
 
     /**
      * WkHtmlToPdf constructor.
+     *
      * @param null $wkhtmltopdfBin
      * @param null $options
      */
@@ -218,7 +219,7 @@ class WkHtmlToPdf extends Processor
     }
 
     /**
-     * Built page PDF
+     * Built page PDF for container
      *
      * @param Document\Printcontainer $container
      * @param Document\Printpage $document

@@ -10,7 +10,7 @@
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 use ActivePublishing\Service\Note;
-use ActivePublishing\Service\Tool;
+use ActivePublishing\Tool;
 use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Helpers;
 use ActiveWireframe\Plugin;
@@ -23,9 +23,6 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_CatalogsController extends Action
 {
-    /**
-     * Init
-     */
     public function init()
     {
         parent::init();
@@ -47,9 +44,6 @@ class ActiveWireframe_CatalogsController extends Action
         $this->view->version = Tool::getPluginVersion(Plugin::PLUGIN_NAME);
     }
 
-    /**
-     * Displays the wireframe tree
-     */
     public function treeAction()
     {
         $document = $this->getParam("document");
@@ -101,8 +95,6 @@ class ActiveWireframe_CatalogsController extends Action
     }
 
     /**
-     * Retrieve the information from a catalog or chapter
-     *
      * @param Printcontainer $document
      * @param int $indice
      * @return array

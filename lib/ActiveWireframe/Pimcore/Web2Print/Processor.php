@@ -12,7 +12,6 @@
 namespace ActiveWireframe\Pimcore\Web2Print;
 
 use ActiveWireframe\Pimcore\Web2Print\Processor\WkHtmlToPdf;
-use ActiveWireframe\Plugin;
 use Pimcore\Config;
 use Pimcore\Web2Print\Processor\PdfReactor8;
 use Pimcore\Tool;

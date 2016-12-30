@@ -12,7 +12,7 @@
 namespace ActiveWireframe;
 
 use ActivePublishing\Service\File;
-use ActivePublishing\Service\Tool;
+use ActivePublishing\Tool;
 use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
@@ -21,6 +21,7 @@ use Pimcore\Model\Document;
 
 /**
  * Class Handler
+ *
  * @package ActiveWireframe
  */
 class Handler
@@ -31,8 +32,6 @@ class Handler
     protected static $_instance;
 
     /**
-     * Retrieve singleton instance
-     *
      * @static
      * @return Handler
      */

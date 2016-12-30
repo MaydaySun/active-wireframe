@@ -9,7 +9,7 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-use ActivePublishing\Service\Tool;
+use ActivePublishing\Tool;
 use ActivePublishing\Service\Translation;
 use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Helpers;
@@ -23,9 +23,6 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_CreateController extends Action
 {
-    /**
-     * Init
-     */
     public function init()
     {
         parent::init();
@@ -33,21 +30,16 @@ class ActiveWireframe_CreateController extends Action
         if (!Plugin::composerExists()) {
             $this->disableLayout();
             $this->disableViewAutoRender();
-            echo 'ERROR: Active Publishing - Composer librairies for this plugin is not installed.';
-            exit();
+            exit('ERROR: Active Publishing - Composer librairies for this plugin is not installed.');
         }
 
         if (!Plugin::isInstalled()) {
             $this->disableLayout();
             $this->disableViewAutoRender();
-            echo 'ERROR: Active Publishing - Plugin does not installed.';
-            exit();
+            exit('ERROR: Active Publishing - Plugin does not installed.');
         }
     }
 
-    /**
-     * Show form
-     */
     public function formAction()
     {
         $this->enableLayout();
@@ -59,20 +51,15 @@ class ActiveWireframe_CreateController extends Action
         // Paginate Form
         $this->view->templateFormPaginate = false;
         if (Tool::pluginIsInstalled('ActivePaginate')) {
+            $this->view->templateFormPaginateJS = "";
             //@Todo
         }
     }
 
-    /**
-     * Create catalog
-     *
-     * @return int
-     */
     public function catalogAction()
     {
         $this->disableViewAutoRender();
         $this->disableLayout();
-        $this->disableBrowserCache();
 
         $cover1 = Translation::get('active_wireframe_first_cover');
         $cover2 = Translation::get('active_wireframe_second_cover');
@@ -191,19 +178,17 @@ class ActiveWireframe_CreateController extends Action
             $catalog->setPublished(1);
             $catalog->save();
 
-        } catch (\Exception $ex) {
-            return Tool::sendJson(['success' => false, 'msg' => $ex->getMessage()]);
-        }
+            Tool::sendJson(['success' => true, 'msg' => Translation::get('active_wireframe_form_success')]);
 
-        return Tool::sendJson(['success' => true, 'msg' => Translation::get('active_wireframe_form_success')]);
+        } catch (\Exception $ex) {
+            Tool::sendJson(['success' => false, 'msg' => $ex->getMessage()]);
+        }
     }
 
     /**
-     * Create page with Active Paginate module
-     *
      * @param $indexPage
      * @param $catalogId
-     * @return bool
+     * @return mixed
      */
     public function createWithPaginate($indexPage, $catalogId)
     {
@@ -226,11 +211,13 @@ class ActiveWireframe_CreateController extends Action
             $classPaginate = "\\ActivePaginate\\Paginate";
             return call_user_func_array([$classPaginate, "getInstance"], ['file', $conf]);
 
+        // Import by tree
         } elseif ($this->hasParam('targetClassFamily') and $this->getParam('targetClassFamily') != '-1'
             and $this->hasParam('targetFamily') and $this->getParam('targetFamily') != '0'
             and $this->hasParam('targetClassObject') and $this->getParam('targetClassObject') != '-1'
         ) {
 
+            // @Todo
 //            $conf['index'] = $indexPage;
 //            $conf['templateId'] = $this->hasParam('targetTemplate') ?
 //                trim($this->getParam('targetTemplate'))
@@ -267,36 +254,26 @@ class ActiveWireframe_CreateController extends Action
         return $indexPage;
     }
 
-    /**
-     * Retrieve templates
-     *
-     * @return int
-     */
+
     public function getTemplatesAction()
     {
         $this->disableViewAutoRender();
         $this->disableLayout();
-        $this->disableBrowserCache();
 
         // Get format and orientation
         $format = $this->hasParam('format') ? $this->getParam('format') : 'a4';
 
         // exotic format
         if ($format == "other") {
-            $templates = $this->getAssetThumbnailByPath('/gabarits-de-pages/');
+            $templates = $this->getAssetThumbnailByPath(Plugin::ASSET_PAGES_TEMPLATES . DIRECTORY_SEPARATOR);
         } else {
-            $templates = $this->getAssetThumbnailByPath('/gabarits-de-pages/' . $format);
+            $templates = $this->getAssetThumbnailByPath(Plugin::ASSET_PAGES_TEMPLATES . DIRECTORY_SEPARATOR . $format);
         }
 
-        return Tool::sendJson([
-            'success' => !empty($templates),
-            'templates' => $templates
-        ]);
+        Tool::sendJson(['success' => !empty($templates), 'templates' => $templates]);
     }
 
     /**
-     * Retrieve thumbnail for templates
-     *
      * @param $pathToFolderAsset
      * @param array $files
      * @return array

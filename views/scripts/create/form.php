@@ -162,14 +162,11 @@
 
             </div>
 
+            <?php if ($this->templateFormPaginate) { // Intégration ActivePaginate ?>
             <div id="tabs-1bis">
-                <?php
-                // Intégration ActivePaginate
-                if ($this->templateFormPaginate) {
-                    $this->template($this->templateFormPaginate);
-                }
-                ?>
+                    <?= $this->template($this->templateFormPaginate); ?>
             </div>
+            <?php } // FiniIntégration ActivePaginate ?>
 
             <div id="tabs-2">
 
@@ -308,5 +305,5 @@
 <!--JS-->
 <script src="/plugins/ActiveWireframe/static/js/create/form.js?v=<?= $this->version; ?>"></script>
 <?php if ($this->templateFormPaginate) { ?>
-    <script src="/plugins/ActivePaginate/static/js/wireframe/form.js"></script>
+    <script src="<?= $this->templateFormPaginateJS; ?>"></script>
 <?php } ?>

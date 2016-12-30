@@ -9,7 +9,7 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-use ActivePublishing\Service\Tool;
+use ActivePublishing\Tool;
 use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Helpers;
 use ActiveWireframe\Plugin;
@@ -22,26 +22,17 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_MenuController extends Action
 {
-    /**
-     * Init
-     */
     public function init()
     {
         parent::init();
         $this->disableLayout();
         $this->disableViewAutoRender();
-        $this->disableBrowserCache();
 
         if (!Plugin::composerExists() or !Plugin::isInstalled()) {
             exit();
         }
     }
 
-    /**
-     * Generate a new pagination
-     *
-     * @return int
-     */
     public function generatePaginationAction()
     {
         $document = Printcontainer::getById($this->getParam('documentId'));
@@ -76,14 +67,9 @@ class ActiveWireframe_MenuController extends Action
 
         }
 
-        return Tool::sendJson(['success' => true]);
+        Tool::sendJson(['success' => true]);
     }
 
-    /**
-     * Refresh thumbnails
-     *
-     * @return int
-     */
     public function reloadCatalogAction()
     {
         $document = Printcontainer::getById($this->getParam('documentId'));
@@ -94,7 +80,7 @@ class ActiveWireframe_MenuController extends Action
             Helpers::reloadDocumentThumbnail($document);
         }
 
-        return Tool::sendJson(['success' => true]);
+        Tool::sendJson(['success' => true]);
     }
 
 }

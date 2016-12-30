@@ -24,9 +24,6 @@ use Symfony\Component\Console\Output\OutputInterface;
  */
 class Web2PrintPdfCreationCommand extends AbstractCommand
 {
-    /**
-     * Init commande
-     */
     protected function configure()
     {
         $this

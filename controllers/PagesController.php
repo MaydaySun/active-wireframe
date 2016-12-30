@@ -9,7 +9,8 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-use ActivePublishing\Service\Tool;
+use ActivePublishing\Tool;
+use ActivePublishing\Service\Extension;
 use ActivePublishing\Service\File;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Helpers;
@@ -22,9 +23,6 @@ use Website\Controller\Action;
  */
 class ActiveWireframe_PagesController extends Action
 {
-    /**
-     * Init
-     */
     public function init()
     {
         parent::init();
@@ -42,9 +40,6 @@ class ActiveWireframe_PagesController extends Action
         }
     }
 
-    /**
-     * Show pdf page in edition mode
-     */
     public function pagesAction()
     {
         $this->enableLayout();
@@ -111,18 +106,24 @@ class ActiveWireframe_PagesController extends Action
             $this->view->template = Helpers::getBackgroundTemplate($this->document, $cinfo, $thumbnail);
         }
 
+        // Extension module
+        $resultEM = Extension::getInstance(Plugin::PLUGIN_NAME)->check();
+        $this->view->allowedExtension = false;
+        if (!empty($resultEM)) {
+            $this->view->allowedExtension = true;
+            $this->view->allowedExtensionJS = "";
+        }
+
         if (!$this->editmode and !$this->hasParam('pimcore_preview') and !$this->hasParam('createThumbnail')) {
             Helpers::createDocumentThumbnail($this->document);
         }
     }
 
-    /**
-     * Retrieve all areas
-     */
     public function getAreasListingAction()
     {
         $this->disableLayout();
         $this->disableViewAutoRender();
+
         $areas = [];
 
         if ($dir = Helpers::getAreaByRole() and !is_dir(PIMCORE_WEBSITE_PATH . $dir)) {
@@ -153,9 +154,6 @@ class ActiveWireframe_PagesController extends Action
         Tool::sendJson($areas);
     }
 
-    /**
-     * Generate thumbnail of document
-     */
     public function getThumbnailAction()
     {
         $this->disableLayout();
@@ -172,13 +170,10 @@ class ActiveWireframe_PagesController extends Action
         }
     }
 
-    /**
-     * Update area
-     */
     public function setAreaAction()
     {
+        $this->disableLayout();
         $this->disableViewAutoRender();
-        $this->disableBrowserCache();
 
         $success = false;
         $msg = 'Area has not been modified';
