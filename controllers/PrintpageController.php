@@ -23,6 +23,9 @@ class ActiveWireframe_PrintpageController extends \Pimcore\Controller\Action\Adm
      */
     public function startPdfGenerationAction()
     {
+        $this->disableLayout();
+        $this->disableViewAutoRender();
+
         $document = Printpage::getById(intval($this->getParam("id")));
         if (empty($document)) {
             throw new \Exception("Document with id " . $this->getParam("id") . " not found.");
