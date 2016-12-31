@@ -76,7 +76,6 @@
             <?php
             $areaBlock = $this->areablock("pages-editable", array(
                     "manual" => true,
-                    "toolbar" => (!$this->pageLock) ? true : false,
                     "areablock_toolbar" => array(
                         "title" => "Elements",
                         "buttonWidth" => 210,
