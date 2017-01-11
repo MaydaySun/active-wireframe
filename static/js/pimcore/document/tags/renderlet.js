@@ -28,7 +28,12 @@ pimcore.document.tags.renderlet = Ext.extend(pimcore.document.tags.renderlet, {
                         var height = element.find('.w2p-renderlet').height();
 
                         var elBoxW2p = element.parent().parent().parent().parent().parent().parent();
-                        elBoxW2p.css("width", width + "px").css("height", height + "px");
+                        if (elBoxW2p.css('width') == null) {
+                            elBoxW2p.css("width", width + "px")
+                        }
+                        if (elBoxW2p.css('height') == null) {
+                            elBoxW2p.css("height", height + "px");
+                        }
 
                         self.getBody().setStyle({
                             height: height + "px",

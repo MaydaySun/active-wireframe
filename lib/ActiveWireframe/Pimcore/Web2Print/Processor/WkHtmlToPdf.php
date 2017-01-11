@@ -123,6 +123,13 @@ class WkHtmlToPdf extends Processor
         if (!$pdf->saveAs($document->getPdfFileName())) {
             throw new \Exception('Could not create PDF: ' . $pdf->getError());
         }
+
+        // Check Pdf
+        $pdftk = new MKH_Pdftk($document->getPdfFileName());
+        $pdftk->cat(1);
+        if (!$pdftk->saveAs($document->getPdfFileName())) {
+            throw new \Exception('Could not create PDF: ' . $pdftk->getError());
+        }
     }
 
     /**
@@ -186,7 +193,7 @@ class WkHtmlToPdf extends Processor
     }
 
     /**
-     * Get all file html of document container
+     * Récupère tous les PDF d'un containeur
      *
      * @param Document\Printcontainer $document
      * @param $params
@@ -219,7 +226,7 @@ class WkHtmlToPdf extends Processor
     }
 
     /**
-     * Built page PDF for container
+     * Création des pages pdf pour les containeurs
      *
      * @param Document\Printcontainer $container
      * @param Document\Printpage $document
