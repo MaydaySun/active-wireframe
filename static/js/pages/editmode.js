@@ -17,6 +17,7 @@ $(document).ready(function () {
             scroll: true,
             cursor: "move",
             opacity: 0.45,
+            snap: ".box-w2p",
             snapMode: "outer",
             snapTolerance: 10
         });
