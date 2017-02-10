@@ -10,7 +10,7 @@
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
 use ActivePublishing\Tool;
-use ActivePublishing\Service\Extension;
+use ActivePublishing\Service\Licence;
 use ActivePublishing\Service\File;
 use ActiveWireframe\Db\Pages;
 use ActiveWireframe\Helpers;
@@ -107,7 +107,7 @@ class ActiveWireframe_PagesController extends Action
         }
 
         // Extension module
-        $resultEM = Extension::getInstance(Plugin::PLUGIN_NAME)->check();
+        $resultEM = Licence::getInstance(Plugin::PLUGIN_NAME)->check();
         $this->view->allowedExtension = false;
         if (!empty($resultEM)) {
             $this->view->allowedExtension = true;

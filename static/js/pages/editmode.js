@@ -17,7 +17,7 @@ $(document).ready(function () {
             scroll: true,
             cursor: "move",
             opacity: 0.45,
-            snap: ".box-w2p",
+            snap: ".box-w2p, .ui-slider-handle",
             snapMode: "outer",
             snapTolerance: 10
         });
