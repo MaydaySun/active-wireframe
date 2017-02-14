@@ -28,7 +28,7 @@ class ActiveWireframe_MenuController extends Action
         $this->disableLayout();
         $this->disableViewAutoRender();
 
-        if (!Plugin::composerExists() or !Plugin::isInstalled()) {
+        if (!Plugin::isInstalled()) {
             exit();
         }
     }

@@ -145,7 +145,7 @@
 <?php if ($this->editmode) { ?>
     <script src="/plugins/ActiveWireframe/static/js/pages/editmode.js?v=<?= $this->version; ?>"></script>
     <?php if ($this->allowedExtension) { ?>
-        <script src="<?= $this->allowedExtensionJS; ?>"></script>
+        <script><?= $this->allowedExtensionJS; ?></script>
     <?php } ?>
 <?php } else { ?>
     <script src="/plugins/ActiveWireframe/static/js/pages/preview.js?v=<?= $this->version; ?>"></script>

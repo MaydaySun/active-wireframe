@@ -9,7 +9,7 @@
             Plugin for managing briefs of your catalogs, brochures, flyers, books, magazines...
         </pluginDescription>
         <!-- meta data -->
-        <pluginVersion>2.6.3</pluginVersion>
+        <pluginVersion>2.6.4</pluginVersion>
         <pluginRevision>0</pluginRevision>
         <pluginBuildTimestamp>0</pluginBuildTimestamp>
         <!-- className of the plugin which extends Pimcore_API_Plugin_Abstract-->

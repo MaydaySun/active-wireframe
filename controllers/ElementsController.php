@@ -28,7 +28,7 @@ class ActiveWireframe_ElementsController extends Action
         $this->disableLayout();
         $this->disableViewAutoRender();
 
-        if (!Plugin::composerExists() or !Plugin::isInstalled()) {
+        if (!Plugin::isInstalled()) {
             exit();
         }
     }
@@ -86,11 +86,7 @@ class ActiveWireframe_ElementsController extends Action
      */
     public function saveElementW2p(Printpage $document, $elementW2p, $oId)
     {
-        if (!file_exists(Plugin::PLUGIN_PATH_DATA)) {
-            Pimcore\File::mkdir(Plugin::PLUGIN_PATH_DATA, 0775, true);
-        }
-
-        $dirDocument = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $document->getId();
+        $dirDocument = Plugin::PLUGIN_WEBSITE_PATH . DIRECTORY_SEPARATOR . $document->getId();
         if (!file_exists($dirDocument)) {
             Pimcore\File::mkdir($dirDocument, 0775, true);
         }

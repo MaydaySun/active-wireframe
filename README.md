@@ -8,6 +8,8 @@ __Require:__
 * "mikehaertl/pdftk2-precise-amd64": "^2.02"
 
 __Versions:__
+* 2.6.4 : bugfixed pour la récupération des données xy des classe w2p-element
+* 2.6.3 : Ajout du magnétisme
 * 2.6.2 : Bug fixé lors de la récupération de la largeur et la hauteau d'un renderlet après enregistrement + Force la génération d'un seul PDF pour une page web2print
 * 2.6.1 : bug fixé + Refactoring
 * 2.6.0 : Possibilité de renuméroter uniquement le chapitre ouvert

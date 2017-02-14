@@ -9,11 +9,11 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-namespace ActiveWireframe\Pimcore\Web2Print\Processor;
+namespace ActiveWireframe\Web2Print\Processor;
 
 use ActiveWireframe\Db\Catalogs;
 use ActiveWireframe\Db\Pages;
-use ActiveWireframe\Pimcore\Web2Print\Processor;
+use ActiveWireframe\Web2Print\Processor;
 use mikehaertl\wkhtmlto\Pdf as MKH_Pdf;
 use mikehaertl\pdftk\Pdf as MKH_Pdftk;
 use Pimcore\Config;

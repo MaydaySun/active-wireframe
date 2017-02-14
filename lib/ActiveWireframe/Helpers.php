@@ -11,7 +11,7 @@
  */
 namespace ActiveWireframe;
 
-use ActivePublishing\Tool;
+use ActivePublishing\Service\Translation;
 use ActivePublishing\Service\User;
 use ActiveWireframe\Db\Elements;
 use ActiveWireframe\Db\Pages;
@@ -24,7 +24,7 @@ use Pimcore\Model\Document;
 use Pimcore\Model\Document\Printcontainer;
 use Pimcore\Model\Document\Printpage;
 use Pimcore\Model\Object\AbstractObject;
-use Pimcore\Model\User as Pimcore_User;
+use Pimcore\Model\User as PimcoreUser;
 use Pimcore\Helper\Mail;
 
 /**
@@ -34,7 +34,6 @@ use Pimcore\Helper\Mail;
 class Helpers
 {
     /**
-     * @static
      * @param Printcontainer $document
      * @return bool
      */
@@ -43,9 +42,13 @@ class Helpers
         foreach ($document->getChilds() as $child) {
 
             if ($child instanceof Printpage) {
+
                 self::createDocumentThumbnail($child);
+
             } elseif ($child instanceof Printcontainer) {
+
                 self::reloadDocumentThumbnail($child);
+
             }
 
         }
@@ -54,29 +57,28 @@ class Helpers
     }
 
     /**
-     * @static
      * @param Document $document
      * @return bool
      */
     public static function createDocumentThumbnail(Document $document)
     {
-        $dirTmp = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $document->getId();
+        $dirTmp = Plugin::PLUGIN_WEBSITE_PATH . DIRECTORY_SEPARATOR . $document->getId();
         $outputFile = $dirTmp . DIRECTORY_SEPARATOR . $document->getId() . '.jpeg';
 
-        // path thumbnail
+        // dossier ou seras ajouté la vignette
         if (!file_exists($dirTmp)) {
-            File::mkdir($dirTmp, 0775, true);
+            File::mkdir($dirTmp);
         }
 
         $web2printConfig = Config::getWeb2PrintConfig();
-
-        // add parameter pimcore_preview to prevent inclusion of google analytics code, cache, etc.
         $url = $web2printConfig->wkhtml2pdfHostname . $document->getFullPath() . '?createThumbnail=true';
         $url .= (strpos($url, "?") ? "&" : "?") . "pimcore_preview=true";
 
         try {
+
             $html = file_get_contents($url);
             $html = Mail::setAbsolutePaths($html, null, $web2printConfig->wkhtml2pdfHostname);
+
         } catch (\Exception $ex) {
             $html = "";
         }
@@ -87,6 +89,7 @@ class Helpers
             'width' => 300,
             'format' => 'jpeg'
         ]);
+
         $image->setPage($html);
         $image->ignoreWarnings = true;
 
@@ -98,15 +101,16 @@ class Helpers
             return true;
 
         } else {
-            $logfile = " \"" . PIMCORE_LOG_DIRECTORY . "/wkhtmltoimage.log\"";
+
+            $logfile = PIMCORE_LOG_DIRECTORY . "/wkhtmltoimage.log";
             File::put($logfile, $image->getError());
+
         }
 
         return false;
     }
 
     /**
-     * @static
      * @param $mm
      * @param int $dpi
      * @return float
@@ -117,7 +121,16 @@ class Helpers
     }
 
     /**
-     * @static
+     * @param $pixels
+     * @param int $dpi
+     * @return float|int
+     */
+    public static function convertPxToMm($pixels, $dpi = 96)
+    {
+        return ($pixels * 25.4) / $dpi;
+    }
+
+    /**
      * @param Printcontainer $document
      * @param int $index
      * @param array $noRename
@@ -125,7 +138,6 @@ class Helpers
      */
     public static function generateNewPagination(Printcontainer $document, $index = 1, $noRename = array())
     {
-        // No child
         if (!$document->hasChilds()) {
             return 0;
         }
@@ -157,7 +169,6 @@ class Helpers
     }
 
     /**
-     * @static
      * @param $widthPage
      * @return int
      */
@@ -195,18 +206,6 @@ class Helpers
     }
 
     /**
-     * @static
-     * @param $pixels
-     * @param int $dpi
-     * @return float|int
-     */
-    public static function convertPxToMm($pixels, $dpi = 96)
-    {
-        return ($pixels * 25.4) / $dpi;
-    }
-
-    /**
-     * @static
      * @param $key
      * @param $parentId
      * @return Document
@@ -215,14 +214,15 @@ class Helpers
     public static function createChapter($key, $parentId)
     {
         $catalog = Printcontainer::getById($parentId);
+
         if ($catalog) {
 
-            // get valid key
             $key = File::getValidFilename($key);
             if ($key == "") {
-                $key = "undefined-chapter-key";
+                $key = Translation::get("active_wireframe_chapter");
             }
 
+            // $key unique
             $i = 1;
             while (Document\Service::pathExists($catalog->getFullPath() . DIRECTORY_SEPARATOR . $key)) {
                 $key = $key . "-" . $i;
@@ -237,12 +237,8 @@ class Helpers
                 "action" => "tree"
             ];
 
-            // Chapter creation
             $chapter = Printcontainer::create($parentId, $dataDocument);
-
-            // Insert BD
             Pages::getInstance()->insertChapter($chapter);
-
             return $chapter;
         }
 
@@ -250,38 +246,36 @@ class Helpers
     }
 
     /**
-     * @static
      * @return string
      */
     public static function getAreaByRole()
     {
-        // Get user and role
         $user = User::getCurrentUser();
         $roles = User::getRolesFromCurrentUser();
 
-        // Default path
         $areaPath = '/website/views/areas';
         $areaPathAbs = PIMCORE_WEBSITE_PATH . '/views/areas';
 
-        // User isn't admin and belong to a role
         if ($user instanceof User and !$user->isAdmin() and !empty($roles)) {
+
             foreach ($roles as $rid) {
-                $role = Pimcore_User\Role::getById($rid);
-                // Role and directory exists
-                if ($role instanceof Pimcore_User\Role
-                    AND file_exists($areaPathAbs . DIRECTORY_SEPARATOR . mb_strtolower($role->getName()))
+
+                $role = PimcoreUser\Role::getById($rid);
+
+                if ($role instanceof PimcoreUser\Role
+                    and file_exists($areaPathAbs . DIRECTORY_SEPARATOR . mb_strtolower($role->getName()))
                 ) {
                     return $areaPath . DIRECTORY_SEPARATOR . mb_strtolower($role->getName());
                 }
+
             }
+
         }
 
-        // Default area path
         return $areaPath . '/active-wireframe';
     }
 
     /**
-     * @static
      * @param Document $page
      * @param $cinfo
      * @param $thumbnail
@@ -308,7 +302,6 @@ class Helpers
     }
 
     /**
-     * @static
      * @param $documentKey
      * @param $parentId
      * @param $catalogId
@@ -326,7 +319,9 @@ class Helpers
         ];
 
         if ($page = self::createPage($documentKey, $parentId, $catalogId, $conf) AND $page instanceof Printpage) {
+
             try {
+
                 $areablock = new Document\Tag\Areablock();
                 $areablock->setName('pages-editable');
                 $areablock->setDocumentId($page->getId());
@@ -338,13 +333,13 @@ class Helpers
             } catch (\Exception $ex) {
                 Logger::err($ex->getMessage());
             }
+
         }
 
         return false;
     }
 
     /**
-     * @static
      * @param $key
      * @param $parentId
      * @param $catalogId
@@ -355,14 +350,15 @@ class Helpers
     public static function createPage($key, $parentId, $catalogId, $configs = [])
     {
         $parent = Printcontainer::getById($parentId);
+
         if ($parent) {
 
-            // get valid key
             $key = File::getValidFilename($key);
             if ($key == "") {
-                $key = "undefined-page-key";
+                $key = Translation::get('active_wireframe_page');
             }
 
+            // $key unique
             $i = 1;
             while (Document\Service::pathExists($parent->getFullPath() . DIRECTORY_SEPARATOR . $key)) {
                 $key = $key . "-" . $i;
@@ -377,12 +373,8 @@ class Helpers
                 "action" => "pages"
             ];
 
-            // Page creation
             $page = Printpage::create($parentId, $dataDocument);
-
-            // Insert BD
             Pages::getInstance()->insertPage($page, $catalogId, $configs);
-
             return $page;
         }
 
@@ -390,7 +382,6 @@ class Helpers
     }
 
     /**
-     * @static
      * @param Printpage $document
      * @param $areaId
      * @param $objectId
@@ -410,12 +401,12 @@ class Helpers
             $indices[] = ['key' => $index, 'type' => $areaId];
             $blocArea->setDataFromEditmode($indices);
 
-            // create new tag
+            // creation du nouveau tag
             $renderlet = new Document\Tag\Renderlet();
             $renderlet->setName($areaId . 'pages-editable' . $index);
             $renderlet->setDataFromEditmode(['id' => $objectId, 'type' => 'object', 'subtype' => 'object']);
 
-            // Add renderlet to page
+            // ajoute le renderlet à la page
             $document->setElement($areaId . 'pages-editable' . $index, $renderlet);
 
             $dataElements = array_merge([
@@ -430,7 +421,6 @@ class Helpers
                 'e_index' => 10
             ], $conf);
 
-            // save
             return Elements::getInstance()->insert($dataElements);
         }
 
@@ -438,24 +428,27 @@ class Helpers
     }
 
     /**
-     * @static
      * @param AbstractObject $node
      * @return bool
      */
     public static function hasChildsRecursives(AbstractObject $node)
     {
         if ($node->hasChilds()) {
+
             foreach ($node->getChilds() as $child) {
+
                 if ($child instanceof AbstractObject AND $child->hasChilds()) {
                     return true;
                 }
+
             }
+
         }
+
         return false;
     }
 
     /**
-     * @static
      * @param Printpage $document
      * @param string $areaId
      * @return bool|mixed
@@ -499,7 +492,6 @@ class Helpers
     }
 
     /**
-     * @static
      * @param $documentId
      * @return array
      */
@@ -507,6 +499,7 @@ class Helpers
     {
         $elements = Elements::getInstance()->getElementsByDocumentId(intval($documentId));
         $collection = [];
+
         foreach ($elements as $element) {
             $collection[$element['e_key']] = $element;
         }

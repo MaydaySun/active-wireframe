@@ -9,9 +9,9 @@
  * @copyright  Copyright (c) 2014-2016 Active Publishing http://www.activepublishing.fr
  * @license https://www.gnu.org/licenses/gpl-3.0.en.html GNU General Public License version 3 (GPLv3)
  */
-namespace ActiveWireframe\Pimcore\Web2Print;
+namespace ActiveWireframe\Web2Print;
 
-use ActiveWireframe\Pimcore\Web2Print\Processor\WkHtmlToPdf;
+use ActiveWireframe\Web2Print\Processor\WkHtmlToPdf;
 use Pimcore\Config;
 use Pimcore\Web2Print\Processor\PdfReactor8;
 use Pimcore\Tool;

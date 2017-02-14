@@ -65,8 +65,8 @@
             $divStart = '<div class="preview-page ' . $classNote . ' ' . $classPagePosition . '">';
 
             $filename = DIRECTORY_SEPARATOR . $document['documentId'] . DIRECTORY_SEPARATOR . $document['documentId'] . '.jpeg';
-            $file = "/website/plugins-data" . DIRECTORY_SEPARATOR . \ActiveWireframe\Plugin::PLUGIN_NAME . $filename;
-            $absoluteFile  = \ActiveWireframe\Plugin::PLUGIN_PATH_DATA . $filename;
+            $file = "/website/activepublishing/" . \ActiveWireframe\Plugin::PLUGIN_NAME . $filename;
+            $absoluteFile  = \ActiveWireframe\Plugin::PLUGIN_WEBSITE_PATH . $filename;
 
             if (file_exists($absoluteFile)) {
                 $img = '<img class="lazy page-image page-border" data-original="' . $file

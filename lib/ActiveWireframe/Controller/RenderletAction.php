@@ -20,7 +20,6 @@ use Website\Controller\Action;
 
 /**
  * Class RenderletAction
- *
  * @package ActiveWireframe\Controller
  */
 class RenderletAction extends Action
@@ -28,12 +27,12 @@ class RenderletAction extends Action
     /**
      * @var string
      */
-    public $_language;
+    public $_language = "fr";
 
     /**
-     * @var int
+     * @var null
      */
-    public $_document;
+    public $_document = null;
 
     /**
      * @var int
@@ -65,53 +64,50 @@ class RenderletAction extends Action
      */
     public $_thumbnail;
 
+    /**
+     * Overwritte
+     */
     public function init()
     {
         parent::init();
 
-        // For object renderlet
         if (!$this->hasParam('id')) {
-            echo "Object ID failed."; exit();
+            exit("Object ID failed.");
         }
 
         if (!$object = Object\Concrete::getById($this->getParam('id'))) {
-            echo "Object failed."; exit();
+            exit("Object failed.");
         }
 
         if(!$object->isPublished()) {
             exit();
         }
 
+        $this->_language = $this->language;
+        $this->view->baseHost = $this->getHostUrl();
+        $this->view->baseAssets = PIMCORE_ASSET_DIRECTORY;
+
+        // Config Thumbnail
+        $this->view->thumbnail = $this->_thumbnail = $this->hasParam('thumbnail')
+            ? $this->getParam('thumbnail')
+            : "active-wireframe-preview";
+
         if ($this->hasParam('documentId')) {
             $this->_document = Document::getById(intval($this->getParam('documentId')));
         } elseif ($this->hasParam('pimcore_parentDocument')) {
             $this->_document = Document::getById(intval($this->getParam('pimcore_parentDocument')));
-        } else {
-            echo "Document ID failed."; exit();
         }
 
         $this->view->object = $this->_object = $object;
         $this->view->objectId = $this->_objectId = intval($object->getId());
         $this->view->htmlId = $object->getKey() . "-" . $object->getId();
 
-        $this->_pluginsDataDocument = Plugin::PLUGIN_PATH_DATA . DIRECTORY_SEPARATOR . $this->_document->getId();
-
-        $this->_pathElementW2pObject = $this->_pluginsDataDocument . DIRECTORY_SEPARATOR . $this->_objectId;
-
-        // language
-        $this->_language = $this->language;
-
-        // send var in view
-        $this->view->baseHost = $this->getHostUrl();
-        $this->view->baseAssets = PIMCORE_ASSET_DIRECTORY;
-
-        // Config Thumbnail
-        $this->view->thumbnail = $this->_thumbnail = $this->hasParam('thumbnail') ?
-            $this->getParam('thumbnail') :
-            "active-wireframe-preview";
-
-        // Data element w2p
-        $this->getDataElementW2p();
+        // Uniquement pour les document printpage (données xy des blocs w2p-element)
+        if (!is_null($this->_document)) {
+            $this->_pluginsDataDocument = Plugin::PLUGIN_WEBSITE_PATH . DIRECTORY_SEPARATOR . $this->_document->getId();
+            $this->_pathElementW2pObject = $this->_pluginsDataDocument . DIRECTORY_SEPARATOR . $this->_objectId;
+            $this->getDataElementW2p();
+        }
     }
 
     /**
@@ -127,6 +123,9 @@ class RenderletAction extends Action
         return Tool::getHostUrl();
     }
 
+    /**
+     * Récupère les positions xy des w2p-element
+     */
     private function getDataElementW2p()
     {
         if (is_dir($this->_pathElementW2pObject)) {
@@ -137,7 +136,6 @@ class RenderletAction extends Action
 
                 foreach ($ls as $file) {
 
-                    // path file json
                     $pathFileJson = $this->_pathElementW2pObject . DIRECTORY_SEPARATOR . $file;
                     $content = \Zend_Json::decode(file_get_contents($pathFileJson));
 

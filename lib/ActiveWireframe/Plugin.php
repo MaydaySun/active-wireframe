@@ -16,14 +16,13 @@ use ActivePublishing\Service\File;
 use ActivePublishing\Service\Table;
 use ActivePublishing\Service\Translation;
 use ActivePublishing\Service\Plugin as APS_Plugin;
-use ActiveWireframe\Pimcore\Console\Command\Web2PrintPdfCreationCommand;
+use ActiveWireframe\Console\Command\Web2PrintPdfCreationCommand;
 use Pimcore\API\Plugin as PluginLib;
 use Pimcore\Model\Asset;
 use Pimcore\Model\Element\ValidationException;
 
 /**
  * Class Plugin
- *
  * @package ActiveWireframe
  */
 class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterface
@@ -32,7 +31,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
     const PLUGIN_PATH = PIMCORE_PLUGINS_PATH . DIRECTORY_SEPARATOR . self::PLUGIN_NAME;
 
-    const PLUGIN_PATH_DATA = PIMCORE_WEBSITE_PATH . "/plugins-data/" . self::PLUGIN_NAME;
+    const PLUGIN_WEBSITE_PATH = PIMCORE_WEBSITE_PATH . "/activepublishing/" . self::PLUGIN_NAME;
 
     const PLUGIN_VAR_PATH = PIMCORE_WEBSITE_VAR . "/plugins/" . self::PLUGIN_NAME;
 
@@ -48,7 +47,6 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     public static $_needsReloadAfterInstall = false;
 
     /**
-     * @static
      * @return string
      */
     public static function needsReloadAfterInstall()
@@ -57,111 +55,54 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     }
 
     /**
-     * @static
+     * @throws PluginLib\Exception
+     */
+    public static function composerExists()
+    {
+        if (!file_exists(PIMCORE_DOCUMENT_ROOT . "/vendor/activepublishing/pimcore-lib")) {
+            throw new PluginLib\Exception('Please install Composer lib "activepublishing/pimcore-lib" before continuing');
+        }
+    }
+
+    /**
      * @return mixed
      */
     public static function install()
     {
-        if (!self::composerExists()) {
-            return 'ERROR: Active Publishing Composer does not exist.';
-        }
+        self::composerExists();
 
         try {
 
-            self::installTranslationAdmin(self::PLUGIN_PATH . "/static/install/texts.csv");
-            self::installTable(self::PLUGIN_PATH . "/static/install/tables.json");
-            self::installDocType(self::PLUGIN_PATH . "/static/install/doctypes.json");
+            Translation::createFromFile(self::PLUGIN_PATH . "/static/install/texts.csv");
+            Table::getInstance()->createTableOrUpdateFromJson(self::PLUGIN_PATH . "/static/install/tables.json");
+            DocType::createDocTypeFromJson(self::PLUGIN_PATH . "/static/install/doctypes.json");
+
+            self::UpdateArch();
             self::installAreas(self::PLUGIN_PATH . "/static/install/areas.zip", self::AREA_WIREFRAME);
             self::createThumbnails();
             self::createDirectoryTemplates();
 
             APS_Plugin::createLogInstall(1, self::PLUGIN_VAR_PATH_INSTALL);
 
+            self::$_needsReloadAfterInstall = true;
+
         } catch (\Exception $ex) {
             return $ex->getMessage();
         }
 
-        self::$_needsReloadAfterInstall = true;
         return 'Install success.';
     }
 
     /**
-     * @static
-     * @return bool
-     */
-    public static function composerExists()
-    {
-        return file_exists(PIMCORE_DOCUMENT_ROOT . "/vendor/activepublishing");
-    }
-
-    /**
-     * Install translation Admin
+     * Ajouts les areas par défaut s'il ne sont pas présent
      *
-     * @static
-     * @param $translationFile
-     * @return array|bool
-     * @throws \Exception
-     */
-    public static function installTranslationAdmin($translationFile)
-    {
-        if(!file_exists($translationFile)) {
-            Throw new \Exception("File not exist");
-        }
-
-        return Translation::createFromFile($translationFile);
-    }
-
-    /**
-     * Install Table in database
-     *
-     * @static
-     * @param $jsonDefinition
-     * @throws \Exception
-     */
-    public static function installTable($jsonDefinition)
-    {
-        if (!file_exists($jsonDefinition)) {
-            Throw new \Exception("File not exist");
-        }
-
-        if (!Table::getInstance()->createTableOrUpdateFromJson($jsonDefinition)) {
-            Throw new \Exception("Creation table in database is failed");
-        }
-    }
-
-    /**
-     * Install Doctype
-     *
-     * @static
-     * @param $jsonDefinition
-     * @throws \Exception
-     */
-    public static function installDocType($jsonDefinition)
-    {
-        if (!file_exists($jsonDefinition)) {
-            Throw new \Exception("File not exist");
-        }
-
-        if (!DocType::createDocTypeFromJson($jsonDefinition)) {
-            Throw new \Exception("Creation doctypes is failed");
-        }
-    }
-
-    /**
-     * Add area directory
-     *
-     * @static
      * @param $zip
      * @param $dst
      * @throws \Exception
      */
     public static function installAreas($zip, $dst)
     {
-        if (!file_exists($zip) ) {
-            Throw new \Exception("File not exist");
-        }
-
-        if (!file_exists($dst)) {
+        if (file_exists($zip) and !file_exists($dst)) {
             if (!File::decompressZip($zip, $dst)) {
                 Throw new \Exception("Decompression of zip is failed");
             }
@@ -169,77 +110,83 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     }
 
     /**
-     * Create thumbnails
+     * Création des vignettes
      *
-     * @static
      * @throws \Exception
      */
     private static function createThumbnails()
     {
-        // Add thumbnail active-wireframe-preview
+        // active-wireframe-preview
         if (!Asset\Image\Thumbnail\Config::getByAutoDetect("active-wireframe-preview")) {
             $pipe = new Asset\Image\Thumbnail\Config();
             $pipe->setName("active-wireframe-preview");
-            $pipe->setQuality(90);
+            $pipe->setQuality(75);
             $pipe->setFormat("PNG");
             $pipe->save();
         }
 
-        // Add thumbnail active-wireframe-preview
+        // active-wireframe-print
         if (!Asset\Image\Thumbnail\Config::getByAutoDetect("active-wireframe-print")) {
             $pipe = new Asset\Image\Thumbnail\Config();
             $pipe->setName("active-wireframe-print");
             $pipe->setQuality(100);
             $pipe->setFormat("PNG");
-            $pipe->setHighResolution(3.2);
+            $pipe->setHighResolution(2);
             $pipe->save();
         }
     }
 
     /**
-     * Create directory pages template
+     * Création du dossier pour les templates de page
      *
-     * @static
      * @throws \Exception
      */
     private static function createDirectoryTemplates()
     {
         if (!Asset\Service::pathExists(self::ASSET_PAGES_TEMPLATES)) {
-
-            // Befor v2.6.1
-            if (Asset\Service::pathExists("/gabarits-de-pages")
-                and $assetFolder = Asset::getByPath("/gabarits-de-pages")
-            ) {
-                $assetFolder->setFilename('active-wireframe');
-                $assetFolder->save();
-            } else {
-                Asset\Service::createFolderByPath(self::ASSET_PAGES_TEMPLATES);
-            }
+            Asset\Service::createFolderByPath(self::ASSET_PAGES_TEMPLATES);
         }
     }
 
     /**
-     * @static
+     * Mise à jour de l'architecture ActiveWireframe
+     */
+    private static function UpdateArch()
+    {
+        // Avant v2.6.1
+        if (Asset\Service::pathExists("/gabarits-de-pages") and $assetFolder = Asset::getByPath("/gabarits-de-pages")) {
+            $assetFolder->setFilename('active-wireframe');
+            $assetFolder->save();
+        }
+
+        // Avant v2.6.4
+        if (file_exists(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data")) {
+            File::cp(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data", self::PLUGIN_VAR_PATH);
+            File::rm(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data");
+        }
+    }
+
+    /**
      * @return string
      */
     public static function uninstall()
     {
-        if (!self::composerExists()) {
-            return 'ERROR: Active Publishing Composer does not exist.';
-        }
+        self::composerExists();
 
         try {
+
             APS_Plugin::createLogInstall(0, self::PLUGIN_VAR_PATH_INSTALL);
+
+            self::$_needsReloadAfterInstall = true;
+
         } catch (\Exception $ex) {
             return $ex->getMessage();
         }
 
-        self::$_needsReloadAfterInstall = true;
         return 'Uninstall success !';
     }
 
     /**
-     * @static
      * @return bool
      */
     public static function isInstalled()
@@ -249,7 +196,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
             return intval($conf->get('installed'));
         }
 
-        return 0;
+        return false;
     }
 
     /**

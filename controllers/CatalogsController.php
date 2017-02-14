@@ -27,12 +27,6 @@ class ActiveWireframe_CatalogsController extends Action
     {
         parent::init();
 
-        if (!Plugin::composerExists()) {
-            $this->disableLayout();
-            $this->disableViewAutoRender();
-            exit('ERROR: Active Publishing - Composer librairies for this plugin is not installed.');
-        }
-
         if (!Plugin::isInstalled()) {
             $this->disableLayout();
             $this->disableViewAutoRender();

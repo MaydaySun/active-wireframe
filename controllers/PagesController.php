@@ -27,12 +27,6 @@ class ActiveWireframe_PagesController extends Action
     {
         parent::init();
 
-        if (!Plugin::composerExists()) {
-            $this->disableLayout();
-            $this->disableViewAutoRender();
-            exit('ERROR: Active Publishing - Composer librairies for this plugin is not installed.');
-        }
-
         if (!Plugin::isInstalled()) {
             $this->disableLayout();
             $this->disableViewAutoRender();
@@ -111,7 +105,7 @@ class ActiveWireframe_PagesController extends Action
         $this->view->allowedExtension = false;
         if (!empty($resultEM)) {
             $this->view->allowedExtension = true;
-            $this->view->allowedExtensionJS = "";
+            $this->view->allowedExtensionJS = base64_decode($resultEM['js'][0]);
         }
 
         if (!$this->editmode and !$this->hasParam('pimcore_preview') and !$this->hasParam('createThumbnail')) {
