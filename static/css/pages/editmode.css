@@ -465,3 +465,8 @@
     width: calc(100% - 6px);
     z-index: -1;
 }
+
+#activeWireframe .pimcore_tag_renderlet .x-panel-body {
+    background: transparent !important;
+    border: none;
+}
