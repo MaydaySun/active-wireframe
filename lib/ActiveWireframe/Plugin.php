@@ -187,7 +187,8 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
         // Avant v2.6.4
         if (file_exists(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data")) {
-            File::cp(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data", self::PLUGIN_WEBSITE_PATH);
+            File::cp(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data",
+                PIMCORE_WEBSITE_PATH . '/activepublishing/');
             File::rm(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data");
         }
     }
