@@ -30,7 +30,7 @@ class ActiveWireframe_CatalogsController extends Action
         if (!Plugin::isInstalled()) {
             $this->disableLayout();
             $this->disableViewAutoRender();
-            exit('ERROR: Active Publishing - Plugin does not installed.');
+            exit('The ActiveWireframe plugin must be installed in order to use this page.');
         }
 
         $this->view->baseUrl = Tool::getHostUrl();

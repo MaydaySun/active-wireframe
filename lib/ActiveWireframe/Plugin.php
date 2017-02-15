@@ -37,9 +37,13 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
     const PLUGIN_VAR_PATH_INSTALL = self::PLUGIN_VAR_PATH . "/install.json";
 
-    const ASSET_PAGES_TEMPLATES = "/active-wireframe";
+    const ASSET_FOLDER_TEMPLATES = "/active-wireframe";
 
     const AREA_WIREFRAME = PIMCORE_WEBSITE_PATH . '/views/areas/active-wireframe';
+
+    const THUMB_PREVIEW = "active-wireframe-preview";
+
+    const THUMB_PRINT = "active-wireframe-print";
 
     /**
      * @var bool
@@ -47,21 +51,53 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     public static $_needsReloadAfterInstall = false;
 
     /**
+     * Overwritte : ajoute 3 évènement sur les document (pour les document print page et containeur)
+     * Ajoute une commande pour la console
+     */
+    public function init()
+    {
+        parent::init();
+
+        // document.postAdd
+        \Pimcore::getEventManager()->attach("document.postAdd", function (\Zend_EventManager_Event $e) {
+            try {
+                Handler::getInstance()->postAdd($e);
+            } catch (\Exception $ex) {
+                throw new ValidationException($ex->getMessage(), $ex->getCode());
+            }
+        });
+
+        // document.postUpdate
+        \Pimcore::getEventManager()->attach("document.postUpdate", function (\Zend_EventManager_Event $e) {
+            try {
+                Handler::getInstance()->postUpdate($e);
+            } catch (\Exception $ex) {
+                throw new ValidationException($ex->getMessage(), $ex->getCode());
+            }
+        });
+
+        // document.postDelete
+        \Pimcore::getEventManager()->attach("document.postDelete", function (\Zend_EventManager_Event $e) {
+            try {
+                Handler::getInstance()->postDelete($e);
+            } catch (\Exception $ex) {
+                throw new ValidationException($ex->getMessage(), $ex->getCode());
+            }
+        });
+
+        // commande web2print
+        \Pimcore::getEventManager()->attach('system.console.init', function (\Zend_EventManager_Event $e) {
+            $application = $e->getTarget();
+            $application->add(new Web2PrintPdfCreationCommand());
+        });
+    }
+
+    /**
      * @return string
      */
     public static function needsReloadAfterInstall()
     {
         return self::$_needsReloadAfterInstall;
-    }
-
-    /**
-     * @throws PluginLib\Exception
-     */
-    public static function composerExists()
-    {
-        if (!file_exists(PIMCORE_DOCUMENT_ROOT . "/vendor/activepublishing/pimcore-lib")) {
-            throw new PluginLib\Exception('Please install Composer lib "activepublishing/pimcore-lib" before continuing');
-        }
     }
 
     /**
@@ -73,11 +109,13 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
 
         try {
 
+            // Met à jour la structure du plugin par rapport aux versions précédente
+            self::UpdateArch();
+
             Translation::createFromFile(self::PLUGIN_PATH . "/static/install/texts.csv");
             Table::getInstance()->createTableOrUpdateFromJson(self::PLUGIN_PATH . "/static/install/tables.json");
             DocType::createDocTypeFromJson(self::PLUGIN_PATH . "/static/install/doctypes.json");
 
-            self::UpdateArch();
             self::installAreas(self::PLUGIN_PATH . "/static/install/areas.zip", self::AREA_WIREFRAME);
             self::createThumbnails();
             self::createDirectoryTemplates();
@@ -91,79 +129,6 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
         }
 
         return 'Install success.';
-    }
-
-    /**
-     * Ajouts les areas par défaut s'il ne sont pas présent
-     *
-     * @param $zip
-     * @param $dst
-     * @throws \Exception
-     */
-    public static function installAreas($zip, $dst)
-    {
-        if (file_exists($zip) and !file_exists($dst)) {
-            if (!File::decompressZip($zip, $dst)) {
-                Throw new \Exception("Decompression of zip is failed");
-            }
-        }
-    }
-
-    /**
-     * Création des vignettes
-     *
-     * @throws \Exception
-     */
-    private static function createThumbnails()
-    {
-        // active-wireframe-preview
-        if (!Asset\Image\Thumbnail\Config::getByAutoDetect("active-wireframe-preview")) {
-            $pipe = new Asset\Image\Thumbnail\Config();
-            $pipe->setName("active-wireframe-preview");
-            $pipe->setQuality(75);
-            $pipe->setFormat("PNG");
-            $pipe->save();
-        }
-
-        // active-wireframe-print
-        if (!Asset\Image\Thumbnail\Config::getByAutoDetect("active-wireframe-print")) {
-            $pipe = new Asset\Image\Thumbnail\Config();
-            $pipe->setName("active-wireframe-print");
-            $pipe->setQuality(100);
-            $pipe->setFormat("PNG");
-            $pipe->setHighResolution(2);
-            $pipe->save();
-        }
-    }
-
-    /**
-     * Création du dossier pour les templates de page
-     *
-     * @throws \Exception
-     */
-    private static function createDirectoryTemplates()
-    {
-        if (!Asset\Service::pathExists(self::ASSET_PAGES_TEMPLATES)) {
-            Asset\Service::createFolderByPath(self::ASSET_PAGES_TEMPLATES);
-        }
-    }
-
-    /**
-     * Mise à jour de l'architecture ActiveWireframe
-     */
-    private static function UpdateArch()
-    {
-        // Avant v2.6.1
-        if (Asset\Service::pathExists("/gabarits-de-pages") and $assetFolder = Asset::getByPath("/gabarits-de-pages")) {
-            $assetFolder->setFilename('active-wireframe');
-            $assetFolder->save();
-        }
-
-        // Avant v2.6.4
-        if (file_exists(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data")) {
-            File::cp(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data", self::PLUGIN_VAR_PATH);
-            File::rm(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data");
-        }
     }
 
     /**
@@ -200,44 +165,86 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     }
 
     /**
-     * @throws \Zend_EventManager_Exception_InvalidArgumentException
+     * @throws PluginLib\Exception
      */
-    public function init()
+    public static function composerExists()
     {
-        parent::init();
+        if (!file_exists(PIMCORE_DOCUMENT_ROOT . "/vendor/activepublishing/pimcore-lib")) {
+            throw new PluginLib\Exception('Please install Composer lib "activepublishing/pimcore-lib" before continuing');
+        }
+    }
 
-        // document.postAdd
-        \Pimcore::getEventManager()->attach("document.postAdd", function (\Zend_EventManager_Event $e) {
-            try {
-                Handler::getInstance()->postAdd($e);
-            } catch (\Exception $ex) {
-                throw new ValidationException($ex->getMessage(), $ex->getCode());
+    /**
+     * Met à jour la structure du plugin par rapport aux versions précédente
+     */
+    private static function UpdateArch()
+    {
+        // Avant v2.6.1
+        if (Asset\Service::pathExists("/gabarits-de-pages") and $assetFolder = Asset::getByPath("/gabarits-de-pages")) {
+            $assetFolder->setFilename('active-wireframe');
+            $assetFolder->save();
+        }
+
+        // Avant v2.6.4
+        if (file_exists(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data")) {
+            File::cp(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data", self::PLUGIN_WEBSITE_PATH);
+            File::rm(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data");
+        }
+    }
+
+    /**
+     * Ajouts les areas par défaut s'il ne sont pas présent
+     *
+     * @param $zip
+     * @param $dst
+     * @throws \Exception
+     */
+    public static function installAreas($zip, $dst)
+    {
+        if (file_exists($zip) and !file_exists($dst)) {
+            if (!File::decompressZip($zip, $dst)) {
+                Throw new \Exception("Decompression of zip is failed");
             }
-        });
+        }
+    }
 
-        // document.postUpdate
-        \Pimcore::getEventManager()->attach("document.postUpdate", function (\Zend_EventManager_Event $e) {
-            try {
-                Handler::getInstance()->postUpdate($e);
-            } catch (\Exception $ex) {
-                throw new ValidationException($ex->getMessage(), $ex->getCode());
-            }
-        });
+    /**
+     * Création des vignettes
+     *
+     * @throws \Exception
+     */
+    private static function createThumbnails()
+    {
+        // active-wireframe-preview
+        if (!Asset\Image\Thumbnail\Config::getByAutoDetect(self::THUMB_PREVIEW)) {
+            $pipe = new Asset\Image\Thumbnail\Config();
+            $pipe->setName(self::THUMB_PREVIEW);
+            $pipe->setQuality(75);
+            $pipe->setFormat("PNG");
+            $pipe->save();
+        }
 
-        // document.postDelete
-        \Pimcore::getEventManager()->attach("document.postDelete", function (\Zend_EventManager_Event $e) {
-            try {
-                Handler::getInstance()->postDelete($e);
-            } catch (\Exception $ex) {
-                throw new ValidationException($ex->getMessage(), $ex->getCode());
-            }
-        });
+        // active-wireframe-print
+        if (!Asset\Image\Thumbnail\Config::getByAutoDetect(self::THUMB_PRINT)) {
+            $pipe = new Asset\Image\Thumbnail\Config();
+            $pipe->setName(self::THUMB_PRINT);
+            $pipe->setQuality(100);
+            $pipe->setFormat("PNG");
+            $pipe->setHighResolution(2);
+            $pipe->save();
+        }
+    }
 
-        // add a single command for webtoprint
-        \Pimcore::getEventManager()->attach('system.console.init', function (\Zend_EventManager_Event $e) {
-            $application = $e->getTarget();
-            $application->add(new Web2PrintPdfCreationCommand());
-        });
+    /**
+     * Création du dossier pour les templates de page
+     *
+     * @throws \Exception
+     */
+    private static function createDirectoryTemplates()
+    {
+        if (!Asset\Service::pathExists(self::ASSET_FOLDER_TEMPLATES)) {
+            Asset\Service::createFolderByPath(self::ASSET_FOLDER_TEMPLATES);
+        }
     }
 
 }

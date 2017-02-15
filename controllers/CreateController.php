@@ -30,7 +30,7 @@ class ActiveWireframe_CreateController extends Action
         if (!Plugin::isInstalled()) {
             $this->disableLayout();
             $this->disableViewAutoRender();
-            exit('ERROR: Active Publishing - Plugin does not installed.');
+            exit('The ActiveWireframe plugin must be installed in order to use this page');
         }
     }
 
@@ -259,9 +259,9 @@ class ActiveWireframe_CreateController extends Action
 
         // exotic format
         if ($format == "other") {
-            $templates = $this->getAssetThumbnailByPath(Plugin::ASSET_PAGES_TEMPLATES . DIRECTORY_SEPARATOR);
+            $templates = $this->getAssetThumbnailByPath(Plugin::ASSET_FOLDER_TEMPLATES . DIRECTORY_SEPARATOR);
         } else {
-            $templates = $this->getAssetThumbnailByPath(Plugin::ASSET_PAGES_TEMPLATES . DIRECTORY_SEPARATOR . $format);
+            $templates = $this->getAssetThumbnailByPath(Plugin::ASSET_FOLDER_TEMPLATES . DIRECTORY_SEPARATOR . $format);
         }
 
         Tool::sendJson(['success' => !empty($templates), 'templates' => $templates]);
