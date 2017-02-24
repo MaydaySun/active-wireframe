@@ -29,6 +29,7 @@ use Pimcore\Helper\Mail;
 
 /**
  * Class Helpers
+ *
  * @package ActiveWireframe
  */
 class Helpers
@@ -40,19 +41,12 @@ class Helpers
     public static function reloadDocumentThumbnail(Printcontainer $document)
     {
         foreach ($document->getChilds() as $child) {
-
             if ($child instanceof Printpage) {
-
                 self::createDocumentThumbnail($child);
-
             } elseif ($child instanceof Printcontainer) {
-
                 self::reloadDocumentThumbnail($child);
-
             }
-
         }
-
         return true;
     }
 
@@ -73,40 +67,27 @@ class Helpers
         $web2printConfig = Config::getWeb2PrintConfig();
         $url = $web2printConfig->wkhtml2pdfHostname . $document->getFullPath() . '?createThumbnail=true';
         $url .= (strpos($url, "?") ? "&" : "?") . "pimcore_preview=true";
-
         try {
-
             $html = file_get_contents($url);
             $html = Mail::setAbsolutePaths($html, null, $web2printConfig->wkhtml2pdfHostname);
-
         } catch (\Exception $ex) {
             $html = "";
         }
 
         file_put_contents(PIMCORE_TEMPORARY_DIRECTORY . DIRECTORY_SEPARATOR . "wkhtmltoimage-input.html", $html);
-
         $image = new Image([
             'width' => 300,
             'format' => 'jpeg'
         ]);
-
         $image->setPage($html);
         $image->ignoreWarnings = true;
 
-        if ($image->saveAs($outputFile)
-            and file_exists($outputFile)
-            and (filesize($outputFile) > 1000)
-        ) {
-
+        if ($image->saveAs($outputFile) and file_exists($outputFile) and (filesize($outputFile) > 1000)) {
             return true;
-
         } else {
-
             $logfile = PIMCORE_LOG_DIRECTORY . "/wkhtmltoimage.log";
             File::put($logfile, $image->getError());
-
         }
-
         return false;
     }
 
@@ -143,9 +124,7 @@ class Helpers
         }
 
         foreach ($document->getChilds() as $page) {
-
             if (($page instanceof Printpage) and (!in_array($page->getKey(), $noRename))) {
-
                 try {
                     $page->setKey(File::getValidFilename($index));
                     $page->save();
@@ -153,18 +132,13 @@ class Helpers
                     echo $ex->getMessage();
                     Logger::err($ex->getMessage());
                 }
-
                 $index++;
-
-            } elseif ($page instanceof Printcontainer
-                and $page->hasChilds()
+            } elseif ($page instanceof Printcontainer and $page->hasChilds()
                 and (!in_array($page->getKey(), $noRename))
             ) {
                 $index = self::generateNewPagination($page, $index, $noRename);
             }
-
         }
-
         return $index;
     }
 
@@ -214,9 +188,7 @@ class Helpers
     public static function createChapter($key, $parentId)
     {
         $catalog = Printcontainer::getById($parentId);
-
         if ($catalog) {
-
             $key = File::getValidFilename($key);
             if ($key == "") {
                 $key = Translation::get("active_wireframe_chapter");
@@ -236,12 +208,10 @@ class Helpers
                 "controller" => "catalogs",
                 "action" => "tree"
             ];
-
             $chapter = Printcontainer::create($parentId, $dataDocument);
             Pages::getInstance()->insertChapter($chapter);
             return $chapter;
         }
-
         throw new \Exception("Printcontainer CATALOG is not found");
     }
 
@@ -252,26 +222,19 @@ class Helpers
     {
         $user = User::getCurrentUser();
         $roles = User::getRolesFromCurrentUser();
-
         $areaPath = '/website/views/areas';
         $areaPathAbs = PIMCORE_WEBSITE_PATH . '/views/areas';
 
         if ($user instanceof User and !$user->isAdmin() and !empty($roles)) {
-
             foreach ($roles as $rid) {
-
                 $role = PimcoreUser\Role::getById($rid);
-
                 if ($role instanceof PimcoreUser\Role
                     and file_exists($areaPathAbs . DIRECTORY_SEPARATOR . mb_strtolower($role->getName()))
                 ) {
                     return $areaPath . DIRECTORY_SEPARATOR . mb_strtolower($role->getName());
                 }
-
             }
-
         }
-
         return $areaPath . '/active-wireframe';
     }
 
@@ -288,16 +251,12 @@ class Helpers
             : Asset::getById(intval($cinfo['template_even']));
 
         if ($assetTemplate) {
-
             if ($assetTemplate instanceof Asset\Document) {
                 return $assetTemplate->getImageThumbnail($thumbnail)->getPath();
-
             } else if ($assetTemplate instanceof Asset\Image) {
                 return $assetTemplate->getThumbnail($thumbnail)->getPath();
             }
-
         }
-
         return false;
     }
 
@@ -319,9 +278,7 @@ class Helpers
         ];
 
         if ($page = self::createPage($documentKey, $parentId, $catalogId, $conf) AND $page instanceof Printpage) {
-
             try {
-
                 $areablock = new Document\Tag\Areablock();
                 $areablock->setName('pages-editable');
                 $areablock->setDocumentId($page->getId());
@@ -329,13 +286,10 @@ class Helpers
                 $page->setElement('pages-editable', $areablock);
                 $page->save();
                 return $page;
-
             } catch (\Exception $ex) {
                 Logger::err($ex->getMessage());
             }
-
         }
-
         return false;
     }
 
@@ -350,9 +304,7 @@ class Helpers
     public static function createPage($key, $parentId, $catalogId, $configs = [])
     {
         $parent = Printcontainer::getById($parentId);
-
         if ($parent) {
-
             $key = File::getValidFilename($key);
             if ($key == "") {
                 $key = Translation::get('active_wireframe_page');
@@ -372,12 +324,10 @@ class Helpers
                 "controller" => "pages",
                 "action" => "pages"
             ];
-
             $page = Printpage::create($parentId, $dataDocument);
             Pages::getInstance()->insertPage($page, $catalogId, $configs);
             return $page;
         }
-
         throw new \Exception("Printconatiner CATALOG is not found");
     }
 
@@ -392,7 +342,6 @@ class Helpers
     public static function CreateTagRenderlet(Printpage $document, $areaId, $objectId, $catalogId, $conf = [])
     {
         if ($areaId !== '') {
-
             $blocArea = $document->getElement('pages-editable');
 
             // init tag
@@ -408,7 +357,6 @@ class Helpers
 
             // ajoute le renderlet à la page
             $document->setElement($areaId . 'pages-editable' . $index, $renderlet);
-
             $dataElements = array_merge([
                 'document_id' => $document->getId(),
                 'document_parent_id' => $document->getParentId(),
@@ -420,10 +368,8 @@ class Helpers
                 'e_left' => null,
                 'e_index' => 10
             ], $conf);
-
             return Elements::getInstance()->insert($dataElements);
         }
-
         return false;
     }
 
@@ -434,17 +380,12 @@ class Helpers
     public static function hasChildsRecursives(AbstractObject $node)
     {
         if ($node->hasChilds()) {
-
             foreach ($node->getChilds() as $child) {
-
-                if ($child instanceof AbstractObject AND $child->hasChilds()) {
+                if ($child instanceof AbstractObject and $child->hasChilds()) {
                     return true;
                 }
-
             }
-
         }
-
         return false;
     }
 
@@ -456,7 +397,6 @@ class Helpers
     public static function createTagRenderletForAsset(Printpage $document, $catalogId, $areaId = '')
     {
         if ($areaId != '') {
-
             $blocArea = $document->getElement('pages-editable');
             $indices = $blocArea->getValue();
             $index = (string)(count($indices) + 1);
@@ -464,7 +404,6 @@ class Helpers
             $blocArea->setDataFromEditmode($indices);
 
             try {
-
                 $renderlet = new Document\Tag\Image();
                 $renderlet->setName($areaId . "pages-editable" . $index);
                 $document->setElement($areaId . "pages-editable" . $index, $renderlet);
@@ -481,13 +420,10 @@ class Helpers
                     'e_left' => null,
                     'e_index' => 10
                 ));
-
             } catch (\Exception $ex) {
                 Logger::err($ex->getMessage());
             }
-
         }
-
         return false;
     }
 
@@ -499,11 +435,9 @@ class Helpers
     {
         $elements = Elements::getInstance()->getElementsByDocumentId(intval($documentId));
         $collection = [];
-
         foreach ($elements as $element) {
             $collection[$element['e_key']] = $element;
         }
-
         return $collection;
     }
 

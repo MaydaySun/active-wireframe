@@ -51,8 +51,8 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     public static $_needsReloadAfterInstall = false;
 
     /**
-     * Overwritte : ajoute 3 évènement sur les document (pour les document print page et containeur)
-     * Ajoute une commande pour la console
+     * Overwritte : ajoute 3 évènements sur les documents (pour les documents print-page et print-containeur)
+     * Ajoute une commande de console (création d'un PDF)
      */
     public function init()
     {
@@ -66,7 +66,6 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
                 throw new ValidationException($ex->getMessage(), $ex->getCode());
             }
         });
-
         // document.postUpdate
         \Pimcore::getEventManager()->attach("document.postUpdate", function (\Zend_EventManager_Event $e) {
             try {
@@ -75,7 +74,6 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
                 throw new ValidationException($ex->getMessage(), $ex->getCode());
             }
         });
-
         // document.postDelete
         \Pimcore::getEventManager()->attach("document.postDelete", function (\Zend_EventManager_Event $e) {
             try {
@@ -84,7 +82,6 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
                 throw new ValidationException($ex->getMessage(), $ex->getCode());
             }
         });
-
         // commande web2print
         \Pimcore::getEventManager()->attach('system.console.init', function (\Zend_EventManager_Event $e) {
             $application = $e->getTarget();
@@ -106,9 +103,7 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     public static function install()
     {
         self::composerExists();
-
         try {
-
             // Met à jour la structure du plugin par rapport aux versions précédente
             self::UpdateArch();
 
@@ -123,11 +118,9 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
             APS_Plugin::createLogInstall(1, self::PLUGIN_VAR_PATH_INSTALL);
 
             self::$_needsReloadAfterInstall = true;
-
         } catch (\Exception $ex) {
             return $ex->getMessage();
         }
-
         return 'Install success.';
     }
 
@@ -137,17 +130,12 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
     public static function uninstall()
     {
         self::composerExists();
-
         try {
-
             APS_Plugin::createLogInstall(0, self::PLUGIN_VAR_PATH_INSTALL);
-
             self::$_needsReloadAfterInstall = true;
-
         } catch (\Exception $ex) {
             return $ex->getMessage();
         }
-
         return 'Uninstall success !';
     }
 
@@ -160,7 +148,6 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
             $conf = new \Zend_Config_Json(self::PLUGIN_VAR_PATH_INSTALL);
             return intval($conf->get('installed'));
         }
-
         return false;
     }
 
@@ -184,7 +171,6 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
             $assetFolder->setFilename('active-wireframe');
             $assetFolder->save();
         }
-
         // Avant v2.6.4
         if (file_exists(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data")) {
             File::cp(PIMCORE_WEBSITE_PATH . DIRECTORY_SEPARATOR . "plugins-data",
@@ -224,7 +210,6 @@ class Plugin extends PluginLib\AbstractPlugin implements PluginLib\PluginInterfa
             $pipe->setFormat("PNG");
             $pipe->save();
         }
-
         // active-wireframe-print
         if (!Asset\Image\Thumbnail\Config::getByAutoDetect(self::THUMB_PRINT)) {
             $pipe = new Asset\Image\Thumbnail\Config();
