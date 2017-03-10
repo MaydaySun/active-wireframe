@@ -125,7 +125,9 @@ class WkHtmlToPdf extends Processor
         }
 
         // Check Pdf
-        $pdftk = new MKH_Pdftk($document->getPdfFileName());
+        // @fixme: allow user configuration. binary path for example!
+        $options = ["command" => "pdftk"];
+        $pdftk = new MKH_Pdftk($document->getPdfFileName(), $options);
         $pdftk->cat(1);
         if (!$pdftk->saveAs($document->getPdfFileName())) {
             throw new \Exception('Could not create PDF: ' . $pdftk->getError());
@@ -163,7 +165,10 @@ class WkHtmlToPdf extends Processor
             'dpi' => 96,
             'image-quality' => 100,
             'image-dpi' => 96,
-            'zoom' => 1
+            'zoom' => 1,
+            'commandOptions' => [
+                'command' => $this->wkhtmltopdfBin
+            ]
         ];
 
     }
