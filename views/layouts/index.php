@@ -31,6 +31,9 @@
     <script src="/plugins/ActiveWireframe/static/jquery-plugins/jquery-lazyload/jquery.lazyload.min.js"></script>
     <script src="/plugins/ActiveWireframe/static/js/jquery-plugins.js?v=<?= $this->version; ?>"></script>
 
+    <?= $this->headLink(); ?>
+    <?= $this->headScript(); ?>
+
     <!-- Editmode -->
     <?php if ($this->editmode) { ?>
         <script src="/plugins/ActiveWireframe/static/js/menu.js?v=<?= $this->version; ?>"></script>
